@@ -28,14 +28,28 @@ public final class PokkitInventoryType {
 		twoWay(cn.nukkit.inventory.InventoryType.ENDER_CHEST, InventoryType.ENDER_CHEST);
 		twoWay(cn.nukkit.inventory.InventoryType.SHULKER_BOX, InventoryType.SHULKER_BOX);
 		twoWay(cn.nukkit.inventory.InventoryType.BEACON, InventoryType.BEACON);
-		twoWay(cn.nukkit.inventory.InventoryType.MINECART_CHEST, InventoryType.CHEST); // TODO check this
-		twoWay(cn.nukkit.inventory.InventoryType.MINECART_HOPPER, InventoryType.HOPPER); // TODO check this
+		twoWay(cn.nukkit.inventory.InventoryType.TRADING, InventoryType.MERCHANT);
 
-		bukkitToNukkit.put(InventoryType.MERCHANT, cn.nukkit.inventory.InventoryType.ANVIL);
+		// TODO: check everything below
+
 		bukkitToNukkit.put(InventoryType.CREATIVE, cn.nukkit.inventory.InventoryType.PLAYER);
 
-		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.UI, InventoryType.PLAYER); // TODO wrong
-		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.OFFHAND, InventoryType.PLAYER); // TODO wrong
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.UI, InventoryType.PLAYER);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.OFFHAND, InventoryType.PLAYER);
+
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.MINECART_CHEST, InventoryType.CHEST);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.CHEST_BOAT, InventoryType.CHEST);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.BARREL, InventoryType.CHEST);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.DONKEY, InventoryType.CHEST);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.MINECART_HOPPER, InventoryType.HOPPER);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.LOOM, InventoryType.PLAYER);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.SMITHING_TABLE, InventoryType.PLAYER);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.LECTERN, InventoryType.PLAYER);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.CAMPFIRE, InventoryType.PLAYER);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.ENTITY_ARMOR, InventoryType.PLAYER);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.ENTITY_EQUIPMENT, InventoryType.PLAYER);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.BLAST_FURNACE, InventoryType.FURNACE);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.SMOKER, InventoryType.FURNACE);
 	}
 
 	/**

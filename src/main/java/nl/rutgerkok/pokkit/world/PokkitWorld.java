@@ -280,7 +280,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public List<Entity> getEntities() {
-		List<Entity> entitiesInChunk = new ArrayList<Entity>();
+		List<Entity> entitiesInChunk = new ArrayList<>();
 
 		for (cn.nukkit.entity.Entity entity : nukkit.getEntities()) {
 			entitiesInChunk.add(PokkitEntity.toBukkit(entity));

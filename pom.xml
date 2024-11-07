@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.rutgerkok</groupId>
 	<artifactId>Pokkit</artifactId>
-	<version>0.11.2.dev</version>
+	<version>0.11.2</version>
 	<name>Pokkit</name>
 	<description>Run Bukkit and Spigot plugins on Nukkit</description>
 	<properties>
@@ -22,14 +22,14 @@
 			<!-- SQLite support for Bukkit plugins -->
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.7.2</version>
+			<version>3.25.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<!-- MySQL support for Bukkit plugins -->
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.37</version>
+			<version>5.1.47</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -59,7 +59,7 @@
 	<repositories>
 		<repository>
 			<id>nukkitx</id>
-			<url>https://repo.nukkitx.com/main/</url>
+			<url>https://repo.opencollab.dev/main/</url>
 		</repository>
 		<repository>
 			<id>spigot-repo</id>

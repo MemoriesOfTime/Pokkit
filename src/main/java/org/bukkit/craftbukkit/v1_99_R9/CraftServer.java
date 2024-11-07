@@ -396,7 +396,7 @@ public final class CraftServer extends Server.Spigot implements Server {
 
 	@Override
 	public boolean getGenerateStructures() {
-		return nukkit.getGenerateStructures();
+		return false;
 	}
 
 	@Override

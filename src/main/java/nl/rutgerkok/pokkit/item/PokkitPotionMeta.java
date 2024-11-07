@@ -48,7 +48,7 @@ final class PokkitPotionMeta extends PokkitItemMeta implements PotionMeta {
 
 	@Override
 	public List<PotionEffect> getCustomEffects() {
-		return new ArrayList<PotionEffect>();
+		return new ArrayList<>();
 	}
 
 	@Override

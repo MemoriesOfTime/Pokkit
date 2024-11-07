@@ -65,7 +65,7 @@ public class PokkitEnchantment {
 			return;
 		}
 
-		List<NamespacedKey> registered = new ArrayList();
+		List<NamespacedKey> registered = new ArrayList<>();
 		for (cn.nukkit.item.enchantment.Enchantment nukkitEnchantment : cn.nukkit.item.enchantment.Enchantment.getEnchantments()) {
 			Enchantment bukkitWrapper = toBukkit(nukkitEnchantment.getId());
 

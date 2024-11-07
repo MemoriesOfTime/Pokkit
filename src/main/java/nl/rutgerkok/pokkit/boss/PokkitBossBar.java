@@ -16,7 +16,7 @@ import nl.rutgerkok.pokkit.player.PokkitPlayer;
 
 public class PokkitBossBar implements BossBar {
 	
-	ArrayList<cn.nukkit.utils.DummyBossBar> dummyBossBars = new ArrayList<cn.nukkit.utils.DummyBossBar>();
+	ArrayList<cn.nukkit.utils.DummyBossBar> dummyBossBars = new ArrayList<>();
 	BarColor color;
 	String title;
 	float progressLength;
@@ -156,7 +156,7 @@ public class PokkitBossBar implements BossBar {
 
 	@Override
 	public List<Player> getPlayers() {
-		ArrayList<Player> players = new ArrayList<Player>();
+		ArrayList<Player> players = new ArrayList<>();
 		for(int i = 0; i < dummyBossBars.size(); i++)
 		{
 			Player p = PokkitPlayer.toBukkit(dummyBossBars.get(i).getPlayer());

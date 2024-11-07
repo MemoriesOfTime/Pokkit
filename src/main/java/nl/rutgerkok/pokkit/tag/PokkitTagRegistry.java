@@ -7,7 +7,7 @@ import org.bukkit.Material;
 
 public class PokkitTagRegistry {
 	
-	HashSet<Material> TagRegistry = new HashSet<Material>();
+	HashSet<Material> TagRegistry = new HashSet<>();
 	boolean blockTags = false;
 	boolean itemTags = true;
 	String tagName = "";
@@ -112,7 +112,7 @@ public class PokkitTagRegistry {
 	private HashSet<Material> ReflectionMaterialEntries(String stringContains, String doesNotContain) {
 		Field[] MaterialFields = Material.class.getFields();
 		
-		HashSet<Material> materialsWithTagName = new HashSet<Material>();
+		HashSet<Material> materialsWithTagName = new HashSet<>();
 		for (int i = 0; i < MaterialFields.length; i++) {
 			if (!MaterialFields[i].getName().toLowerCase().contains("legacy")) {
 				if (doesNotContain.length() == 0 || !MaterialFields[i].getName().toLowerCase().contains(doesNotContain))
@@ -145,6 +145,6 @@ public class PokkitTagRegistry {
 	}
 	
 	private HashSet<Material> CombineMaterialEntries(Material...materials) {
-		return CombineMaterialEntries(new HashSet<Material>(), materials);
+		return CombineMaterialEntries(new HashSet<>(), materials);
 	}
 }

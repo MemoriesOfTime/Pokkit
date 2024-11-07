@@ -169,7 +169,7 @@ public final class EntityEvents extends EventTranslator {
 			return;
 		}
 
-		List<ItemStack> bukkitDrops = new ArrayList<ItemStack>();
+		List<ItemStack> bukkitDrops = new ArrayList<>();
 		for (Item item : event.getDrops()) {
 			bukkitDrops.add(PokkitItemStack.toBukkitCopy(item));
 		}
@@ -187,7 +187,7 @@ public final class EntityEvents extends EventTranslator {
 			return;
 		}
 
-		List<Block> blocks = new ArrayList<Block>();
+		List<Block> blocks = new ArrayList<>();
 
 		for (cn.nukkit.block.Block nukkitBlock : event.getBlockList()) {
 			blocks.add(PokkitBlock.toBukkit(nukkitBlock));

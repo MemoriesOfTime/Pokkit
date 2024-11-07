@@ -164,12 +164,12 @@ public class PokkitEntity implements Entity {
 
     @Override
     public int getMaxFireTicks() {
-        return nukkit.maxFireTicks;
+        return 32767;
     }
 
     @Override
     public List<MetadataValue> getMetadata(String metadataKey) {
-        List<MetadataValue> bukkitList = new ArrayList<MetadataValue>();
+        List<MetadataValue> bukkitList = new ArrayList<>();
         if (nukkit.getMetadata(metadataKey) != null) {
             nukkit.getMetadata(metadataKey).forEach((value) -> bukkitList.add(PokkitMetadataValue.toBukkit(value)));
         }

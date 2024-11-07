@@ -21,7 +21,7 @@ public class PokkitParticle {
 		case DAMAGE_INDICATOR:
 			break;
 		case DRAGON_BREATH:
-			return cn.nukkit.level.particle.Particle.TYPE_DRAGONS_BREATH;
+			return cn.nukkit.level.particle.Particle.TYPE_DRAGON_BREATH;
 		case DRIP_LAVA:
 			return cn.nukkit.level.particle.Particle.TYPE_DRIP_LAVA;
 		case DRIP_WATER:
