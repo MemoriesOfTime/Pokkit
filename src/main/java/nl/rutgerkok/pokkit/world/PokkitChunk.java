@@ -1,11 +1,14 @@
 package nl.rutgerkok.pokkit.world;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import cn.nukkit.level.Level;
 import cn.nukkit.level.format.FullChunk;
 
+import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.blockstate.PokkitBlockState;
 import nl.rutgerkok.pokkit.entity.PokkitEntity;
 
@@ -15,7 +18,9 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
+import org.bukkit.plugin.Plugin;
 
 public final class PokkitChunk implements Chunk {
 
@@ -116,6 +121,36 @@ public final class PokkitChunk implements Chunk {
 	}
 
 	@Override
+	public boolean addPluginChunkTicket(Plugin plugin) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean removePluginChunkTicket(Plugin plugin) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public Collection<Plugin> getPluginChunkTickets() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public long getInhabitedTime() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public void setInhabitedTime(long l) {
+		Pokkit.notImplemented();
+	}
+
+	@Override
+	public boolean contains(BlockData blockData) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
 	public boolean load() {
 		return world.loadChunk(nukkit.getX(), nukkit.getZ(), true);
 	}
@@ -134,11 +169,4 @@ public final class PokkitChunk implements Chunk {
 	public boolean unload(boolean save) {
 		return world.unloadChunk(nukkit.getX(), nukkit.getZ(), save);
 	}
-
-	@Override
-	@Deprecated
-	public boolean unload(boolean save, boolean safe) {
-		return world.unloadChunk(nukkit.getX(), nukkit.getZ(), save, safe);
-	}
-
 }

@@ -1128,8 +1128,8 @@ public final class PokkitSound {
 			return cn.nukkit.level.Sound.MOB_ZOMBIE_SAY;
 		case ENTITY_PARROT_IMITATE_ELDER_GUARDIAN:
 			return cn.nukkit.level.Sound.MOB_GUARDIAN_LAND_IDLE;
-		case ENTITY_PARROT_IMITATE_ENDERMAN:
-			return cn.nukkit.level.Sound.MOB_ENDERMEN_IDLE;
+			//case ENTITY_PARROT_IMITATE_ENDERMAN:
+			//	return cn.nukkit.level.Sound.MOB_ENDERMEN_IDLE;
 		case ENTITY_PARROT_IMITATE_ENDERMITE:
 			return cn.nukkit.level.Sound.MOB_ENDERMITE_SAY;
 		case ENTITY_PARROT_IMITATE_ENDER_DRAGON:
@@ -1146,8 +1146,8 @@ public final class PokkitSound {
 			return cn.nukkit.level.Sound.MOB_MAGMACUBE_BIG;
 		case ENTITY_PARROT_IMITATE_PHANTOM:
 			return cn.nukkit.level.Sound.MOB_PHANTOM_IDLE;
-		case ENTITY_PARROT_IMITATE_POLAR_BEAR:
-			return cn.nukkit.level.Sound.MOB_POLARBEAR_IDLE;
+			//case ENTITY_PARROT_IMITATE_POLAR_BEAR:
+			//	return cn.nukkit.level.Sound.MOB_POLARBEAR_IDLE;
 		case ENTITY_PARROT_IMITATE_SHULKER:
 			return cn.nukkit.level.Sound.MOB_SHULKER_AMBIENT;
 		case ENTITY_PARROT_IMITATE_SILVERFISH:
@@ -1170,12 +1170,12 @@ public final class PokkitSound {
 			return cn.nukkit.level.Sound.MOB_WITHER_AMBIENT;
 		case ENTITY_PARROT_IMITATE_WITHER_SKELETON:
 			return cn.nukkit.level.Sound.MOB_SKELETON_SAY;
-		case ENTITY_PARROT_IMITATE_WOLF:
-			return cn.nukkit.level.Sound.MOB_WOLF_BARK;
+			//case ENTITY_PARROT_IMITATE_WOLF:
+			//	return cn.nukkit.level.Sound.MOB_WOLF_BARK;
 		case ENTITY_PARROT_IMITATE_ZOMBIE:
 			return cn.nukkit.level.Sound.MOB_ZOMBIE_SAY;
-		case ENTITY_PARROT_IMITATE_ZOMBIE_PIGMAN:
-			return cn.nukkit.level.Sound.MOB_ZOMBIEPIG_ZPIG;
+			//case ENTITY_PARROT_IMITATE_ZOMBIE_PIGMAN:
+			//	return cn.nukkit.level.Sound.MOB_ZOMBIEPIG_ZPIG;
 		case ENTITY_PARROT_IMITATE_ZOMBIE_VILLAGER:
 			return cn.nukkit.level.Sound.MOB_ZOMBIE_VILLAGER_SAY;
 		case ENTITY_PARROT_STEP:

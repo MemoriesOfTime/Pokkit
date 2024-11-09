@@ -1,18 +1,12 @@
 package nl.rutgerkok.pokkit.player;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SplittableRandom;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import cn.nukkit.level.Position;
 import cn.nukkit.network.protocol.*;
+import nl.rutgerkok.pokkit.inventory.PokkitEntityEquipment;
 import nl.rutgerkok.pokkit.item.PokkitItemStack;
 import nl.rutgerkok.pokkit.world.PokkitWorld;
 import org.apache.commons.lang.Validate;
@@ -121,11 +115,6 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 					}
 				}
 				return hiddenPlayers;
-			}
-
-			@Override
-			public String getLocale() {
-				return nukkit.getLocale().toString();
 			}
 
 			@Override
@@ -255,11 +244,6 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}*/
 
 	@Override
-	public void awardAchievement(@SuppressWarnings("deprecation") org.bukkit.Achievement achievement) {
-		// Silently unsupported!
-	}
-
-	@Override
 	public boolean beginConversation(Conversation arg0) {
 		throw Pokkit.unsupported();
 	}
@@ -271,7 +255,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void chat(String message) {
-		 String msg = message = nukkit.getRemoveFormat() ? TextFormat.clean(message) : message;
+		 String msg = nukkit.getRemoveFormat() ? TextFormat.clean(message) : message;
 		 PlayerChatEvent chatEvent = new PlayerChatEvent(toNukkit(this), msg);
 		nukkit.getServer().getPluginManager().callEvent(chatEvent);
 		if (!chatEvent.isCancelled()) {
@@ -405,14 +389,12 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public EntityEquipment getEquipment() {
-		throw Pokkit.unsupported();
-
+		return new PokkitEntityEquipment(nukkit.getInventory());
 	}
 
 	@Override
 	public float getExhaustion() {
 		throw Pokkit.unsupported();
-
 	}
 
 	@Override
@@ -572,8 +554,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public Entity getSpectatorTarget() {
-		throw Pokkit.unsupported();
-
+		return null;
 	}
 
 	@Override
@@ -590,19 +571,20 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		default:
 			break;
 		}
-		throw Pokkit.unsupported();
+		Pokkit.notImplemented();
+		return 0;
 	}
 
 	@Override
 	public int getStatistic(Statistic arg0, EntityType arg1) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
-
+		Pokkit.notImplemented();
+		return 0;
 	}
 
 	@Override
 	public int getStatistic(Statistic arg0, Material arg1) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
-
+		Pokkit.notImplemented();
+		return 0;
 	}
 
 	@Override
@@ -640,12 +622,6 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	@Override
 	public void giveExpLevels(int levels) {
 		nukkit.setExperience(nukkit.getExperience(), nukkit.getExperienceLevel() + levels);
-	}
-
-	@Override
-	public boolean hasAchievement(@SuppressWarnings("deprecation") org.bukkit.Achievement achievement) {
-		return true; // When achievements are properly implemented in Nukkit,
-						// change this to use Nukkit's API!
 	}
 
 	@Override
@@ -998,11 +974,6 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}
 
 	@Override
-	public void removeAchievement(@SuppressWarnings("deprecation") org.bukkit.Achievement achievement) {
-		// Silently unsupported!
-	}
-
-	@Override
 	public void removeAttachment(PermissionAttachment attachment) {
 		nukkit.removeAttachment(PokkitPermissionAttachment.toNukkit(attachment));
 	}
@@ -1092,6 +1063,11 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void sendSignChange(Location arg0, String[] arg1) throws IllegalArgumentException {
+		Pokkit.notImplemented();
+	}
+
+	@Override
+	public void sendSignChange(Location location, String[] strings, DyeColor dyeColor) throws IllegalArgumentException {
 		Pokkit.notImplemented();
 	}
 
@@ -1360,6 +1336,17 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}
 
 	@Override
+	public void sendExperienceChange(float progress) {
+		//nukkit.sendExperience(progress);
+	}
+
+	@Override
+	public void sendExperienceChange(float progress, int level) {
+		//nukkit.sendExperience(progress);
+		nukkit.sendExperienceLevel(level);
+	}
+
+	@Override
 	public void setWalkSpeed(float arg0) throws IllegalArgumentException {
 		nukkit.setMovementSpeed(arg0);
 	}
@@ -1416,9 +1403,9 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 		int index = 0;
 		while (count > index) {
-			double realOffsetX = 0;
-			double realOffsetY = 0;
-			double realOffsetZ = 0;
+			double realOffsetX;
+			double realOffsetY;
+			double realOffsetZ;
 			if (offsetX != 0) {
 				realOffsetX = offsetX / 2;
 				x = x + random.nextDouble(-realOffsetX, realOffsetX);
@@ -1517,8 +1504,21 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}
 
 	@Override
+	public void openBook(ItemStack itemStack) {
+		Pokkit.notImplemented();
+	}
+
+	@Override
 	public void updateInventory() {
 		nukkit.getInventory().sendContents(nukkit);
 	}
 
+	@Override
+	public InventoryView getOpenInventory() {
+		Optional<cn.nukkit.inventory.Inventory> inventory = nukkit.getTopWindow();
+		if (inventory.isPresent()) {
+			return new PokkitInventoryView(PokkitInventory.toBukkit(inventory.get()), this);
+		}
+		return new PokkitInventoryView(PokkitInventory.toBukkit(nukkit.getCraftingGrid()), this);
+	}
 }

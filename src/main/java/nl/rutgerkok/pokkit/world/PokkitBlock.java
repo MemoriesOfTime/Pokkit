@@ -1,9 +1,6 @@
 package nl.rutgerkok.pokkit.world;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import org.bukkit.*;
 import org.bukkit.block.Biome;
@@ -13,6 +10,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_99_R9.CraftServer;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -118,6 +116,11 @@ public final class PokkitBlock implements Block {
 		return getDrops0(PokkitItemStack.toNukkitCopy(tool));
 	}
 
+	@Override
+	public Collection<ItemStack> getDrops(ItemStack itemStack, Entity entity) {
+		return getDrops0(PokkitItemStack.toNukkitCopy(itemStack));
+	}
+
 	private Collection<ItemStack> getDrops0(cn.nukkit.item.Item item) {
 		if (this.drops != null) {
 			return this.drops;
@@ -220,7 +223,6 @@ public final class PokkitBlock implements Block {
 	@Override
 	public double getTemperature() {
 		int biomeId = nukkit.getLevel().getBiomeId((int) nukkit.x, (int) nukkit.z);
-		@SuppressWarnings("deprecation")
 		cn.nukkit.level.biome.Biome biome = EnumBiome.getBiome(biomeId);
 		if (biome != null && biome.isFreezing()) {
 			return 0.1;

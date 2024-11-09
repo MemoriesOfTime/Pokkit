@@ -135,18 +135,6 @@ public final class CraftServers extends Server.Spigot implements Server {
 	}
 
 	@Override
-	public String getServerName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getServerId() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public String getWorldType() {
 		// TODO Auto-generated method stub
 		return null;
@@ -227,6 +215,16 @@ public final class CraftServers extends Server.Spigot implements Server {
 	@Override
 	public int getTicksPerMonsterSpawns() {
 		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getTicksPerWaterSpawns() {
+		return 0;
+	}
+
+	@Override
+	public int getTicksPerAmbientSpawns() {
 		return 0;
 	}
 
@@ -397,6 +395,11 @@ public final class CraftServers extends Server.Spigot implements Server {
 	public void resetRecipes() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public boolean removeRecipe(NamespacedKey namespacedKey) {
+		return false;
 	}
 
 	@Override

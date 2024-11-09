@@ -236,18 +236,8 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 	}
 
 	@Override
-	public String getName() {
-		return nukkit.getName();
-	}
-
-	@Override
 	public int getSize() {
 		return nukkit.getSize();
-	}
-
-	@Override
-	public String getTitle() {
-		return nukkit.getTitle();
 	}
 
 	@Override

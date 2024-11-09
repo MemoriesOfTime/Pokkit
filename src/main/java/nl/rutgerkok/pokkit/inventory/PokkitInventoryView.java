@@ -43,4 +43,8 @@ public final class PokkitInventoryView extends InventoryView {
 		return type;
 	}
 
+	@Override
+	public String getTitle() {
+		return topInventory.getClass().getSimpleName();
+	}
 }

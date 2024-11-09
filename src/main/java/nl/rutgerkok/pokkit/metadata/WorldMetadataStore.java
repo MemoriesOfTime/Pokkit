@@ -22,6 +22,6 @@ public final class WorldMetadataStore extends MetadataStoreBase<World> implement
 	 */
 	@Override
 	protected String disambiguate(World world, String metadataKey) {
-		return world.getUID().toString() + ":" + metadataKey;
+		return world.getUID() + ":" + metadataKey;
 	}
 }

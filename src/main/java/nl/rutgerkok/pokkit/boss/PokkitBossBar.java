@@ -38,10 +38,9 @@ public class PokkitBossBar implements BossBar {
 
 	@Override
 	public void setTitle(String title) {
-		for(int i = 0; i < dummyBossBars.size(); i++)
-		{
-			dummyBossBars.get(i).setText(title);
-		}
+        for (DummyBossBar dummyBossBar : dummyBossBars) {
+            dummyBossBar.setText(title);
+        }
 		this.title = title;
 	}
 
@@ -76,10 +75,9 @@ public class PokkitBossBar implements BossBar {
 		this.color = color;
 		BossBarColor bcolor = BarColorToBossBarColor(color);
 
-		for(int i = 0; i < dummyBossBars.size(); i++)
-		{
-			dummyBossBars.get(i).setColor(bcolor);
-		}
+        for (DummyBossBar dummyBossBar : dummyBossBars) {
+            dummyBossBar.setColor(bcolor);
+        }
 	}
 
 	@Override
@@ -109,10 +107,9 @@ public class PokkitBossBar implements BossBar {
 
 	@Override
 	public void setProgress(double progress) {
-		for(int i = 0; i < dummyBossBars.size(); i++)
-		{
-			dummyBossBars.get(i).setLength((float) progress*100);
-		}
+        for (DummyBossBar dummyBossBar : dummyBossBars) {
+            dummyBossBar.setLength((float) progress * 100);
+        }
 		progressLength = (float) progress;
 	}
 
@@ -157,11 +154,10 @@ public class PokkitBossBar implements BossBar {
 	@Override
 	public List<Player> getPlayers() {
 		ArrayList<Player> players = new ArrayList<>();
-		for(int i = 0; i < dummyBossBars.size(); i++)
-		{
-			Player p = PokkitPlayer.toBukkit(dummyBossBars.get(i).getPlayer());
-			players.add(p);
-		}
+        for (DummyBossBar dummyBossBar : dummyBossBars) {
+            Player p = PokkitPlayer.toBukkit(dummyBossBar.getPlayer());
+            players.add(p);
+        }
 		return players;
 	}
 
@@ -177,18 +173,16 @@ public class PokkitBossBar implements BossBar {
 
 	@Override
 	public void show() {
-		for(int i = 0; i < dummyBossBars.size(); i++)
-		{
-			dummyBossBars.get(i).create();
-		}
+        for (DummyBossBar dummyBossBar : dummyBossBars) {
+            dummyBossBar.create();
+        }
 		
 	}
 
 	@Override
 	public void hide() {
-		for(int i = 0; i < dummyBossBars.size(); i++)
-		{
-			dummyBossBars.get(i).destroy();
-		}
+        for (DummyBossBar dummyBossBar : dummyBossBars) {
+            dummyBossBar.destroy();
+        }
 	}
 }

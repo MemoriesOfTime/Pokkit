@@ -41,7 +41,6 @@ public final class NukkitHook extends PluginBase {
 	public void onLoad() {
 		try {
 			PluginClassLoader nukkitLoader = (PluginClassLoader) getClass().getClassLoader();
-			@SuppressWarnings("resource")
 			UrlFirstClassLoader classLoader = new UrlFirstClassLoader(nukkitLoader.getURLs(), nukkitLoader);
 
 			pokkit = classLoader.loadClass("nl.rutgerkok.pokkit.Pokkit").newInstance();

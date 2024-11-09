@@ -15,6 +15,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.memory.MemoryKey;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -110,7 +111,7 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 
 	@Override
 	public EntityEquipment getEquipment() {
-		throw Pokkit.unsupported();
+		return null;
 	}
 
 	@Override
@@ -234,6 +235,21 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 	}
 
 	@Override
+	public void attack(Entity entity) {
+		Pokkit.notImplemented();
+	}
+
+	@Override
+	public void swingMainHand() {
+
+	}
+
+	@Override
+	public void swingOffHand() {
+
+	}
+
+	@Override
 	public boolean hasLineOfSight(Entity other) {
 		return nukkit.hasLineOfSight(PokkitEntity.toNukkit(other));
 	}
@@ -255,8 +271,18 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 	}
 
 	@Override
+	public <T> T getMemory(MemoryKey<T> memoryKey) {
+		return null;
+	}
+
+	@Override
+	public <T> void setMemory(MemoryKey<T> memoryKey, T t) {
+
+	}
+
+	@Override
 	public boolean isGliding() {
-		return false;
+		return nukkit.isGliding();
 	}
 
 	@Override
@@ -266,6 +292,11 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 
 	@Override
 	public boolean isRiptiding() {
+		return nukkit.isSpinAttack();
+	}
+
+	@Override
+	public boolean isSleeping() {
 		return false;
 	}
 
@@ -317,6 +348,16 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 	@Override
 	public void setHealth(double health) {
 		nukkit.setHealth((float) health);
+	}
+
+	@Override
+	public double getAbsorptionAmount() {
+		return 0;
+	}
+
+	@Override
+	public void setAbsorptionAmount(double v) {
+
 	}
 
 	@Override

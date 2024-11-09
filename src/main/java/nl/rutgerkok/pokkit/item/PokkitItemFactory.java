@@ -68,7 +68,7 @@ public final class PokkitItemFactory implements ItemFactory {
 		case TIPPED_ARROW:
 		case LEGACY_TIPPED_ARROW:
 			return new PokkitPotionMeta(tag, damage);
-		case SIGN:
+		case OAK_SIGN:
 		case LEGACY_SIGN:
 		case BLACK_BANNER:
 		case BLUE_BANNER:

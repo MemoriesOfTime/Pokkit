@@ -8,9 +8,11 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Pose;
 import org.bukkit.inventory.ItemStack;
 
 import cn.nukkit.blockentity.BlockEntityItemFrame;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.util.BoundingBox;
 
 public class PokkitItemFrameEntity extends PokkitFakeEntity implements ItemFrame {
@@ -27,6 +29,11 @@ public class PokkitItemFrameEntity extends PokkitFakeEntity implements ItemFrame
 
 	@Override
 	public BlockFace getFacing() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public Pose getPose() {
 		throw Pokkit.unsupported();
 	}
 
@@ -101,4 +108,8 @@ public class PokkitItemFrameEntity extends PokkitFakeEntity implements ItemFrame
 		Pokkit.notImplemented();
 	}
 
+	@Override
+	public PersistentDataContainer getPersistentDataContainer() {
+		throw Pokkit.unsupported();
+	}
 }

@@ -27,7 +27,7 @@ public class PokkitEnchantmentTarget {
 		twoWay(EnchantmentType.BOW, EnchantmentTarget.BOW);
 		twoWay(EnchantmentType.WEARABLE, EnchantmentTarget.WEARABLE);
 		twoWay(EnchantmentType.TRIDENT, EnchantmentTarget.TRIDENT);
-		twoWay(EnchantmentType.CROSSBOW, EnchantmentTarget.BOW); //No type for crossbow in Bukkit 1.13.2
+		twoWay(EnchantmentType.CROSSBOW, EnchantmentTarget.CROSSBOW);
 	}
 
 	/**

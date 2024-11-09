@@ -64,6 +64,11 @@ public class PokkitHumanEntity extends PokkitLivingEntity implements HumanEntity
 	}
 
 	@Override
+	public float getAttackCooldown() {
+		return 0;
+	}
+
+	@Override
 	public GameMode getGameMode() {
 		throw Pokkit.unsupported();
 	}
@@ -147,7 +152,7 @@ public class PokkitHumanEntity extends PokkitLivingEntity implements HumanEntity
 
 	@Override
 	public boolean isBlocking() {
-		return false;
+		return nukkit.isBlocking();
 	}
 
 	@Override
@@ -158,6 +163,21 @@ public class PokkitHumanEntity extends PokkitLivingEntity implements HumanEntity
 	@Override
 	public boolean isSleeping() {
 		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public void attack(Entity entity) {
+		Pokkit.notImplemented();
+	}
+
+	@Override
+	public void swingMainHand() {
+
+	}
+
+	@Override
+	public void swingOffHand() {
+
 	}
 
 	@Override

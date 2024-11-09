@@ -62,7 +62,7 @@ public final class PermissionsYml implements PokkitService {
 				getLogger().log(Level.SEVERE, "Cannot create server permisisons file " + file, e);
 			}
 		} catch (MarkedYAMLException ex) {
-			getLogger().log(Level.WARNING, "Server permissions file " + file + " is not valid YAML: " + ex.toString());
+			getLogger().log(Level.WARNING, "Server permissions file " + file + " is not valid YAML: " + ex);
 		} catch (Throwable ex) {
 			getLogger().log(Level.WARNING, "Server permissions file " + file + " is not valid YAML.", ex);
 		}

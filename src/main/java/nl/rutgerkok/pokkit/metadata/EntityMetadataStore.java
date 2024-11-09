@@ -24,6 +24,6 @@ public final class EntityMetadataStore extends MetadataStoreBase<Entity> impleme
 	 */
 	@Override
 	protected String disambiguate(Entity entity, String metadataKey) {
-		return entity.getUniqueId().toString() + ":" + metadataKey;
+		return entity.getUniqueId() + ":" + metadataKey;
 	}
 }

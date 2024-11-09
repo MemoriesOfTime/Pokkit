@@ -1,6 +1,7 @@
 package nl.rutgerkok.pokkit.tag;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.HashSet;
 
 import org.bukkit.Material;
@@ -8,9 +9,9 @@ import org.bukkit.Material;
 public class PokkitTagRegistry {
 	
 	HashSet<Material> TagRegistry = new HashSet<>();
-	boolean blockTags = false;
-	boolean itemTags = true;
-	String tagName = "";
+	boolean blockTags;
+	boolean itemTags;
+	String tagName;
 	
 	/*
 	 * tagName is the name of the tag.
@@ -74,7 +75,7 @@ public class PokkitTagRegistry {
 		case "saplings": ReflectAndRegister("sapling", "potted"); break;
 		case "slabs": ReflectAndRegister("slab", ""); break;
 		case "shulker_boxes": ReflectAndRegister("shulker_box", ""); break;
-		case "signs": AddToTagRegistry(CombineMaterialEntries(Material.SIGN, Material.WALL_SIGN)); break;
+		case "signs": AddToTagRegistry(CombineMaterialEntries(Material.OAK_SIGN, Material.OAK_WALL_SIGN)); break;
 		case "snow": ReflectAndRegister("snow", ""); break;
 		case "spruce_logs": AddToTagRegistry(CombineMaterialEntries(Material.SPRUCE_LOG, Material.STRIPPED_SPRUCE_LOG, Material.SPRUCE_WOOD, Material.STRIPPED_SPRUCE_WOOD)); break;
 		case "stairs": ReflectAndRegister("stairs", ""); break;
@@ -88,7 +89,7 @@ public class PokkitTagRegistry {
 			break;
 		case "valid_spawn": AddToTagRegistry(CombineMaterialEntries(Material.GRASS_BLOCK, Material.PODZOL)); break;
 		case "walls": AddToTagRegistry(CombineMaterialEntries(Material.COBBLESTONE_WALL, Material.MOSSY_COBBLESTONE_WALL)); break;
-		case "wall_signs": AddToTagRegistry(CombineMaterialEntries(Material.WALL_SIGN)); break;
+		case "wall_signs": AddToTagRegistry(CombineMaterialEntries(Material.OAK_WALL_SIGN)); break;
 		case "wall_corals": ReflectAndRegister("coral_wall_fan", ""); break;
 		case "wart_blocks": AddToTagRegistry(CombineMaterialEntries(Material.NETHER_WART, Material.NETHER_WART_BLOCK)); break;
 		case "wooden_buttons": AddToTagRegistry(CombineMaterialEntries(Material.ACACIA_BUTTON, Material.BIRCH_BUTTON, Material.DARK_OAK_BUTTON, Material.JUNGLE_BUTTON, Material.OAK_BUTTON, Material.SPRUCE_BUTTON)); break;
@@ -113,23 +114,22 @@ public class PokkitTagRegistry {
 		Field[] MaterialFields = Material.class.getFields();
 		
 		HashSet<Material> materialsWithTagName = new HashSet<>();
-		for (int i = 0; i < MaterialFields.length; i++) {
-			if (!MaterialFields[i].getName().toLowerCase().contains("legacy")) {
-				if (doesNotContain.length() == 0 || !MaterialFields[i].getName().toLowerCase().contains(doesNotContain))
-				{
-					if (MaterialFields[i].getName().toLowerCase().contains(stringContains)) {
-						try {
-							Material materialField = (Material) MaterialFields[i].get(null);
-							if ((blockTags && materialField.isBlock()) || (!blockTags && materialField.isItem())) {
-								materialsWithTagName.add(materialField);
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}	
-					}
-				}
-			}
-		}
+        for (Field field : MaterialFields) {
+            if (!field.getName().toLowerCase().contains("legacy")) {
+                if (doesNotContain.isEmpty() || !field.getName().toLowerCase().contains(doesNotContain)) {
+                    if (field.getName().toLowerCase().contains(stringContains)) {
+                        try {
+                            Material materialField = (Material) field.get(null);
+                            if ((blockTags && materialField.isBlock()) || (!blockTags && materialField.isItem())) {
+                                materialsWithTagName.add(materialField);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
 		return materialsWithTagName;
 	}
 	
@@ -138,9 +138,7 @@ public class PokkitTagRegistry {
 	}
 	
 	private HashSet<Material> CombineMaterialEntries(HashSet<Material> materialsWithTagName, Material...materials) {
-		for (int i = 0; i < materials.length; i++) {
-			materialsWithTagName.add(materials[i]);
-		}
+        Collections.addAll(materialsWithTagName, materials);
 		return materialsWithTagName;
 	}
 	

@@ -83,7 +83,6 @@ import nl.rutgerkok.pokkit.world.PokkitWorldType;
 
 import cn.nukkit.level.Level;
 
-@SuppressWarnings("deprecation")
 public final class CraftServer extends Server.Spigot implements Server {
 
 	public static cn.nukkit.Server toNukkit(Server server) {
@@ -313,7 +312,7 @@ public final class CraftServer extends Server.Spigot implements Server {
 
 	@Override
 	public boolean getAllowEnd() {
-		return false;
+		return nukkit.getPropertyBoolean("allow-the-end", true);
 	}
 
 	@Override
@@ -328,12 +327,12 @@ public final class CraftServer extends Server.Spigot implements Server {
 
 	@Override
 	public int getAmbientSpawnLimit() {
-		return nukkit.getConfig().getInt("spawn-limits.ambient");
+		return 0;
 	}
 
 	@Override
 	public int getAnimalSpawnLimit() {
-		return nukkit.getConfig().getInt("spawn-limits.animals");
+		return 0;
 	}
 
 	@Override
@@ -466,7 +465,7 @@ public final class CraftServer extends Server.Spigot implements Server {
 
 	@Override
 	public int getMonsterSpawnLimit() {
-		return nukkit.getConfig().getInt("spawn-limits.monsters");
+		return 0;
 	}
 
 	@Override
@@ -585,16 +584,6 @@ public final class CraftServer extends Server.Spigot implements Server {
 	}
 
 	@Override
-	public String getServerId() {
-		return nukkit.getServerUniqueId().toString();
-	}
-
-	@Override
-	public String getServerName() {
-		return nukkit.getMotd();
-	}
-
-	@Override
 	public ServicesManager getServicesManager() {
 		return servicesManager;
 	}
@@ -633,12 +622,22 @@ public final class CraftServer extends Server.Spigot implements Server {
 
 	@Override
 	public int getTicksPerAnimalSpawns() {
-		return nukkit.getConfig().getInt("ticks-per.animal-spawns");
+		return 0;
 	}
 
 	@Override
 	public int getTicksPerMonsterSpawns() {
-		return nukkit.getConfig().getInt("ticks-per.monster-spawns");
+		return 0;
+	}
+
+	@Override
+	public int getTicksPerWaterSpawns() {
+		return 0;
+	}
+
+	@Override
+	public int getTicksPerAmbientSpawns() {
+		return 0;
 	}
 
 	@Override
@@ -674,7 +673,7 @@ public final class CraftServer extends Server.Spigot implements Server {
 
 	@Override
 	public int getWaterAnimalSpawnLimit() {
-		return nukkit.getConfig().getInt("spawn-limits.animals");
+		return 0;
 	}
 
 	@Override
@@ -782,6 +781,11 @@ public final class CraftServer extends Server.Spigot implements Server {
 	@Override
 	public void resetRecipes() {
 		Pokkit.notImplemented();
+	}
+
+	@Override
+	public boolean removeRecipe(NamespacedKey namespacedKey) {
+		return false;
 	}
 
 	@Override

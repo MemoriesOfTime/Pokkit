@@ -2,8 +2,11 @@ package nl.rutgerkok.pokkit.blockstate;
 
 import java.util.Objects;
 
+import cn.nukkit.utils.BlockColor;
 import com.google.common.base.Preconditions;
 
+import org.bukkit.Color;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 
@@ -11,16 +14,19 @@ import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.blockdata.PokkitBlockData;
 
 import cn.nukkit.nbt.tag.CompoundTag;
+import org.bukkit.persistence.PersistentDataContainer;
 
 public final class SignBlockState extends PokkitBlockState implements Sign {
 
 	private final String[] lines;
 	private String hiddenData;
+	private BlockColor color;
 
-	protected SignBlockState(Location locationOrNull, PokkitBlockData materialData, String[] lines, String hiddenData) {
+	protected SignBlockState(Location locationOrNull, PokkitBlockData materialData, String[] lines, String hiddenData, BlockColor colorOrNull) {
 		super(locationOrNull, materialData);
 		this.lines = Objects.requireNonNull(lines, "lines");
 		this.hiddenData = Objects.requireNonNull(hiddenData, "hiddenData");
+		this.color = colorOrNull;
 		Preconditions.checkArgument(lines.length == 4, "there must be four lines on a sign");
 	}
 
@@ -58,6 +64,11 @@ public final class SignBlockState extends PokkitBlockState implements Sign {
 		} else {
 			tag.putString(Pokkit.NAME, hiddenData);
 		}
+		if (color == null) {
+			tag.remove("SignTextColor");
+		} else {
+			tag.putInt("SignTextColor", color.getARGB());
+		}
 	}
 
 	/**
@@ -81,11 +92,29 @@ public final class SignBlockState extends PokkitBlockState implements Sign {
 
 	@Override
 	public boolean isEditable() {
-		throw Pokkit.unsupported();
+		return false;
 	}
 
 	@Override
 	public void setEditable(boolean editable) {
 		Pokkit.notImplemented();
+	}
+
+	@Override
+	public PersistentDataContainer getPersistentDataContainer() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public DyeColor getColor() {
+		if (color == null) {
+			return null;
+		}
+		return DyeColor.getByColor(Color.fromRGB(color.getRGB()));
+	}
+
+	@Override
+	public void setColor(DyeColor dyeColor) {
+		color = new BlockColor(dyeColor.getColor().asRGB());
 	}
 }

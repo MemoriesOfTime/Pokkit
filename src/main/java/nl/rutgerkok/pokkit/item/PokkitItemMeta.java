@@ -30,8 +30,9 @@ import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.nbt.tag.StringTag;
 import cn.nukkit.nbt.tag.Tag;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.persistence.PersistentDataContainer;
 
-public class PokkitItemMeta extends ItemMeta.Spigot implements ItemMeta, Damageable {
+public class PokkitItemMeta implements ItemMeta, Damageable {
 
 	protected CompoundTag tag;
 	private int damage;
@@ -389,6 +390,21 @@ public class PokkitItemMeta extends ItemMeta.Spigot implements ItemMeta, Damagea
 		setOrRemoveChildTag(tag, "display", displayTag);
 	}
 
+	@Override
+	public boolean hasCustomModelData() {
+		return false;
+	}
+
+	@Override
+	public int getCustomModelData() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public void setCustomModelData(Integer integer) {
+		Pokkit.notImplemented();
+	}
+
 	/**
 	 * Sets the child in the parent when the child is not empty. If the child is
 	 * empty, the child tag is removed from the parent.
@@ -414,13 +430,7 @@ public class PokkitItemMeta extends ItemMeta.Spigot implements ItemMeta, Damagea
 	}
 
 	@Override
-	public Spigot spigot() {
-		return this;
-	}
-
-	@Override
-	@SuppressWarnings("rawtypes")
-	public void setAttributeModifiers(Multimap modifiers) {
+    public void setAttributeModifiers(Multimap modifiers) {
 		Pokkit.notImplemented();
 	}
 
@@ -450,6 +460,11 @@ public class PokkitItemMeta extends ItemMeta.Spigot implements ItemMeta, Damagea
 	}
 
 	@Override
+	public void setVersion(int i) {
+
+	}
+
+	@Override
 	public boolean removeAttributeModifier(EquipmentSlot slot) {
 		throw Pokkit.unsupported();
 	}
@@ -467,5 +482,10 @@ public class PokkitItemMeta extends ItemMeta.Spigot implements ItemMeta, Damagea
 	@Override
 	public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot) {
 		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public PersistentDataContainer getPersistentDataContainer() {
+		return null;
 	}
 }

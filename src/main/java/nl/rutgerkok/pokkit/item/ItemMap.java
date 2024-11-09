@@ -78,7 +78,7 @@ public class ItemMap {
 	    registerTwoWay(ItemID.COOKED_PORKCHOP, Material.COOKED_PORKCHOP);
 	    registerTwoWay(ItemID.PAINTING, Material.PAINTING);
 	    registerTwoWay(ItemID.GOLDEN_APPLE, Material.GOLDEN_APPLE);
-	    registerTwoWay(ItemID.SIGN, Material.SIGN);
+	    registerTwoWay(ItemID.SIGN, Material.OAK_SIGN);
 		registerTwoWay(ItemID.WOODEN_DOOR, Material.OAK_DOOR);
 	    registerTwoWay(ItemID.BUCKET, Material.BUCKET);
 	    registerTwoWay(ItemID.MINECART, Material.MINECART);

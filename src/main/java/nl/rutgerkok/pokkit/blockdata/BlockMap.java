@@ -192,12 +192,12 @@ public final class BlockMap {
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.FARMLAND), Material.FARMLAND);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.FURNACE), Material.FURNACE);
 		registerNukkitToBukkit(cn.nukkit.block.Block.get(BlockID.BURNING_FURNACE), Material.FURNACE);
-		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SIGN_POST), Material.SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SIGN_POST), Material.OAK_SIGN);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DOOR_BLOCK), Material.OAK_DOOR);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LADDER), Material.LADDER);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.RAIL), Material.RAIL);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COBBLESTONE_STAIRS), Material.COBBLESTONE_STAIRS);
-		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WALL_SIGN), Material.WALL_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WALL_SIGN), Material.OAK_WALL_SIGN);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LEVER), Material.LEVER);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STONE_PRESSURE_PLATE), Material.STONE_PRESSURE_PLATE);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.IRON_DOOR_BLOCK), Material.IRON_DOOR);

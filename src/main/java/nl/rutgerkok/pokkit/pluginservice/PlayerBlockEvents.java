@@ -85,7 +85,6 @@ public final class PlayerBlockEvents extends EventTranslator {
 
 		// Nukkit does not provide ignitingBlock, so we have to use this
 		// deprecated method
-		@SuppressWarnings("deprecation")
 		BlockBurnEvent bukkitEvent = new BlockBurnEvent(PokkitBlock.toBukkit(burning));
 		callCancellable(event, bukkitEvent);
 	}
@@ -123,7 +122,7 @@ public final class PlayerBlockEvents extends EventTranslator {
 		}
 
 		cn.nukkit.block.Block ignited = event.getBlock();
-		IgniteCause cause = IgniteCause.FLINT_AND_STEEL;
+		IgniteCause cause;
 
 		switch (event.getCause()) {
 		case EXPLOSION:

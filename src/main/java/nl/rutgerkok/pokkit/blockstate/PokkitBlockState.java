@@ -44,7 +44,7 @@ public abstract class PokkitBlockState implements BlockState {
 		if (blockEntityOrNull instanceof BlockEntitySign) {
 			String hiddenData = blockEntityOrNull.namedTag.getString(Pokkit.NAME);
 			return new SignBlockState(location, blockData, ((BlockEntitySign) blockEntityOrNull).getText(),
-					hiddenData);
+					hiddenData, ((BlockEntitySign) blockEntityOrNull).getColor());
 		}
 
 		return new PlainBlockState(location, blockData);
@@ -62,11 +62,11 @@ public abstract class PokkitBlockState implements BlockState {
 	public static PokkitBlockState getVirtual(Material material, CompoundTag tag) {
 		PokkitBlockData materialData = PokkitBlockData.createBlockData(material, 0);
 
-		if (material == Material.SIGN) {
+		if (material == Material.OAK_SIGN) {
 			String[] lines = new String[] { tag.getString("Text1"), tag.getString("Text2"), tag.getString("Text3"),
 					tag.getString("Text4") };
 			String hiddenData = tag.getString(Pokkit.NAME);
-			return new SignBlockState(null, materialData, lines, hiddenData);
+			return new SignBlockState(null, materialData, lines, hiddenData, null);
 		}
 
 		return new PlainBlockState(null, materialData);

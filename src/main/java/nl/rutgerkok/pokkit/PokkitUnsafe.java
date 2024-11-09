@@ -31,6 +31,11 @@ public class PokkitUnsafe implements UnsafeValues {
 	}
 
 	@Override
+	public Material getMaterial(String s, int i) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
 	public Material fromLegacy(MaterialData material) {
 		return material.getItemType();
 	}

@@ -5,12 +5,14 @@ import java.util.Objects;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Pose;
 import org.bukkit.inventory.ItemStack;
 
 import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.item.PokkitItemStack;
 
 import cn.nukkit.level.Location;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.util.BoundingBox;
 
 /**
@@ -70,6 +72,16 @@ public class PokkitItemEntity extends PokkitFakeEntity implements Item {
 
 	@Override
 	public BlockFace getFacing() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public Pose getPose() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public PersistentDataContainer getPersistentDataContainer() {
 		throw Pokkit.unsupported();
 	}
 }

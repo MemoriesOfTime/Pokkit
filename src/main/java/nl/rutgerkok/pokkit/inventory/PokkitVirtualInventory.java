@@ -240,18 +240,8 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 	}
 
 	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
 	public int getSize() {
 		return contents.size();
-	}
-
-	@Override
-	public String getTitle() {
-		return title;
 	}
 
 	@Override

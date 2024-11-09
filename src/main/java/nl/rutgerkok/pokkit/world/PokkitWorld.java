@@ -1,36 +1,27 @@
 package nl.rutgerkok.pokkit.world;
 
 import cn.nukkit.Server;
+import cn.nukkit.entity.item.EntityFallingBlock;
+import cn.nukkit.level.biome.EnumBiome;
 import cn.nukkit.level.generator.Flat;
 import cn.nukkit.level.generator.object.tree.ObjectTree;
 import cn.nukkit.math.NukkitRandom;
 import cn.nukkit.math.SimpleAxisAlignedBB;
+import nl.rutgerkok.pokkit.blockdata.PokkitBlockData;
+import nl.rutgerkok.pokkit.entity.PokkitItemEntity;
 import org.bukkit.*;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SplittableRandom;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.boss.DragonBattle;
 import org.bukkit.craftbukkit.v1_99_R9.CraftServer;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.LightningStrike;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.ItemStack;
@@ -123,6 +114,16 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
+	public boolean isHardcore() {
+		return false;
+	}
+
+	@Override
+	public void setHardcore(boolean b) {
+
+	}
+
+	@Override
 	public boolean createExplosion(double x, double y, double z, float power) {
 		return this.createExplosion(null, x, y, z, power, false, true);
 	}
@@ -134,6 +135,11 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public boolean createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks) {
+		return this.createExplosion(null, x, y, z, power, setFire, breakBlocks);
+	}
+
+	@Override
+	public boolean createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks, Entity entity) {
 		return this.createExplosion(null, x, y, z, power, setFire, breakBlocks);
 	}
 
@@ -167,15 +173,31 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
+	public boolean createExplosion(Location loc, float power, boolean setFire, boolean breakBlocks) {
+		cn.nukkit.level.Location l = PokkitLocation.toNukkit(loc);
+		return this.createExplosion(l.level, l.x, l.y, l.z, power, setFire, breakBlocks);
+	}
+
+	@Override
+	public boolean createExplosion(Location loc, float power, boolean setFire, boolean breakBlocks, Entity source) {
+		cn.nukkit.level.Location l = PokkitLocation.toNukkit(loc);
+		return this.createExplosion(l.level, l.x, l.y, l.z, power, setFire, breakBlocks);
+	}
+
+	@Override
 	public Item dropItem(Location location, ItemStack item) {
-		nukkit.dropItem(PokkitLocation.toNukkit(location), PokkitItemStack.toNukkitCopy(item), new Vector3(0, 0, 0));
-		return null; // Add entity support
+		cn.nukkit.level.Location nkl = PokkitLocation.toNukkit(location);
+		cn.nukkit.item.Item nki = PokkitItemStack.toNukkitCopy(item);
+		nukkit.dropItem(nkl, nki, new Vector3(0, 0, 0));
+		return new PokkitItemEntity(nki, nkl);
 	}
 
 	@Override
 	public Item dropItemNaturally(Location location, ItemStack item) {
-		nukkit.dropItem(PokkitLocation.toNukkit(location), PokkitItemStack.toNukkitCopy(item));
-		return null; // Add entity support
+		cn.nukkit.level.Location nkl = PokkitLocation.toNukkit(location);
+		cn.nukkit.item.Item nki = PokkitItemStack.toNukkitCopy(item);
+		nukkit.dropItem(nkl, nki);
+		return new PokkitItemEntity(nki, nkl);
 	}
 
 	@Override
@@ -183,6 +205,9 @@ public final class PokkitWorld implements World {
 		switch (type) {
 			case TREE:
 				ObjectTree.growTree(nukkit, location.getBlockX(), location.getBlockY(), location.getBlockZ(), new NukkitRandom(), 0);
+				return true;
+			case REDWOOD:
+				ObjectTree.growTree(nukkit, location.getBlockX(), location.getBlockY(), location.getBlockZ(), new NukkitRandom(), 1);
 				return true;
 			case BIRCH:
 				ObjectTree.growTree(nukkit, location.getBlockX(), location.getBlockY(), location.getBlockZ(), new NukkitRandom(), 2);
@@ -209,27 +234,32 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public boolean getAllowAnimals() {
-		return Server.getInstance().getPropertyBoolean("spawn-animals");
+		return false;
 	}
 
 	@Override
 	public boolean getAllowMonsters() {
-		return Server.getInstance().getPropertyBoolean("spawn-mobs");
+		return false;
 	}
 
 	@Override
 	public int getAmbientSpawnLimit() {
-		return nukkit.getServer().getConfig().getInt("spawn-limits.ambient");
+		return 0;
 	}
 
 	@Override
 	public int getAnimalSpawnLimit() {
-	    return nukkit.getServer().getConfig().getInt("spawn-limits.animals");
+	    return 0;
 	}
 
 	@Override
 	public Biome getBiome(int x, int z) {
 		return PokkitBiome.toBukkit(nukkit.getBiomeId(x, z));
+	}
+
+	@Override
+	public Biome getBiome(int x, int y, int z) {
+		return PokkitBiome.toBukkit(nukkit.getChunk(x >> 4, z >> 4, true).getBiomeId(x & 15, y, z & 15));
 	}
 
 	@Override
@@ -274,8 +304,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public ChunkSnapshot getEmptyChunkSnapshot(int x, int z, boolean includeBiome, boolean includeBiomeTempRain) {
-		throw Pokkit.unsupported();
-
+		return new PokkitChunkSnapshot(x, z, nukkit.getName(), nukkit.getProvider().getEmptyChunk(x, z));
 	}
 
 	@Override
@@ -289,21 +318,52 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
-	public <T extends Entity> Collection<T> getEntitiesByClass(@SuppressWarnings("unchecked") Class<T>... classes) {
-		throw Pokkit.unsupported();
+	public <T extends Entity> Collection<T> getEntitiesByClass(Class<T>... classes) {
+		Collection<T> entitiesInChunk = new ArrayList<>();
 
+		for (cn.nukkit.entity.Entity entity : nukkit.getEntities()) {
+			Entity bukkit = PokkitEntity.toBukkit(entity);
+
+			c:
+			for (Class<?> cls : classes) {
+				if (cls.isAssignableFrom(bukkit.getClass())) {
+					entitiesInChunk.add((T) bukkit);
+					break c;
+				}
+			}
+		}
+		return entitiesInChunk;
 	}
 
 	@Override
 	public <T extends Entity> Collection<T> getEntitiesByClass(Class<T> cls) {
-		throw Pokkit.unsupported();
+		List<T> entitiesInChunk = new ArrayList<>();
 
+		for (cn.nukkit.entity.Entity entity : nukkit.getEntities()) {
+			Entity bukkit = PokkitEntity.toBukkit(entity);
+			if (cls.isAssignableFrom(bukkit.getClass())) {
+				entitiesInChunk.add((T) bukkit);
+			}
+		}
+		return entitiesInChunk;
 	}
 
 	@Override
 	public Collection<Entity> getEntitiesByClasses(Class<?>... classes) {
-		throw Pokkit.unsupported();
+		List<Entity> entitiesInChunk = new ArrayList<>();
 
+		for (cn.nukkit.entity.Entity entity : nukkit.getEntities()) {
+			Entity bukkit = PokkitEntity.toBukkit(entity);
+
+			c:
+			for (Class<?> cls : classes) {
+				if (cls.isAssignableFrom(bukkit.getClass())) {
+					entitiesInChunk.add(bukkit);
+					break c;
+				}
+			}
+		}
+		return entitiesInChunk;
 	}
 
 	@Override
@@ -388,6 +448,26 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
+	public int getHighestBlockYAt(int i, int i1, HeightMap heightMap) {
+		return 0;
+	}
+
+	@Override
+	public int getHighestBlockYAt(Location location, HeightMap heightMap) {
+		return 0;
+	}
+
+	@Override
+	public Block getHighestBlockAt(int i, int i1, HeightMap heightMap) {
+		return null;
+	}
+
+	@Override
+	public Block getHighestBlockAt(Location location, HeightMap heightMap) {
+		return null;
+	}
+
+	@Override
 	public int getHighestBlockYAt(int x, int z) {
 		return nukkit.getHighestBlockAt(x, z);
 	}
@@ -401,6 +481,11 @@ public final class PokkitWorld implements World {
 	public double getHumidity(int x, int z) {
 		throw Pokkit.unsupported();
 
+	}
+
+	@Override
+	public double getHumidity(int i, int i1, int i2) {
+		return 0;
 	}
 
 	@Override
@@ -452,7 +537,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public int getMonsterSpawnLimit() {
-		return Server.getInstance().getConfig().getInt("spawn-limits.monsters");
+		return 0;
 	}
 
 	@Override
@@ -567,8 +652,17 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public double getTemperature(int x, int z) {
-		throw Pokkit.unsupported();
+		int biomeId = nukkit.getBiomeId(x, z);
+		cn.nukkit.level.biome.Biome biome = EnumBiome.getBiome(biomeId);
+		if (biome != null && biome.isFreezing()) {
+			return 0.1;
+		}
+		return 0.6;
+	}
 
+	@Override
+	public double getTemperature(int x, int y, int z) {
+		return getTemperature(x, z);
 	}
 
 	@Override
@@ -578,12 +672,12 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public long getTicksPerAnimalSpawns() {
-		return Server.getInstance().getConfig().getInt("ticks-per.animal-spawns");
+		return 0;
 	}
 
 	@Override
 	public long getTicksPerMonsterSpawns() {
-		return Server.getInstance().getConfig().getInt("ticks-per.monster-spawns");
+		return 0;
 	}
 
 	@Override
@@ -598,7 +692,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public int getWaterAnimalSpawnLimit() {
-		return Server.getInstance().getConfig().getInt("spawn-limits.animals");
+		return 0;
 	}
 
 	@Override
@@ -759,7 +853,32 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public Collection<Chunk> getForceLoadedChunks() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public boolean addPluginChunkTicket(int i, int i1, Plugin plugin) {
 		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean removePluginChunkTicket(int i, int i1, Plugin plugin) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public void removePluginChunkTickets(Plugin plugin) {
+		Pokkit.notImplemented();
+	}
+
+	@Override
+	public Collection<Plugin> getPluginChunkTickets(int i, int i1) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Map<Plugin, Collection<Chunk>> getPluginChunkTickets() {
+		return Collections.emptyMap();
 	}
 
 	@Override
@@ -785,14 +904,10 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public void setAmbientSpawnLimit(int limit) {
-		Server.getInstance().getConfig().set("spawn-limits.ambient", limit);
-		Server.getInstance().getConfig().save();
 	}
 
 	@Override
 	public void setAnimalSpawnLimit(int limit) {
-		Server.getInstance().getConfig().set("spawn-limits.animals", limit);
-		Server.getInstance().getConfig().save();
 	}
 
 	@Override
@@ -803,6 +918,11 @@ public final class PokkitWorld implements World {
 	@Override
 	public void setBiome(int x, int z, Biome biome) {
 		nukkit.setBiomeId(x, z, (byte) PokkitBiome.toNukkit(biome));
+	}
+
+	@Override
+	public void setBiome(int i, int i1, int i2, Biome biome) {
+		nukkit.setBiomeId(i, i2, (byte) PokkitBiome.toNukkit(biome));
 	}
 
 	@Override
@@ -858,8 +978,6 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public void setMonsterSpawnLimit(int limit) {
-		Server.getInstance().getConfig().set("spawn-limits.monsters", limit);
-		Server.getInstance().getConfig().save();
 	}
 
 	@Override
@@ -869,8 +987,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public void setSpawnFlags(boolean allowMonsters, boolean allowAnimals) {
-		Server.getInstance().setPropertyBoolean("spawn-mobs", allowMonsters);
-		Server.getInstance().setPropertyBoolean("spawn-animals", allowAnimals);
+
 	}
 
 	@Override
@@ -905,14 +1022,30 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public void setTicksPerAnimalSpawns(int ticksPerAnimalSpawns) {
-		Server.getInstance().getConfig().set("ticks-per.animal-spawns", ticksPerAnimalSpawns);
-		Server.getInstance().getConfig().save();
 	}
 
 	@Override
 	public void setTicksPerMonsterSpawns(int ticksPerMonsterSpawns) {
-		Server.getInstance().getConfig().set("ticks-per.monster-spawns", ticksPerMonsterSpawns);
-		Server.getInstance().getConfig().save();
+	}
+
+	@Override
+	public long getTicksPerWaterSpawns() {
+		return 0;
+	}
+
+	@Override
+	public void setTicksPerWaterSpawns(int i) {
+
+	}
+
+	@Override
+	public long getTicksPerAmbientSpawns() {
+		return 0;
+	}
+
+	@Override
+	public void setTicksPerAmbientSpawns(int i) {
+
 	}
 
 	@Override
@@ -922,8 +1055,6 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public void setWaterAnimalSpawnLimit(int limit) {
-		Server.getInstance().getConfig().set("spawn-limits.water-animals", limit);
-		Server.getInstance().getConfig().save();
 	}
 
 	@Override
@@ -950,10 +1081,8 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
-	public <T extends Arrow> T spawnArrow(Location location, Vector direction, float speed, float spread,
-			Class<T> clazz) {
+	public <T extends AbstractArrow> T spawnArrow(Location location, Vector vector, float v, float v1, Class<T> aClass) {
 		throw Pokkit.unsupported();
-
 	}
 
 	@Override
@@ -978,7 +1107,26 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public FallingBlock spawnFallingBlock(Location location, BlockData data) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
+		cn.nukkit.block.Block block = PokkitBlockData.toNukkit(data);
+		CompoundTag nbt = new CompoundTag()
+				.putList(new ListTag<DoubleTag>("Pos")
+						.add(new DoubleTag("", location.getX() + 0.5))
+						.add(new DoubleTag("", location.getY()))
+						.add(new DoubleTag("", location.getZ() + 0.5)))
+				.putList(new ListTag<DoubleTag>("Motion")
+						.add(new DoubleTag("", 0))
+						.add(new DoubleTag("", 0))
+						.add(new DoubleTag("", 0)))
+
+				.putList(new ListTag<FloatTag>("Rotation")
+						.add(new FloatTag("", 0))
+						.add(new FloatTag("", 0)))
+				.putInt("TileID", block.getId())
+				.putByte("Data", block.getDamage());
+
+		cn.nukkit.entity.Entity ent = cn.nukkit.entity.Entity.createEntity(EntityFallingBlock.NETWORK_ID, nukkit.getChunk((int) location.getX() >> 4, (int) location.getZ() >> 4), nbt);
+		ent.spawnToAll();
+		return null;
 	}
 
 	@Override
@@ -1020,7 +1168,7 @@ public final class PokkitWorld implements World {
 	@Override
 	public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX,
 			double offsetY, double offsetZ, double extra, T data, boolean force) {
-		int id = 0;
+		int id;
 
 		id = PokkitParticle.toNukkit(particle);
 
@@ -1028,9 +1176,9 @@ public final class PokkitWorld implements World {
 
 		int index = 0;
 		while (count > index) {
-			double realOffsetX = 0;
-			double realOffsetY = 0;
-			double realOffsetZ = 0;
+			double realOffsetX;
+			double realOffsetY;
+			double realOffsetZ;
 			if (offsetX != 0) {
 				realOffsetX = offsetX / 2;
 				x = x + random.nextDouble(-realOffsetX, realOffsetX);
@@ -1110,6 +1258,21 @@ public final class PokkitWorld implements World {
 		return spigot;
 	}
 
+	@Override
+	public Raid locateNearestRaid(Location location, int i) {
+		return null;
+	}
+
+	@Override
+	public List<Raid> getRaids() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public DragonBattle getEnderDragonBattle() {
+		return null;
+	}
+
 	public LightningStrike strike(Location loc, boolean effect) {
 		BaseFullChunk chunk = nukkit.getChunk(loc.getChunk().getX(), loc.getChunk().getZ());
         int x = loc.getBlockX();
@@ -1158,25 +1321,18 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
-	public boolean unloadChunk(int x, int z, boolean save, boolean safe) {
-		return nukkit.unloadChunk(x, z, safe, save);
-	}
-
-	@Override
 	public boolean unloadChunkRequest(int x, int z) {
 		return nukkit.unloadChunkRequest(x, z);
-
-	}
-
-	@Override
-	public boolean unloadChunkRequest(int x, int z, boolean safe) {
-		return nukkit.unloadChunkRequest(x, z, safe);
-
 	}
 
 	@Override
 	public Location locateNearestStructure(Location location, StructureType type, int i, boolean b) {
-		throw Pokkit.unsupported();
+		return null;
+	}
+
+	@Override
+	public int getViewDistance() {
+		return nukkit.getServer().getViewDistance();
 	}
 
 	@Override

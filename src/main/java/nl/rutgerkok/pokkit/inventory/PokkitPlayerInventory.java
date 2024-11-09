@@ -5,6 +5,7 @@ import java.util.Arrays;
 import cn.nukkit.Player;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -14,7 +15,7 @@ import nl.rutgerkok.pokkit.item.PokkitItemStack;
 
 import cn.nukkit.item.Item;
 
-public final class PokkitPlayerInventory extends PokkitLiveInventory implements PlayerInventory {
+public class PokkitPlayerInventory extends PokkitLiveInventory implements PlayerInventory {
 
 	public PokkitPlayerInventory(cn.nukkit.inventory.PlayerInventory inventory) {
 		super(inventory);
@@ -36,6 +37,50 @@ public final class PokkitPlayerInventory extends PokkitLiveInventory implements 
 	}
 
 	@Override
+	public void setItem(EquipmentSlot equipmentSlot, ItemStack itemStack) {
+		switch (equipmentSlot) {
+			case HAND:
+				setItemInHand(itemStack);
+				return;
+			case OFF_HAND:
+				setItemInOffHand(itemStack);
+				return;
+			case FEET:
+				setBoots(itemStack);
+				return;
+			case LEGS:
+				setLeggings(itemStack);
+				return;
+			case CHEST:
+				setChestplate(itemStack);
+				return;
+			case HEAD:
+				setHelmet(itemStack);
+				return;
+		}
+		Pokkit.notImplemented();
+	}
+
+	@Override
+	public ItemStack getItem(EquipmentSlot equipmentSlot) {
+		switch (equipmentSlot) {
+			case HAND:
+				return getItemInHand();
+			case OFF_HAND:
+				return getItemInOffHand();
+			case FEET:
+				return getBoots();
+			case LEGS:
+				return getLeggings();
+			case CHEST:
+				return getChestplate();
+			case HEAD:
+				return getHelmet();
+		}
+		throw Pokkit.unsupported();
+	}
+
+	@Override
 	public ItemStack getChestplate() {
 		return PokkitItemStack.toBukkitCopy(nukkit().getChestplate());
 	}
@@ -43,7 +88,6 @@ public final class PokkitPlayerInventory extends PokkitLiveInventory implements 
 	@Override
 	public ItemStack[] getExtraContents() {
 		throw Pokkit.unsupported();
-
 	}
 
 	@Override

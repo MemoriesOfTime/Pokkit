@@ -48,6 +48,11 @@ public class PokkitChunkSnapshot implements ChunkSnapshot {
 	}
 
 	@Override
+	public Biome getBiome(int x, int y, int z) {
+		return PokkitBiome.toBukkit(nukkit.getBiomeId(x, y, z));
+	}
+
+	@Override
 	public BlockData getBlockData(int x, int y, int z) {
 		return blocksIds[x][y][z];
 	}
@@ -86,12 +91,16 @@ public class PokkitChunkSnapshot implements ChunkSnapshot {
 	@Override
 	public double getRawBiomeTemperature(int x, int z) {
 		int biomeId = nukkit.getBiomeId(x, z);
-		@SuppressWarnings("deprecation")
 		cn.nukkit.level.biome.Biome biome = EnumBiome.getBiome(biomeId);
 		if (biome != null && biome.isFreezing()) {
 			return 0.1;
 		}
 		return 0.6;
+	}
+
+	@Override
+	public double getRawBiomeTemperature(int i, int i1, int i2) {
+		return 0;
 	}
 
 	@Override
@@ -112,5 +121,10 @@ public class PokkitChunkSnapshot implements ChunkSnapshot {
 	@Override
 	public boolean isSectionEmpty(int sy) {
 		return true; // Always true due to reasons
+	}
+
+	@Override
+	public boolean contains(BlockData blockData) {
+		throw Pokkit.unsupported();
 	}
 }
