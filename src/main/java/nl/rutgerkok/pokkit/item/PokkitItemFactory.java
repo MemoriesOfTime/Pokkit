@@ -16,7 +16,7 @@ public final class PokkitItemFactory implements ItemFactory {
 
 	@Override
 	public ItemMeta asMetaFor(ItemMeta meta, ItemStack stack) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
+		return meta;
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public final class PokkitItemFactory implements ItemFactory {
 
 	@Override
 	public Color getDefaultLeatherColor() {
-		throw Pokkit.unsupported();
+		return Color.fromRGB(0xA06540);
 	}
 
 	@Override
@@ -160,11 +160,34 @@ public final class PokkitItemFactory implements ItemFactory {
 		return ((PokkitItemMeta) meta).getTag().isEmpty();
 	}
 
-	@Override
+	@SuppressWarnings("deprecation")
 	public Material updateMaterial(ItemMeta meta, Material material) throws IllegalArgumentException {
-		// Normally used to change the material, for example when the spawned
-		// type of a spawn egg has changed
 		return material;
+	}
+
+	@Override
+	public Material getSpawnEgg(org.bukkit.entity.EntityType type) {
+		return Material.AIR;
+	}
+
+	@Override
+	public ItemStack enchantItem(org.bukkit.entity.Entity entity, ItemStack item, int level, boolean allowTreasures) {
+		return item;
+	}
+
+	@Override
+	public ItemStack enchantItem(org.bukkit.World world, ItemStack item, int level, boolean allowTreasures) {
+		return item;
+	}
+
+	@Override
+	public ItemStack enchantItem(ItemStack item, int level, boolean allowTreasures) {
+		return item;
+	}
+
+	@Override
+	public ItemStack createItemStack(String materialKey) throws IllegalArgumentException {
+		return new ItemStack(Material.AIR);
 	}
 
 }

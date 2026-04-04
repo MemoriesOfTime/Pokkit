@@ -9,6 +9,7 @@ import nl.rutgerkok.pokkit.entity.PokkitEntity;
 import nl.rutgerkok.pokkit.item.PokkitItemStack;
 import nl.rutgerkok.pokkit.player.PokkitPlayer;
 import nl.rutgerkok.pokkit.world.PokkitBlock;
+import nl.rutgerkok.pokkit.world.PokkitBlockFace;
 import nl.rutgerkok.pokkit.world.PokkitWorld;
 
 import org.bukkit.block.BlockFace;
@@ -39,13 +40,13 @@ public final class PlayerBlockEvents extends EventTranslator {
 		// In Bukkit, if you break a block in creative, a PlayerInteractEvent is sent before the block breaks
 		// So we need to call a PlayerInteractEvent if the player is in creative
 		if (event.getPlayer().isCreative()) {
-		    // Yes, the player is in creative!
-		    // TODO: That BlockFace.SELF is wrong
+			cn.nukkit.math.BlockFace nukkitFace = event.getFace();
+			BlockFace bukkitFace = nukkitFace != null ? PokkitBlockFace.toBukkit(nukkitFace) : BlockFace.SELF;
 			PlayerInteractEvent playerInteractEvent = new PlayerInteractEvent(
 					PokkitPlayer.toBukkit(event.getPlayer()),
 					Action.LEFT_CLICK_BLOCK,
 					PokkitItemStack.toBukkitCopy(event.getItem()),
-					brokenBlock, BlockFace.SELF);
+					brokenBlock, bukkitFace);
 		    callCancellable(event, playerInteractEvent);
 		    if (playerInteractEvent.isCancelled()) {
 		        return;

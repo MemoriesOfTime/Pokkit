@@ -12,7 +12,7 @@ import nl.rutgerkok.pokkit.PokkitLocation;
 import nl.rutgerkok.pokkit.entity.*;
 import nl.rutgerkok.pokkit.item.PokkitItemStack;
 import nl.rutgerkok.pokkit.world.PokkitBlock;
-import org.bukkit.block.Block;
+import org.bukkit.ExplosionResult;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.*;
@@ -61,10 +61,6 @@ public final class EntityEvents extends EventTranslator {
 			return;
 		}
 
-		// EntityCombustEvent and EntityCombustBy*Event share their handler
-		// lists. So this method can also be called with the event parameter set
-		// to an EntityCombustByEntityEvent or EntityCombustByBlockEvent. In that
-		// case, the event translation is a bit more involved.
 		if (event instanceof cn.nukkit.event.entity.EntityCombustByEntityEvent) {
 			onEntityCombustByEntity((cn.nukkit.event.entity.EntityCombustByEntityEvent) event);
 			return;
@@ -77,19 +73,13 @@ public final class EntityEvents extends EventTranslator {
 		EntityCombustEvent bukkitEvent = new EntityCombustEvent(PokkitEntity.toBukkit(event.getEntity()), event.getDuration());
 
 		callCancellable(event, bukkitEvent);
-		event.setDuration(bukkitEvent.getDuration());
-	}
-
-	public void onEntityCombustByBlock(cn.nukkit.event.entity.EntityCombustByBlockEvent event) {
-		// Called by onEntityCombust, so don't use an @EventHandler annotation
-
-		EntityCombustByBlockEvent bukkitEvent = new EntityCombustByBlockEvent(PokkitBlock.toBukkit(event.getCombuster()), PokkitEntity.toBukkit(event.getEntity()), event.getDuration());
-
-		callCancellable(event, bukkitEvent);
+		event.setDuration((int) bukkitEvent.getDuration());
 	}
 
 	private void onEntityCombustByEntity(cn.nukkit.event.entity.EntityCombustByEntityEvent event) {
-		// Called by onEntityCombust, so don't use an @EventHandler annotation
+		if (canIgnore(EntityCombustByEntityEvent.getHandlerList())) {
+			return;
+		}
 
 		EntityCombustByEntityEvent bukkitEvent = new EntityCombustByEntityEvent(
 				PokkitEntity.toBukkit(event.getCombuster()),
@@ -97,7 +87,21 @@ public final class EntityEvents extends EventTranslator {
 				event.getDuration());
 
 		callCancellable(event, bukkitEvent);
-		event.setDuration(bukkitEvent.getDuration());
+		event.setDuration((int) bukkitEvent.getDuration());
+	}
+
+	private void onEntityCombustByBlock(cn.nukkit.event.entity.EntityCombustByBlockEvent event) {
+		if (canIgnore(EntityCombustByBlockEvent.getHandlerList())) {
+			return;
+		}
+
+		EntityCombustByBlockEvent bukkitEvent = new EntityCombustByBlockEvent(
+				PokkitBlock.toBukkit(event.getCombuster()),
+				PokkitEntity.toBukkit(event.getEntity()),
+				event.getDuration());
+
+		callCancellable(event, bukkitEvent);
+		event.setDuration((int) bukkitEvent.getDuration());
 	}
 
 	@EventHandler(ignoreCancelled = false)
@@ -175,7 +179,7 @@ public final class EntityEvents extends EventTranslator {
 		}
 
 		EntityDeathEvent bukkitEvent = new EntityDeathEvent(
-				PokkitLivingEntity.toBukkit((EntityLiving) event.getEntity()), bukkitDrops);
+				PokkitLivingEntity.toBukkit((EntityLiving) event.getEntity()), null, bukkitDrops);
 
 		callUncancellable(bukkitEvent);
 		event.setDrops(bukkitEvent.getDrops().stream().map(PokkitItemStack::toNukkitCopy).toArray(Item[]::new));
@@ -183,24 +187,24 @@ public final class EntityEvents extends EventTranslator {
 
 	@EventHandler(ignoreCancelled = false)
 	public void onEntityExplode(cn.nukkit.event.entity.EntityExplodeEvent event) {
-		if (canIgnore(PlayerInteractEvent.getHandlerList())) {
+		if (canIgnore(EntityExplodeEvent.getHandlerList())) {
 			return;
 		}
 
-		List<Block> blocks = new ArrayList<>();
+		List<org.bukkit.block.Block> blocks = new ArrayList<>();
 
 		for (cn.nukkit.block.Block nukkitBlock : event.getBlockList()) {
 			blocks.add(PokkitBlock.toBukkit(nukkitBlock));
 		}
 
-		EntityExplodeEvent bukkitEvent = new EntityExplodeEvent(PokkitEntity.toBukkit(event.getEntity()), PokkitLocation.toBukkit(event.getPosition()), blocks, (float) event.getYield());
+		EntityExplodeEvent bukkitEvent = new EntityExplodeEvent(PokkitEntity.toBukkit(event.getEntity()), PokkitLocation.toBukkit(event.getPosition()), blocks, (float) event.getYield(), org.bukkit.ExplosionResult.DESTROY);
 
 		callCancellable(event, bukkitEvent);
 	}
 
 	@EventHandler(ignoreCancelled = false)
 	public void onEntityRegainHealth(cn.nukkit.event.entity.EntityRegainHealthEvent event) {
-		if (canIgnore(PlayerInteractEvent.getHandlerList())) {
+		if (canIgnore(EntityRegainHealthEvent.getHandlerList())) {
 			return;
 		}
 
@@ -229,14 +233,16 @@ public final class EntityEvents extends EventTranslator {
 
 	@EventHandler(ignoreCancelled = false)
 	public void onExplosion(cn.nukkit.event.entity.ExplosionPrimeEvent event) {
-		if (canIgnore(PlayerInteractEvent.getHandlerList())) {
+		if (canIgnore(ExplosionPrimeEvent.getHandlerList())) {
 			return;
-		}
+        }
 
-		ExplosionPrimeEvent bukkitEvent = new ExplosionPrimeEvent(PokkitEntity.toBukkit(event.getEntity()), (float) event.getForce(), true); // Always true because Nukkit doesn't have that boolean
+		ExplosionPrimeEvent bukkitEvent = new ExplosionPrimeEvent(PokkitEntity.toBukkit(event.getEntity()), (float) event.getForce(), true);
 
 		callCancellable(event, bukkitEvent);
+		event.setForce(bukkitEvent.getRadius());
 	}
+
 
 	@EventHandler(ignoreCancelled = false)
     public void onItemDrop(ItemFrameDropItemEvent event) {
@@ -300,6 +306,19 @@ public final class EntityEvents extends EventTranslator {
 		EntityProjectile nukkitProjectile = (EntityProjectile) event.getEntity();
 		Projectile projectile = PokkitProjectile.toBukkit(nukkitProjectile);
 		ProjectileHitEvent bukkitEvent = new ProjectileHitEvent(projectile, PokkitEntity.toBukkit(entity), PokkitBlock.toBukkit(block));
+
+		callUncancellable(bukkitEvent);
+	}
+
+	@EventHandler(ignoreCancelled = false)
+	public void onPortalEnter(cn.nukkit.event.entity.EntityPortalEnterEvent event) {
+		if (canIgnore(org.bukkit.event.entity.EntityPortalEnterEvent.getHandlerList())) {
+			return;
+		}
+
+		org.bukkit.event.entity.EntityPortalEnterEvent bukkitEvent = new org.bukkit.event.entity.EntityPortalEnterEvent(
+				PokkitEntity.toBukkit(event.getEntity()),
+				PokkitLocation.toBukkit(event.getEntity().getPosition()));
 
 		callUncancellable(bukkitEvent);
 	}

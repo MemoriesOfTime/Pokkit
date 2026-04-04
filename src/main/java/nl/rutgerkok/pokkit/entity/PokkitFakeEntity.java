@@ -1,29 +1,31 @@
 package nl.rutgerkok.pokkit.entity;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntitySnapshot;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Pose;
+import org.bukkit.entity.SpawnCategory;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
-import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.PokkitLocation;
 import nl.rutgerkok.pokkit.world.PokkitWorld;
 
@@ -33,44 +35,37 @@ abstract class PokkitFakeEntity implements Entity {
 
 	@Override
 	public PermissionAttachment addAttachment(Plugin plugin) {
-		throw Pokkit.unsupported();
-
+		return null;
 	}
 
 	@Override
 	public PermissionAttachment addAttachment(Plugin plugin, int ticks) {
-		throw Pokkit.unsupported();
-
+		return null;
 	}
 
 	@Override
 	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
-		throw Pokkit.unsupported();
-
+		return null;
 	}
 
 	@Override
 	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) {
-		throw Pokkit.unsupported();
-
+		return null;
 	}
 
 	@Override
 	public boolean addPassenger(Entity passenger) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public boolean addScoreboardTag(String tag) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public boolean eject() {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
@@ -85,8 +80,7 @@ abstract class PokkitFakeEntity implements Entity {
 
 	@Override
 	public int getEntityId() {
-		throw Pokkit.unsupported();
-
+		return -1;
 	}
 
 	@Override
@@ -101,13 +95,12 @@ abstract class PokkitFakeEntity implements Entity {
 
 	@Override
 	public double getHeight() {
-		throw Pokkit.unsupported();
+		return 0;
 	}
 
 	@Override
 	public EntityDamageEvent getLastDamageCause() {
-		throw Pokkit.unsupported();
-
+		return null;
 	}
 
 	@Override
@@ -122,8 +115,7 @@ abstract class PokkitFakeEntity implements Entity {
 
 	@Override
 	public int getMaxFireTicks() {
-		throw Pokkit.unsupported();
-
+		return 0;
 	}
 
 	@Override
@@ -189,8 +181,7 @@ abstract class PokkitFakeEntity implements Entity {
 
 	@Override
 	public UUID getUniqueId() {
-		throw Pokkit.unsupported();
-
+		return UUID.randomUUID();
 	}
 
 	@Override
@@ -205,7 +196,7 @@ abstract class PokkitFakeEntity implements Entity {
 
 	@Override
 	public double getWidth() {
-		throw Pokkit.unsupported();
+		return 0;
 	}
 
 	@Override
@@ -220,20 +211,17 @@ abstract class PokkitFakeEntity implements Entity {
 
 	@Override
 	public boolean hasMetadata(String metadataKey) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public boolean hasPermission(Permission perm) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public boolean hasPermission(String name) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
@@ -303,107 +291,81 @@ abstract class PokkitFakeEntity implements Entity {
 
 	@Override
 	public boolean leaveVehicle() {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public void playEffect(EntityEffect type) {
-		Pokkit.notImplemented();
-
 	}
 
 	@Override
 	public void recalculatePermissions() {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void remove() {
-		Pokkit.notImplemented();
-
 	}
 
 	@Override
 	public void removeAttachment(PermissionAttachment attachment) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void removeMetadata(String metadataKey, Plugin owningPlugin) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public boolean removePassenger(Entity passenger) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public boolean removeScoreboardTag(String tag) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public void sendMessage(String message) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void sendMessage(String[] messages) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void setCustomName(String name) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void setCustomNameVisible(boolean flag) {
-		Pokkit.notImplemented();
-
 	}
 
 	@Override
 	public void setFallDistance(float distance) {
-		Pokkit.notImplemented();
-
 	}
 
 	@Override
 	public void setFireTicks(int ticks) {
-		Pokkit.notImplemented();
-
 	}
 
 	@Override
 	public void setGlowing(boolean flag) {
-		Pokkit.notImplemented();
-
 	}
 
 	@Override
 	public void setGravity(boolean gravity) {
-		Pokkit.notImplemented();
-
 	}
 
 	@Override
 	public void setInvulnerable(boolean flag) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void setLastDamageCause(EntityDamageEvent event) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void setMetadata(String metadataKey, MetadataValue newMetadataValue) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
@@ -413,61 +375,177 @@ abstract class PokkitFakeEntity implements Entity {
 
 	@Override
 	public boolean setPassenger(Entity passenger) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public void setPersistent(boolean persistent) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void setPortalCooldown(int cooldown) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void setSilent(boolean flag) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void setTicksLived(int value) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void setVelocity(Vector velocity) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public Spigot spigot() {
-		throw Pokkit.unsupported();
+		return new Spigot();
 	}
 
 	@Override
 	public boolean teleport(Entity destination) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public boolean teleport(Entity destination, TeleportCause cause) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public boolean teleport(Location location) {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public boolean teleport(Location location, TeleportCause cause) {
-		throw Pokkit.unsupported();
+		return false;
+	}
 
+	@Override
+	public BoundingBox getBoundingBox() {
+		return new BoundingBox(0, 0, 0, 1, 1, 1);
+	}
+
+	@Override
+	public void setRotation(float v, float v1) {
+	}
+
+	@Override
+	public org.bukkit.block.BlockFace getFacing() {
+		return org.bukkit.block.BlockFace.SOUTH;
+	}
+
+	@Override
+	public Pose getPose() {
+		return Pose.STANDING;
+	}
+
+	@Override
+	public PersistentDataContainer getPersistentDataContainer() {
+		return null;
+	}
+
+	@Override
+	public Entity copy() {
+		return null;
+	}
+
+	@Override
+	public Entity copy(Location location) {
+		return null;
+	}
+
+	@Override
+	public EntitySnapshot createSnapshot() {
+		return null;
+	}
+
+	@Override
+	public String getAsString() {
+		return "PokkitFakeEntity{type=" + getType() + "}";
+	}
+
+	@Override
+	public SpawnCategory getSpawnCategory() {
+		return SpawnCategory.MISC;
+	}
+
+	@Override
+	public int getFreezeTicks() {
+		return 0;
+	}
+
+	@Override
+	public int getMaxFreezeTicks() {
+		return 140;
+	}
+
+	@Override
+	public boolean isFrozen() {
+		return false;
+	}
+
+	@Override
+	public void setFreezeTicks(int ticks) {
+	}
+
+	@Override
+	public Sound getSwimSound() {
+		return Sound.ENTITY_GENERIC_SWIM;
+	}
+
+	@Override
+	public Sound getSwimSplashSound() {
+		return Sound.ENTITY_GENERIC_SPLASH;
+	}
+
+	@Override
+	public Sound getSwimHighSpeedSplashSound() {
+		return Sound.ENTITY_GENERIC_SPLASH;
+	}
+
+	@Override
+	public boolean isVisualFire() {
+		return false;
+	}
+
+	@Override
+	public void setVisualFire(boolean fire) {
+	}
+
+	@Override
+	public boolean isInWorld() {
+		return false;
+	}
+
+	@Override
+	public boolean isInWater() {
+		return false;
+	}
+
+	@Override
+	public boolean isVisibleByDefault() {
+		return true;
+	}
+
+	@Override
+	public void setVisibleByDefault(boolean visible) {
+	}
+
+	@Override
+	public Set<Player> getTrackedBy() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public void sendMessage(UUID sender, String message) {
+		sendMessage(message);
+	}
+
+	@Override
+	public void sendMessage(UUID sender, String... messages) {
+		sendMessage(messages);
 	}
 }

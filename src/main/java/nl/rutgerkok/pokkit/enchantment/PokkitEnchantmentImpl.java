@@ -7,15 +7,28 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.ItemStack;
 
+import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.item.PokkitItemStack;
 
 final class PokkitEnchantmentImpl extends Enchantment {
 
 	private final cn.nukkit.item.enchantment.Enchantment nukkit;
+	private final NamespacedKey bukkitId;
 
 	public PokkitEnchantmentImpl(cn.nukkit.item.enchantment.Enchantment nukkit, NamespacedKey bukkitId) {
-		super(bukkitId);
+		super();
 		this.nukkit = Objects.requireNonNull(nukkit, "nukkit");
+		this.bukkitId = bukkitId;
+	}
+
+	@Override
+	public NamespacedKey getKey() {
+		return bukkitId;
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return "enchantment." + bukkitId.getNamespace() + "." + bukkitId.getKey();
 	}
 
 	@Override

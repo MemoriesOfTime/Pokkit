@@ -6,7 +6,7 @@ import java.util.ListIterator;
 
 import com.google.common.base.Preconditions;
 
-import org.apache.commons.lang.Validate;
+import java.util.Objects;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -27,7 +27,9 @@ public abstract class PokkitAbstractInventory implements Inventory {
 
 	@Override
 	public final HashMap<Integer, ItemStack> addItem(ItemStack... items) throws IllegalArgumentException {
-		Validate.noNullElements(items);
+		for (ItemStack item : items) {
+			Objects.requireNonNull(item, "item");
+		}
 
 		HashMap<Integer, ItemStack> result = new HashMap<>();
 		for (int i = 0; i < items.length; i++) {

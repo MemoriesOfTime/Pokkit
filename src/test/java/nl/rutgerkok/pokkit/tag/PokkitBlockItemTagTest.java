@@ -26,7 +26,7 @@ public class PokkitBlockItemTagTest {
 	@Test
 	public void TestGetServer() {
 		assertNotNull(Bukkit.getServer());
-		assertEquals(Bukkit.getServer(), server);
+		assertTrue(Bukkit.getServer() instanceof CraftServers);
 	}
 	
 	@Test

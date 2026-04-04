@@ -47,4 +47,41 @@ public class PokkitBanList implements BanList {
     public void pardon(String target) {
         nukkit.remove(target);
     }
+
+    @Override
+    public void pardon(Object target) {
+        pardon(String.valueOf(target));
+    }
+
+    @Override
+    public boolean isBanned(Object target) {
+        return isBanned(String.valueOf(target));
+    }
+
+    @Override
+    public Set getEntries() {
+        return nukkit.getEntires().values().stream().map(PokkitBanEntry::new).collect(Collectors.toSet());
+    }
+
+    @Override
+    public BanEntry getBanEntry(Object target) {
+        return getBanEntry(String.valueOf(target));
+    }
+
+    @Override
+    public BanEntry addBan(Object target, String reason, Date date, String source) {
+        return addBan(String.valueOf(target), reason, date, source);
+    }
+
+    @Override
+    public BanEntry addBan(Object target, String reason, java.time.Instant instant, String source) {
+        Date date = instant != null ? Date.from(instant) : null;
+        return addBan(String.valueOf(target), reason, date, source);
+    }
+
+    @Override
+    public BanEntry addBan(Object target, String reason, java.time.Duration duration, String source) {
+        Date date = duration != null ? new Date(System.currentTimeMillis() + duration.toMillis()) : null;
+        return addBan(String.valueOf(target), reason, date, source);
+    }
 }

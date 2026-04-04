@@ -28,6 +28,9 @@ public class PokkitEnchantmentTarget {
 		twoWay(EnchantmentType.WEARABLE, EnchantmentTarget.WEARABLE);
 		twoWay(EnchantmentType.TRIDENT, EnchantmentTarget.TRIDENT);
 		twoWay(EnchantmentType.CROSSBOW, EnchantmentTarget.CROSSBOW);
+		twoWay(EnchantmentType.ALL, EnchantmentTarget.VANISHABLE);
+		nukkitToBukkit.put(EnchantmentType.MACE, EnchantmentTarget.WEAPON);
+		nukkitToBukkit.put(EnchantmentType.SPEAR, EnchantmentTarget.WEAPON);
 	}
 
 	/**

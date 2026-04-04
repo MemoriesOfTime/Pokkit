@@ -4,8 +4,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.Objects;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
@@ -129,10 +129,10 @@ final class BukkitEventManager {
 	 */
 	public void registerEvent(Class<? extends Event> event, Listener listener, EventPriority priority,
 			EventExecutor executor, Plugin plugin, boolean ignoreCancelled) {
-		Validate.notNull(listener, "Listener cannot be null");
-		Validate.notNull(priority, "Priority cannot be null");
-		Validate.notNull(executor, "Executor cannot be null");
-		Validate.notNull(plugin, "Plugin cannot be null");
+		Objects.requireNonNull(listener, "Listener cannot be null");
+		Objects.requireNonNull(priority, "Priority cannot be null");
+		Objects.requireNonNull(executor, "Executor cannot be null");
+		Objects.requireNonNull(plugin, "Plugin cannot be null");
 
 		if (!plugin.isEnabled()) {
 			throw new IllegalPluginAccessException("Plugin attempted to register " + event + " while not enabled");

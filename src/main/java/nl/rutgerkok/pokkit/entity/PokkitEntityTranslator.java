@@ -17,42 +17,213 @@ public class PokkitEntityTranslator {
 		case PIG:
 		case RABBIT:
 		case SHEEP:
-		case WOLF:
 		case OCELOT:
 		case VILLAGER:
-		case BOAT:
-		case LIGHTNING:
 		case CHICKEN:
 			String name = et.getName();
 			name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
 			return name;
+		case WOLF:
+			return "Wolf";
+		case BOAT:
+			return "Boat";
+		case LIGHTNING_BOLT:
+			return "LightningBolt";
 		case ENDER_PEARL:
 			return "EnderPearl";
-		case THROWN_EXP_BOTTLE:
+		case EXPERIENCE_BOTTLE:
 			return "ThrownExpBottle";
-		case PRIMED_TNT:
+		case TNT:
 			return "PrimedTnt";
 		case EXPERIENCE_ORB:
 			return "XpOrb";
-		case SPLASH_POTION:
+		case POTION:
 			return "ThrownPotion";
 		case FALLING_BLOCK:
 			return "FallingSand";
 		case PLAYER:
 			return "Human";
 		case MINECART:
-		case MINECART_COMMAND:
-		case MINECART_FURNACE:
-		case MINECART_MOB_SPAWNER:
+		case COMMAND_BLOCK_MINECART:
+		case FURNACE_MINECART:
+		case SPAWNER_MINECART:
 			return "MinecartRideable";
-		case MINECART_CHEST:
+		case CHEST_MINECART:
 			return "MinecartChest";
-		case MINECART_HOPPER:
+		case HOPPER_MINECART:
 			return "MinecartHopper";
-		case MINECART_TNT:
+		case TNT_MINECART:
 			return "MinecartTNT";
 		case TRIDENT:
 			return "ThrownTrident";
+		case ZOMBIE:
+			return "Zombie";
+		case SKELETON:
+			return "Skeleton";
+		case SPIDER:
+			return "Spider";
+		case CAVE_SPIDER:
+			return "CaveSpider";
+		case ENDERMAN:
+			return "Enderman";
+		case BLAZE:
+			return "Blaze";
+		case GHAST:
+			return "Ghast";
+		case SLIME:
+			return "Slime";
+		case MAGMA_CUBE:
+			return "LavaSlime";
+		case WITCH:
+			return "Witch";
+		case GUARDIAN:
+			return "Guardian";
+		case ELDER_GUARDIAN:
+			return "ElderGuardian";
+		case SILVERFISH:
+			return "Silverfish";
+		case ENDERMITE:
+			return "Endermite";
+		case PHANTOM:
+			return "Phantom";
+		case WITHER_SKELETON:
+			return "WitherSkeleton";
+		case STRAY:
+			return "Stray";
+		case HUSK:
+			return "Husk";
+		case DROWNED:
+			return "Drowned";
+		case SHULKER:
+			return "Shulker";
+		case EVOKER:
+			return "EvocationIllager";
+		case VINDICATOR:
+			return "VindicationIllager";
+		case VEX:
+			return "Vex";
+		case PILLAGER:
+			return "Pillager";
+		case RAVAGER:
+			return "Ravager";
+		case WITHER:
+			return "WitherBoss";
+		case ENDER_DRAGON:
+			return "EnderDragon";
+		case IRON_GOLEM:
+			return "IronGolem";
+		case SNOW_GOLEM:
+			return "SnowGolem";
+		case BAT:
+			return "Bat";
+		case SQUID:
+			return "Squid";
+		case HORSE:
+			return "Horse";
+		case DONKEY:
+			return "Donkey";
+		case MULE:
+			return "Mule";
+		case SKELETON_HORSE:
+			return "SkeletonHorse";
+		case ZOMBIE_HORSE:
+			return "ZombieHorse";
+		case MOOSHROOM:
+			return "Mooshroom";
+		case POLAR_BEAR:
+			return "PolarBear";
+		case LLAMA:
+			return "Llama";
+		case PARROT:
+			return "Parrot";
+		case TURTLE:
+			return "Turtle";
+		case DOLPHIN:
+			return "Dolphin";
+		case CAT:
+			return "Cat";
+		case FOX:
+			return "Fox";
+		case PANDA:
+			return "Panda";
+		case BEE:
+			return "Bee";
+		case STRIDER:
+			return "Strider";
+		case HOGLIN:
+			return "Hoglin";
+		case ZOGLIN:
+			return "Zoglin";
+		case PIGLIN:
+			return "Piglin";
+		case PIGLIN_BRUTE:
+			return "PiglinBrute";
+		case GOAT:
+			return "Goat";
+		case ALLAY:
+			return "Allay";
+		case WARDEN:
+			return "Warden";
+		case FROG:
+			return "Frog";
+		case TADPOLE:
+			return "Tadpole";
+		case AXOLOTL:
+			return "Axolotl";
+		case GLOW_SQUID:
+			return "GlowSquid";
+		case COD:
+			return "Cod";
+		case SALMON:
+			return "Salmon";
+		case TROPICAL_FISH:
+			return "TropicalFish";
+		case PUFFERFISH:
+			return "Pufferfish";
+		case ARMOR_STAND:
+			return "ArmorStand";
+		case FIREWORK_ROCKET:
+			return "FireworksRocket";
+		case END_CRYSTAL:
+			return "EnderCrystal";
+		case AREA_EFFECT_CLOUD:
+			return "AreaEffectCloud";
+		case ITEM_FRAME:
+			return "ItemFrame";
+		case GLOW_ITEM_FRAME:
+			return "GlowItemFrame";
+		case EGG:
+			return "Egg";
+		case DRAGON_FIREBALL:
+			return "DragonFireball";
+		case SMALL_FIREBALL:
+			return "SmallFireball";
+		case FIREBALL:
+			return "Fireball";
+		case WITHER_SKULL:
+			return "WitherSkull";
+		case LLAMA_SPIT:
+			return "LlamaSpit";
+		case EVOKER_FANGS:
+			return "EvocationFang";
+		case FISHING_BOBBER:
+			return "FishingHook";
+		case LEASH_KNOT:
+			return "LeashKnot";
+		case ITEM:
+			return "Item";
+		case CAMEL:
+			return "Camel";
+		case SNIFFER:
+			return "Sniffer";
+		case BREEZE:
+			return "Breeze";
+		case ARMADILLO:
+			return "Armadillo";
+		case BOGGED:
+			return "Bogged";
+		case WIND_CHARGE:
+			return "WindCharge";
 		default:
 			return "null";
 		}

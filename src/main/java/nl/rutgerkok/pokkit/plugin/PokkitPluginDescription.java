@@ -13,6 +13,7 @@ import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.LoaderOptions;
 
 import cn.nukkit.plugin.PluginDescription;
 import cn.nukkit.utils.Utils;
@@ -25,7 +26,7 @@ import cn.nukkit.utils.Utils;
 final class PokkitPluginDescription extends PluginDescription {
 
 	private static Yaml getYaml() {
-		return new Yaml(new SafeConstructor() {
+		return new Yaml(new SafeConstructor(new LoaderOptions()) {
 			{
 				yamlConstructors.put(null, new AbstractConstruct() {
 					@Override

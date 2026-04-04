@@ -16,6 +16,20 @@ public class PokkitMetadataValue implements MetadataValue {
         return new PokkitMetadataValue(nukkit);
     }
     
+    public static cn.nukkit.metadata.MetadataValue toNukkit(MetadataValue bukkit) {
+        cn.nukkit.plugin.Plugin nukkitPlugin = nl.rutgerkok.pokkit.plugin.PokkitPlugin.toNukkit(bukkit.getOwningPlugin());
+        return new cn.nukkit.metadata.MetadataValue(nukkitPlugin) {
+            @Override
+            public Object value() {
+                return bukkit.value();
+            }
+            @Override
+            public void invalidate() {
+                bukkit.invalidate();
+            }
+        };
+    }
+    
     @Override
     public Object value() {
         return nukkit.value();

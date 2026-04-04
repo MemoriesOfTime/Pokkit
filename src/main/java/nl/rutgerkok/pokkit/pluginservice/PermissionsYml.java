@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
@@ -34,7 +35,7 @@ public final class PermissionsYml implements PokkitService {
 	 *            The custom permissions file.
 	 */
 	private void loadCustomPermissions(File file) {
-		Yaml yaml = new Yaml(new SafeConstructor());
+		Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
 
 		try (FileInputStream stream = new FileInputStream(file)) {
 			@SuppressWarnings("unchecked")

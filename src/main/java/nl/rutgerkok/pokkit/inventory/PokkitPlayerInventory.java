@@ -9,7 +9,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.entity.PokkitHumanEntity;
 import nl.rutgerkok.pokkit.item.PokkitItemStack;
 
@@ -58,7 +57,6 @@ public class PokkitPlayerInventory extends PokkitLiveInventory implements Player
 				setHelmet(itemStack);
 				return;
 		}
-		Pokkit.notImplemented();
 	}
 
 	@Override
@@ -77,7 +75,7 @@ public class PokkitPlayerInventory extends PokkitLiveInventory implements Player
 			case HEAD:
 				return getHelmet();
 		}
-		throw Pokkit.unsupported();
+		return null;
 	}
 
 	@Override
@@ -87,7 +85,7 @@ public class PokkitPlayerInventory extends PokkitLiveInventory implements Player
 
 	@Override
 	public ItemStack[] getExtraContents() {
-		throw Pokkit.unsupported();
+		return new ItemStack[0];
 	}
 
 	@Override
@@ -152,7 +150,6 @@ public class PokkitPlayerInventory extends PokkitLiveInventory implements Player
 
 	@Override
 	public void setExtraContents(ItemStack[] items) {
-		Pokkit.notImplemented();
 	}
 
 	@Override

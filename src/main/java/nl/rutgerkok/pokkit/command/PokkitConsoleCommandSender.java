@@ -1,6 +1,6 @@
 package nl.rutgerkok.pokkit.command;
 
-import nl.rutgerkok.pokkit.Pokkit;
+import java.util.UUID;
 
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.conversations.Conversation;
@@ -18,22 +18,19 @@ final class PokkitConsoleCommandSender extends PokkitCommandSender implements Co
 
 	@Override
 	public void abandonConversation(Conversation conversation) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void abandonConversation(Conversation conversation, ConversationAbandonedEvent details) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void acceptConversationInput(String input) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public boolean beginConversation(Conversation conversation) {
-		throw Pokkit.unsupported();
+		return false;
 	}
 
 	@Override
@@ -44,6 +41,11 @@ final class PokkitConsoleCommandSender extends PokkitCommandSender implements Co
 	@Override
 	public void sendRawMessage(String message) {
 		this.sendMessage(message);
+	}
+
+	@Override
+	public void sendRawMessage(UUID uuid, String message) {
+		this.sendRawMessage(message);
 	}
 
 }

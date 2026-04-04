@@ -2,6 +2,7 @@ package nl.rutgerkok.pokkit.command;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import nl.rutgerkok.pokkit.permission.PokkitPermission;
@@ -157,6 +158,16 @@ public class PokkitCommandSender extends CommandSender.Spigot implements Command
 		for (String message : messages) {
 			nukkit.sendMessage(message);
 		}
+	}
+
+	@Override
+	public void sendMessage(UUID sender, String message) {
+		sendMessage(message);
+	}
+
+	@Override
+	public void sendMessage(UUID sender, String... messages) {
+		sendMessage(messages);
 	}
 
 	@Override

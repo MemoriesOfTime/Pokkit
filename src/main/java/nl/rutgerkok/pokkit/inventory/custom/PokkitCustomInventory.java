@@ -36,6 +36,10 @@ public final class PokkitCustomInventory extends PokkitLiveInventory implements 
 		if (size < 1) {
 			throw new IllegalArgumentException("Invalid inventory size: " + size);
 		}
+		// Bedrock clients only support single chest (27) and double chest (54)
+		if (size != 27 && size != 54) {
+			size = size <= 27 ? 27 : 54;
+		}
 
 		NukkitCustomInventory nukkit = new NukkitCustomInventory(title, holderOrNull);
 		nukkit.setSize(size);

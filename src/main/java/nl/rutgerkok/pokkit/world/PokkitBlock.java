@@ -11,6 +11,7 @@ import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_99_R9.CraftServer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -25,6 +26,7 @@ import nl.rutgerkok.pokkit.world.biome.PokkitBiome;
 import cn.nukkit.block.BlockAir;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemBlock;
+import cn.nukkit.level.Position;
 import cn.nukkit.level.biome.EnumBiome;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
@@ -87,7 +89,11 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public int getBlockPower() {
-		throw Pokkit.unsupported();
+		int power = 0;
+		for (BlockFace face : BlockFace.values()) {
+			power = Math.max(power, getBlockPower(face));
+		}
+		return power;
 	}
 
 	@Override
@@ -153,19 +159,24 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public double getHumidity() {
-		return 0.15; // Seems to be removed from Nukkit
+		int biomeId = nukkit.getLevel().getBiomeId(getX(), getZ());
+		cn.nukkit.level.biome.Biome biome = EnumBiome.getBiome(biomeId);
+		if (biome != null) {
+			if (biome.isFreezing()) return 0.3;
+			if (biome.canRain()) return 0.8;
+			return 0.0;
+		}
+		return 0.5;
 	}
 
 	@Override
 	public byte getLightFromBlocks() {
-		return (byte) nukkit.getLightLevel(); // I think this is wrong, but
-												// there isn't any way to get
-												// the light emitted from blocks
+		return (byte) nukkit.getLevel().getBlockLightAt(getX(), getY(), getZ());
 	}
 
 	@Override
 	public byte getLightFromSky() {
-		return (byte) nukkit.getLightLevel(); // Same thing as above
+		return (byte) nukkit.getLevel().getBlockSkyLightAt(getX(), getY(), getZ());
 	}
 
 	@Override
@@ -196,8 +207,7 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public PistonMoveReaction getPistonMoveReaction() {
-		throw Pokkit.unsupported();
-
+		return PistonMoveReaction.MOVE;
 	}
 
 	@Override
@@ -262,14 +272,12 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public boolean isBlockFaceIndirectlyPowered(BlockFace face) {
-		throw Pokkit.unsupported();
-
+		return isBlockIndirectlyPowered();
 	}
 
 	@Override
 	public boolean isBlockFacePowered(BlockFace face) {
-		throw Pokkit.unsupported();
-
+		return isBlockPowered();
 	}
 
 	@Override
@@ -299,12 +307,61 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public RayTraceResult rayTrace(Location location, Vector vector, double v, FluidCollisionMode fluidCollisionMode) {
-		throw Pokkit.unsupported();
+		return null;
+	}
+
+	@Override
+	public boolean canPlace(BlockData blockData) {
+		cn.nukkit.block.Block nukkitBlock = PokkitBlockData.toNukkit(blockData);
+		return nukkitBlock.canPlaceOn(nukkit, Position.fromObject(nukkit, nukkit.getLevel()));
 	}
 
 	@Override
 	public BoundingBox getBoundingBox() {
 		return new BoundingBox(nukkit.getBoundingBox().getMinX(), nukkit.getBoundingBox().getMinY(), nukkit.getBoundingBox().getMinZ(), nukkit.getBoundingBox().getMaxX(), nukkit.getBoundingBox().getMaxY(), nukkit.getBoundingBox().getMaxZ());
+	}
+
+	@Override
+	public org.bukkit.util.VoxelShape getCollisionShape() {
+		return new org.bukkit.util.VoxelShape() {
+			@Override
+			public java.util.Collection<org.bukkit.util.BoundingBox> getBoundingBoxes() {
+				return java.util.Collections.singletonList(getBoundingBox());
+			}
+			@Override
+			public boolean overlaps(org.bukkit.util.BoundingBox boundingBox) {
+				return getBoundingBox().overlaps(boundingBox);
+			}
+		};
+	}
+
+	@Override
+	public float getBreakSpeed(Player player) {
+		cn.nukkit.Player nukkitPlayer = nl.rutgerkok.pokkit.player.PokkitPlayer.toNukkit(player);
+		cn.nukkit.item.Item tool = nukkitPlayer.getInventory().getItemInHand();
+		double breakTime = nukkit.getBreakTime(tool, nukkitPlayer);
+		if (breakTime <= 0) return Float.MAX_VALUE;
+		return (float) (1.0 / breakTime);
+	}
+
+	@Override
+	public boolean isPreferredTool(ItemStack itemStack) {
+		if (itemStack == null || itemStack.getType() == Material.AIR) return false;
+		cn.nukkit.item.Item nukkitItem = nl.rutgerkok.pokkit.item.PokkitItemStack.toNukkitCopy(itemStack);
+		double withTool = nukkit.calculateBreakTime(nukkitItem);
+		double bareHand = nukkit.calculateBreakTime(cn.nukkit.item.Item.get(cn.nukkit.item.Item.AIR));
+		return withTool < bareHand;
+	}
+
+	@Override
+	public boolean applyBoneMeal(BlockFace face) {
+		cn.nukkit.item.Item bonemeal = cn.nukkit.item.Item.get(cn.nukkit.item.Item.DYE, cn.nukkit.item.ItemDye.BONE_MEAL);
+		return nukkit.onActivate(bonemeal, null);
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return "block." + getType().getKey().getNamespace() + "." + getType().getKey().getKey();
 	}
 
 	@Override

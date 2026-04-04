@@ -1,7 +1,9 @@
 package nl.rutgerkok.pokkit.boss;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -11,15 +13,17 @@ import org.bukkit.entity.Player;
 
 import cn.nukkit.utils.BossBarColor;
 import cn.nukkit.utils.DummyBossBar;
-import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.player.PokkitPlayer;
 
 public class PokkitBossBar implements BossBar {
 	
 	ArrayList<cn.nukkit.utils.DummyBossBar> dummyBossBars = new ArrayList<>();
 	BarColor color;
+	BarStyle style;
 	String title;
 	float progressLength;
+	private boolean visible = true;
+	private final Set<BarFlag> flags = EnumSet.noneOf(BarFlag.class);
 
 	public PokkitBossBar(String arg0, BarColor arg1, BarStyle arg2, BarFlag[] arg3) {
 		setTitle(arg0);
@@ -82,27 +86,27 @@ public class PokkitBossBar implements BossBar {
 
 	@Override
 	public BarStyle getStyle() {
-		return BarStyle.SOLID;
+		return style != null ? style : BarStyle.SOLID;
 	}
 
 	@Override
 	public void setStyle(BarStyle style) {
-		Pokkit.notImplemented();
+		this.style = style;
 	}
 
 	@Override
 	public void removeFlag(BarFlag flag) {
-		Pokkit.notImplemented();
+		flags.remove(flag);
 	}
 
 	@Override
 	public void addFlag(BarFlag flag) {
-		Pokkit.notImplemented();
+		flags.add(flag);
 	}
 
 	@Override
 	public boolean hasFlag(BarFlag flag) {
-		throw Pokkit.unsupported();
+		return flags.contains(flag);
 	}
 
 	@Override
@@ -163,12 +167,17 @@ public class PokkitBossBar implements BossBar {
 
 	@Override
 	public void setVisible(boolean visible) {
-		Pokkit.notImplemented();
+		this.visible = visible;
+		if (visible) {
+			show();
+		} else {
+			hide();
+		}
 	}
 
 	@Override
 	public boolean isVisible() {
-		return true;//throw Pokkit.unsupported();
+		return visible;
 	}
 
 	@Override

@@ -69,4 +69,13 @@ public class PokkitBanEntry implements BanEntry {
     public void save() {
         // silently unsupported
     }
+
+    @Override
+    public void remove() {
+    }
+
+    @Override
+    public Object getBanTarget() {
+        return getTarget();
+    }
 }

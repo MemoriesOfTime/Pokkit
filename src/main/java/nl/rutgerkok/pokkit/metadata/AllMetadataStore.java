@@ -22,7 +22,7 @@ public final class AllMetadataStore {
 	}
 
 	public List<MetadataValue> getBlockMetadata(Level level) {
-		throw Pokkit.unsupported();
+		return java.util.Collections.emptyList();
 	}
 
 	public PlayerMetadataStore getPlayerMetadata() {

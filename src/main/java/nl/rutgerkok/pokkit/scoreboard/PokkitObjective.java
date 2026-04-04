@@ -2,7 +2,6 @@ package nl.rutgerkok.pokkit.scoreboard;
 
 import java.util.Objects;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.*;
 
@@ -37,6 +36,11 @@ final class PokkitObjective implements Objective {
 	}
 
 	@Override
+	public Criteria getTrackedCriteria() throws IllegalStateException {
+		return null;
+	}
+
+	@Override
 	public String getDisplayName() throws IllegalStateException {
 		checkScoreboard();
 		return displayName;
@@ -65,13 +69,13 @@ final class PokkitObjective implements Objective {
 
 	@Override
 	public Score getScore(OfflinePlayer player) throws IllegalArgumentException, IllegalStateException {
-		Validate.notNull(player, "player");
+		Objects.requireNonNull(player, "player");
 		return getScore(player.getName());
 	}
 
 	@Override
 	public Score getScore(String entry) throws IllegalArgumentException, IllegalStateException {
-		Validate.notNull(entry, "entry");
+		Objects.requireNonNull(entry, "entry");
 		PokkitScoreboard scoreboard = checkScoreboard();
 		return scoreboard.getOrCreateScore(this, entry);
 	}
@@ -89,7 +93,7 @@ final class PokkitObjective implements Objective {
 
 	@Override
 	public void setDisplayName(String displayName) throws IllegalStateException, IllegalArgumentException {
-		Validate.notNull(displayName, "displayName");
+		Objects.requireNonNull(displayName, "displayName");
 		checkScoreboard();
 		this.displayName = displayName;
 	}

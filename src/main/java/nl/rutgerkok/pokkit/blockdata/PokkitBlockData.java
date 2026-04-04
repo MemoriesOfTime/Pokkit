@@ -4,8 +4,11 @@ import java.util.Objects;
 
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.structure.Mirror;
+import org.bukkit.block.structure.StructureRotation;
 
 import nl.rutgerkok.pokkit.Pokkit;
+import nl.rutgerkok.pokkit.blockstate.PokkitBlockState;
 
 import cn.nukkit.block.Block;
 
@@ -119,6 +122,79 @@ public class PokkitBlockData implements BlockData {
 	@Override
 	public boolean matches(BlockData data) {
 		return block.getFullId() == ((PokkitBlockData) data).block.getFullId();
+	}
+
+	@Override
+	public org.bukkit.block.BlockState createBlockState() {
+		return PokkitBlockState.fromBlockData(this);
+	}
+
+	@Override
+	public void copyTo(org.bukkit.block.data.BlockData other) {
+		// Cannot copy to different implementation
+	}
+
+	@Override
+	public void mirror(Mirror mirror) {
+	}
+
+	@Override
+	public void rotate(StructureRotation rotation) {
+	}
+
+	@Override
+	public org.bukkit.Material getPlacementMaterial() {
+		return getMaterial();
+	}
+
+	@Override
+	public org.bukkit.SoundGroup getSoundGroup() {
+		return null;
+	}
+
+	@Override
+	public int getLightEmission() {
+		return 0;
+	}
+
+	@Override
+	public boolean isOccluding() {
+		return false;
+	}
+
+	@Override
+	public boolean requiresCorrectToolForDrops() {
+		return false;
+	}
+
+	@Override
+	public boolean isPreferredTool(org.bukkit.inventory.ItemStack itemStack) {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.block.PistonMoveReaction getPistonMoveReaction() {
+		return org.bukkit.block.PistonMoveReaction.MOVE;
+	}
+
+	@Override
+	public boolean isSupported(org.bukkit.block.Block block) {
+		return true;
+	}
+
+	@Override
+	public boolean isSupported(org.bukkit.Location location) {
+		return true;
+	}
+
+	@Override
+	public boolean isFaceSturdy(org.bukkit.block.BlockFace face, org.bukkit.block.BlockSupport support) {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.Color getMapColor() {
+		return org.bukkit.Color.BLACK;
 	}
 
 	@Override

@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.command.PokkitCommandSender;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.v1_99_R9.CraftServer;
+import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -50,7 +50,7 @@ public class PokkitPlugin implements cn.nukkit.plugin.Plugin {
 
 		@Override
 		public FileConfiguration getConfig() {
-			throw Pokkit.unsupported();
+			return null;
 		}
 
 		@Override
@@ -60,6 +60,11 @@ public class PokkitPlugin implements cn.nukkit.plugin.Plugin {
 
 		@Override
 		public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
+			return null;
+		}
+
+		@Override
+		public BiomeProvider getDefaultBiomeProvider(String worldName, String id) {
 			return null;
 		}
 
@@ -82,7 +87,7 @@ public class PokkitPlugin implements cn.nukkit.plugin.Plugin {
 
 		@Override
 		public org.bukkit.plugin.PluginLoader getPluginLoader() {
-			throw Pokkit.unsupported();
+			return null;
 		}
 
 		@Override
@@ -108,22 +113,19 @@ public class PokkitPlugin implements cn.nukkit.plugin.Plugin {
 		@Override
 		public boolean onCommand(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command,
 				String label, String[] args) {
-			throw Pokkit.unsupported();
+			return false;
 		}
 
 		@Override
 		public void onDisable() {
-			Pokkit.notImplemented();
 		}
 
 		@Override
 		public void onEnable() {
-			Pokkit.notImplemented();
 		}
 
 		@Override
 		public void onLoad() {
-			Pokkit.notImplemented();
 		}
 
 		@Override
@@ -134,22 +136,18 @@ public class PokkitPlugin implements cn.nukkit.plugin.Plugin {
 
 		@Override
 		public void reloadConfig() {
-			Pokkit.notImplemented();
 		}
 
 		@Override
 		public void saveConfig() {
-			Pokkit.notImplemented();
 		}
 
 		@Override
 		public void saveDefaultConfig() {
-			Pokkit.notImplemented();
 		}
 
 		@Override
 		public void saveResource(String resourcePath, boolean replace) {
-			Pokkit.notImplemented();
 		}
 
 		@Override
@@ -241,6 +239,12 @@ public class PokkitPlugin implements cn.nukkit.plugin.Plugin {
 	}
 
 	@Override
+	public File getFile() {
+		// Return a placeholder file since we don't have direct access to the plugin JAR file
+		return new File(bukkit.getDataFolder().getParentFile(), bukkit.getName() + ".jar");
+	}
+
+	@Override
 	public PluginLoader getPluginLoader() {
 		return loader;
 	}
@@ -318,7 +322,7 @@ public class PokkitPlugin implements cn.nukkit.plugin.Plugin {
 
 	@Override
 	public boolean saveResource(String filename, String outputName, boolean replace) {
-		throw Pokkit.unsupported();
+		return false;
 	}
 
 	@Override

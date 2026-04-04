@@ -1,6 +1,7 @@
 package nl.rutgerkok.pokkit.entity;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
@@ -57,31 +58,56 @@ public class PokkitItemEntity extends PokkitFakeEntity implements Item {
 
 	@Override
 	public EntityType getType() {
-		return EntityType.DROPPED_ITEM;
+        return EntityType.ITEM;
 	}
 
 	@Override
 	public void setItemStack(ItemStack stack) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void setPickupDelay(int delay) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public BlockFace getFacing() {
-		throw Pokkit.unsupported();
+		return BlockFace.SOUTH;
 	}
 
 	@Override
 	public Pose getPose() {
-		throw Pokkit.unsupported();
+		return Pose.STANDING;
 	}
 
 	@Override
 	public PersistentDataContainer getPersistentDataContainer() {
-		throw Pokkit.unsupported();
+		return null;
+	}
+
+	@Override
+	public UUID getThrower() {
+		return null;
+	}
+
+	@Override
+	public void setThrower(UUID uuid) {
+	}
+
+	@Override
+	public UUID getOwner() {
+		return null;
+	}
+
+	@Override
+	public void setOwner(UUID uuid) {
+	}
+
+	@Override
+	public boolean isUnlimitedLifetime() {
+		return false;
+	}
+
+	@Override
+	public void setUnlimitedLifetime(boolean unlimited) {
 	}
 }

@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.UniqueIdConversion;
 
 import org.bukkit.*;
@@ -49,6 +48,13 @@ public final class PokkitOfflinePlayer implements OfflinePlayer {
 
 	@Override
 	public Location getBedSpawnLocation() {
+		return getRespawnLocation();
+	}
+
+	@Override
+	public Location getLocation() {
+		Player online = getPlayer();
+		if (online != null) return online.getLocation();
 		return null;
 	}
 
@@ -79,7 +85,6 @@ public final class PokkitOfflinePlayer implements OfflinePlayer {
 
 	@Override
 	public int getStatistic(Statistic statistic) throws IllegalArgumentException {
-		Pokkit.notImplemented();
 		return 0;
 	}
 
@@ -95,7 +100,6 @@ public final class PokkitOfflinePlayer implements OfflinePlayer {
 
 	@Override
 	public int getStatistic(Statistic statistic, Material material) throws IllegalArgumentException {
-		Pokkit.notImplemented();
 		return 0;
 	}
 
@@ -126,7 +130,6 @@ public final class PokkitOfflinePlayer implements OfflinePlayer {
 
 	@Override
 	public int getStatistic(Statistic statistic, EntityType entityType) throws IllegalArgumentException {
-		Pokkit.notImplemented();
 		return 0;
 	}
 
@@ -227,4 +230,39 @@ public final class PokkitOfflinePlayer implements OfflinePlayer {
 		getNukkit().setWhitelisted(value);
 	}
 
+	@Override
+	public Location getLastDeathLocation() {
+		Player online = getPlayer();
+		if (online != null) return online.getLastDeathLocation();
+		return null;
+	}
+
+	@Override
+	public Location getRespawnLocation() {
+		Player online = getPlayer();
+		if (online != null) return online.getRespawnLocation();
+		return null;
+	}
+
+	@Override
+	public org.bukkit.profile.PlayerProfile getPlayerProfile() {
+		return org.bukkit.Bukkit.createPlayerProfile(getUniqueId(), getName());
+	}
+
+	@Override
+	public org.bukkit.BanEntry ban(String reason, java.util.Date expires, String source) {
+		return org.bukkit.Bukkit.getBanList(org.bukkit.BanList.Type.NAME).addBan(getName(), reason, expires, source);
+	}
+
+	@Override
+	public org.bukkit.BanEntry ban(String reason, java.time.Instant expires, String source) {
+		java.util.Date date = expires != null ? java.util.Date.from(expires) : null;
+		return ban(reason, date, source);
+	}
+
+	@Override
+	public org.bukkit.BanEntry ban(String reason, java.time.Duration duration, String source) {
+		java.util.Date date = duration != null ? new java.util.Date(System.currentTimeMillis() + duration.toMillis()) : null;
+		return ban(reason, date, source);
+	}
 }

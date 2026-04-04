@@ -17,7 +17,6 @@ public final class PokkitInventoryType {
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.DOUBLE_CHEST, InventoryType.CHEST);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.MINECART_CHEST, InventoryType.CHEST);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.CHEST_BOAT, InventoryType.CHEST);
-		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.DONKEY, InventoryType.CHEST);
 		twoWay(cn.nukkit.inventory.InventoryType.DISPENSER, InventoryType.DISPENSER);
 		twoWay(cn.nukkit.inventory.InventoryType.DROPPER, InventoryType.DROPPER);
 		twoWay(cn.nukkit.inventory.InventoryType.FURNACE, InventoryType.FURNACE);
@@ -36,14 +35,19 @@ public final class PokkitInventoryType {
 		twoWay(cn.nukkit.inventory.InventoryType.SHULKER_BOX, InventoryType.SHULKER_BOX);
 		twoWay(cn.nukkit.inventory.InventoryType.BARREL, InventoryType.BARREL);
 		twoWay(cn.nukkit.inventory.InventoryType.BLAST_FURNACE, InventoryType.BLAST_FURNACE);
-		twoWay(cn.nukkit.inventory.InventoryType.LECTERN, InventoryType.LECTERN);
 		twoWay(cn.nukkit.inventory.InventoryType.SMOKER, InventoryType.SMOKER);
 		twoWay(cn.nukkit.inventory.InventoryType.LOOM, InventoryType.LOOM);
-		bukkitToNukkit.put(InventoryType.CARTOGRAPHY, cn.nukkit.inventory.InventoryType.CRAFTING); // Nukkit TODO
-		bukkitToNukkit.put(InventoryType.GRINDSTONE, cn.nukkit.inventory.InventoryType.CRAFTING); // Nukkit TODO
-		bukkitToNukkit.put(InventoryType.STONECUTTER, cn.nukkit.inventory.InventoryType.CRAFTING); // Nukkit TODO
-		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.SMITHING_TABLE, InventoryType.CRAFTING); // Spigot TODO
-		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.CAMPFIRE, InventoryType.PLAYER); // Spigot TODO
+		bukkitToNukkit.put(InventoryType.CARTOGRAPHY, cn.nukkit.inventory.InventoryType.CRAFTING); // No Nukkit equivalent
+		twoWay(cn.nukkit.inventory.InventoryType.GRINDSTONE, InventoryType.GRINDSTONE);
+		twoWay(cn.nukkit.inventory.InventoryType.STONECUTTER, InventoryType.STONECUTTER);
+		twoWay(cn.nukkit.inventory.InventoryType.SMITHING_TABLE, InventoryType.SMITHING);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.CAMPFIRE, InventoryType.FURNACE); // No direct Bukkit equivalent
+		bukkitToNukkit.put(InventoryType.LECTERN, cn.nukkit.inventory.InventoryType.CRAFTING); // No Nukkit equivalent
+		bukkitToNukkit.put(InventoryType.COMPOSTER, cn.nukkit.inventory.InventoryType.DROPPER); // No Nukkit equivalent
+		bukkitToNukkit.put(InventoryType.CHISELED_BOOKSHELF, cn.nukkit.inventory.InventoryType.CHEST); // No Nukkit equivalent
+		bukkitToNukkit.put(InventoryType.JUKEBOX, cn.nukkit.inventory.InventoryType.HOPPER); // No Nukkit equivalent
+		bukkitToNukkit.put(InventoryType.CRAFTER, cn.nukkit.inventory.InventoryType.DISPENSER); // No Nukkit equivalent
+		bukkitToNukkit.put(InventoryType.SMITHING_NEW, cn.nukkit.inventory.InventoryType.SMITHING_TABLE);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.UI, InventoryType.PLAYER);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.OFFHAND, InventoryType.PLAYER);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.ENTITY_ARMOR, InventoryType.PLAYER);

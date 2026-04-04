@@ -74,8 +74,7 @@ public class PokkitChunkSnapshot implements ChunkSnapshot {
 
 	@Override
 	public long getCaptureFullTime() {
-		throw Pokkit.unsupported();
-
+		return 0;
 	}
 
 	@Override
@@ -125,6 +124,16 @@ public class PokkitChunkSnapshot implements ChunkSnapshot {
 
 	@Override
 	public boolean contains(BlockData blockData) {
-		throw Pokkit.unsupported();
+		return false;
+	}
+
+	@Override
+	public boolean contains(Biome biome) {
+		for (int x = 0; x < 16; x++) {
+			for (int z = 0; z < 16; z++) {
+				if (getBiome(x, z) == biome) return true;
+			}
+		}
+		return false;
 	}
 }

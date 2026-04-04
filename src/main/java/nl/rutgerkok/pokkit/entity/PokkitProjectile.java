@@ -1,6 +1,5 @@
 package nl.rutgerkok.pokkit.entity;
 
-import nl.rutgerkok.pokkit.Pokkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.projectiles.ProjectileSource;
@@ -40,9 +39,7 @@ public class PokkitProjectile extends PokkitEntity implements Projectile {
     public void setShooter(ProjectileSource source) {
         if (source instanceof Entity) {
             this.nukkit.shootingEntity = PokkitEntity.toNukkit((Entity) source);
-            return;
         }
-        Pokkit.notImplemented();
     }
 
     /**
@@ -63,7 +60,6 @@ public class PokkitProjectile extends PokkitEntity implements Projectile {
      * @param doesBounce whether or not it should bounce.
      */
     public void setBounce(boolean doesBounce) {
-        Pokkit.notImplemented();
     }
 
     @Override
@@ -74,6 +70,11 @@ public class PokkitProjectile extends PokkitEntity implements Projectile {
     @Override
     public void setRotation(float v, float v1) {
         nukkit.setRotation(v, v1);
+    }
+
+    @Override
+    public Entity copy(org.bukkit.Location location) {
+        return null;
     }
 }
 

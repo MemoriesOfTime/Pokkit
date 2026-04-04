@@ -9,7 +9,7 @@ import cn.nukkit.network.protocol.*;
 import nl.rutgerkok.pokkit.inventory.PokkitEntityEquipment;
 import nl.rutgerkok.pokkit.item.PokkitItemStack;
 import nl.rutgerkok.pokkit.world.PokkitWorld;
-import org.apache.commons.lang.Validate;
+import java.util.Objects;
 import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
@@ -84,7 +84,17 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	private final cn.nukkit.Player nukkit;
 	private Scoreboard scoreboard;
 	private InetSocketAddress address;
+	private boolean sleepingIgnored;
 	public int lastItemSlot = ITEM_SLOT_NOT_INITIALIZED;
+	private double healthScale = 20;
+	private boolean healthScaled = false;
+	private GameMode previousGameMode = null;
+	private int expCooldown = 0;
+	private String playerListHeader = null;
+	private String playerListFooter = null;
+	private long playerTimeOffset = 0;
+	private boolean playerTimeRelative = true;
+	private Entity spectatorTarget = null;
 
 	/**
 	 * All plugin classes that currently request the player to be hidden. If
@@ -102,11 +112,6 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		PokkitPlayer instance = this;
 		this.spigot = new Player.Spigot() {
 			@Override
-			public boolean getCollidesWithEntities() {
-				return nukkit.canCollide();
-			}
-
-			@Override
 			public Set<Player> getHiddenPlayers() {
 				Set<Player> hiddenPlayers = new HashSet<>();
 				for (Player player : getServer().getOnlinePlayers()) {
@@ -122,10 +127,12 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 				return InetSocketAddress.createUnresolved(nukkit.getAddress(), nukkit.getPort());
 			}
 
-			@Override
-			public void respawn() {
-				Pokkit.notImplemented();
-			}
+            @Override
+            public void respawn() {
+                if (!nukkit.isAlive()) {
+                    nukkit.setHealth(nukkit.getMaxHealth());
+                }
+            }
 
 			@Override
 			public void sendMessage(BaseComponent component) {
@@ -171,27 +178,19 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 						break;
 				}
 			}
-
-			@Override
-			public void setCollidesWithEntities(boolean collides) {
-				setCollidable(collides);
-			}
 		};
 	}
 
 	@Override
 	public void abandonConversation(Conversation arg0) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void abandonConversation(Conversation arg0, ConversationAbandonedEvent arg1) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public void acceptConversationInput(String arg0) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
@@ -244,8 +243,8 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}*/
 
 	@Override
-	public boolean beginConversation(Conversation arg0) {
-		throw Pokkit.unsupported();
+	public boolean beginConversation(Conversation conversation) {
+		return true;
 	}
 
 	@Override
@@ -271,35 +270,39 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		nukkit.removeAllWindows();
 	}
 
-	@Override
-	public void decrementStatistic(Statistic arg0) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void decrementStatistic(Statistic stat) throws IllegalArgumentException {
+        setStatistic(stat, getStatistic(stat) - 1);
+    }
 
-	@Override
-	public void decrementStatistic(Statistic arg0, EntityType arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void decrementStatistic(Statistic stat, EntityType entityType) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + entityType.name();
+        nukkit.namedTag.putInt(key, nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) - 1 : -1);
+    }
 
-	@Override
-	public void decrementStatistic(Statistic arg0, EntityType arg1, int arg2) {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void decrementStatistic(Statistic stat, EntityType entityType, int amount) {
+        String key = "Stat_" + stat.name() + "_" + entityType.name();
+        nukkit.namedTag.putInt(key, (nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) : 0) - amount);
+    }
 
-	@Override
-	public void decrementStatistic(Statistic arg0, int arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void decrementStatistic(Statistic stat, int amount) throws IllegalArgumentException {
+        setStatistic(stat, getStatistic(stat) - amount);
+    }
 
-	@Override
-	public void decrementStatistic(Statistic arg0, Material arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void decrementStatistic(Statistic stat, Material material) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + material.name();
+        nukkit.namedTag.putInt(key, nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) - 1 : -1);
+    }
 
-	@Override
-	public void decrementStatistic(Statistic arg0, Material arg1, int arg2) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void decrementStatistic(Statistic stat, Material material, int amount) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + material.name();
+        nukkit.namedTag.putInt(key, (nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) : 0) - amount);
+    }
 
 	@Override
 	public boolean eject() {
@@ -332,7 +335,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public AdvancementProgress getAdvancementProgress(Advancement advancement) {
-		throw Pokkit.unsupported();
+		return null;
 	}
 
 	@Override
@@ -347,7 +350,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public AttributeInstance getAttribute(Attribute arg0) {
-		return getAttribute(arg0);
+		return super.getAttribute(arg0);
 	}
 
 	@Override
@@ -357,6 +360,9 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean getCanPickupItems() {
+		if (nukkit.namedTag.contains("CanPickupItems")) {
+			return nukkit.namedTag.getBoolean("CanPickupItems");
+		}
 		return isValid();
 	}
 
@@ -392,14 +398,14 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		return new PokkitEntityEquipment(nukkit.getInventory());
 	}
 
-	@Override
-	public float getExhaustion() {
-		throw Pokkit.unsupported();
-	}
+    @Override
+    public float getExhaustion() {
+        return nukkit.namedTag.contains("BukkitExhaustion") ? nukkit.namedTag.getFloat("BukkitExhaustion") : 0f;
+    }
 
 	@Override
 	public float getExp() {
-		return cn.nukkit.entity.Attribute.getAttribute(cn.nukkit.entity.Attribute.EXPERIENCE).getValue();
+		return nukkit.getExperience();
 	}
 
 	@Override
@@ -434,10 +440,10 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		return firstPlayed;
 	}
 
-	@Override
-	public float getFlySpeed() {
-		return 1F;
-	}
+    @Override
+    public float getFlySpeed() {
+        return nukkit.getFlySpeed();
+    }
 
 	@Override
 	public int getFoodLevel() {
@@ -457,7 +463,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public double getHealthScale() {
-		return 1;
+		return healthScale;
 	}
 
 	@Override
@@ -474,11 +480,10 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		return nukkit.getExperienceLevel();
 	}
 
-	@Override
-	public Set<String> getListeningPluginChannels() {
-		throw Pokkit.unsupported();
-
-	}
+    @Override
+    public Set<String> getListeningPluginChannels() {
+        return Bukkit.getMessenger().getIncomingChannels();
+    }
 
 	@Override
 	public String getLocale() {
@@ -501,14 +506,12 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public String getPlayerListFooter() {
-		// Not implemented
-		return null;
+		return playerListFooter;
 	}
 
 	@Override
 	public String getPlayerListHeader() {
-		// Not implemented
-		return null;
+		return playerListHeader;
 	}
 
 	@Override
@@ -518,12 +521,15 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public long getPlayerTime() {
-		return nukkit.getLevel().getTime(); // The player time will be always the same as the level's time.
+		if (playerTimeRelative) {
+			return nukkit.getLevel().getTime() + playerTimeOffset;
+		}
+		return playerTimeOffset;
 	}
 
 	@Override
 	public long getPlayerTimeOffset() {
-		return 0; // The player time will be always the same as the level's time.
+		return playerTimeOffset;
 	}
 
 	@Override
@@ -533,7 +539,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public int getPortalCooldown() {
-		return 80;
+		return nukkit.namedTag.contains("PortalCooldown") ? nukkit.namedTag.getInt("PortalCooldown") : 80;
 	}
 
 	@Override
@@ -546,46 +552,49 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		return scoreboard;
 	}
 
-	@Override
-	public int getSleepTicks() {
-		throw Pokkit.unsupported();
-
-	}
+    @Override
+    public int getSleepTicks() {
+        if (!nukkit.isSleeping()) return 0;
+        if (nukkit.namedTag.contains("SleepStartTick")) {
+            int elapsed = nukkit.getServer().getTick() - nukkit.namedTag.getInt("SleepStartTick");
+            return Math.min(elapsed, 100);
+        }
+        return 100;
+    }
 
 	@Override
 	public Entity getSpectatorTarget() {
-		return null;
+		if (!nukkit.isSpectator()) return null;
+		return spectatorTarget;
 	}
 
-	@Override
-	public int getStatistic(Statistic arg0) throws IllegalArgumentException {
-		switch (arg0) {
-		case PLAY_ONE_MINUTE:
-			long first = nukkit.getFirstPlayed();
-			long diff = System.currentTimeMillis() - first; // This is the
-															// difference in
-															// millis
-			int seconds = (int) (diff / 1000) % 60; // And this is the
-													// difference in seconds
-			return seconds * 20; // And this is in ticks
-		default:
-			break;
-		}
-		Pokkit.notImplemented();
-		return 0;
-	}
+    @Override
+    public int getStatistic(Statistic stat) throws IllegalArgumentException {
+        switch (stat) {
+        case PLAY_ONE_MINUTE:
+            if (nukkit.namedTag.contains("Stat_PLAY_ONE_MINUTE")) {
+                return nukkit.namedTag.getInt("Stat_PLAY_ONE_MINUTE");
+            }
+            long first = nukkit.getFirstPlayed();
+            long diffMillis = System.currentTimeMillis() - first;
+            return (int) (diffMillis / 1000) * 20;
+        default:
+            String key = "Stat_" + stat.name();
+            return nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) : 0;
+        }
+    }
 
-	@Override
-	public int getStatistic(Statistic arg0, EntityType arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-		return 0;
-	}
+    @Override
+    public int getStatistic(Statistic stat, EntityType entityType) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + entityType.name();
+        return nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) : 0;
+    }
 
-	@Override
-	public int getStatistic(Statistic arg0, Material arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-		return 0;
-	}
+    @Override
+    public int getStatistic(Statistic stat, Material material) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + material.name();
+        return nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) : 0;
+    }
 
 	@Override
 	public int getTotalExperience() {
@@ -676,35 +685,39 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		hidePlayer(plugin.getClass(), player);
 	}
 
-	@Override
-	public void incrementStatistic(Statistic arg0) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void incrementStatistic(Statistic stat) throws IllegalArgumentException {
+        setStatistic(stat, getStatistic(stat) + 1);
+    }
 
-	@Override
-	public void incrementStatistic(Statistic arg0, EntityType arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void incrementStatistic(Statistic stat, EntityType entityType) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + entityType.name();
+        nukkit.namedTag.putInt(key, (nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) : 0) + 1);
+    }
 
-	@Override
-	public void incrementStatistic(Statistic arg0, EntityType arg1, int arg2) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void incrementStatistic(Statistic stat, EntityType entityType, int amount) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + entityType.name();
+        nukkit.namedTag.putInt(key, (nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) : 0) + amount);
+    }
 
-	@Override
-	public void incrementStatistic(Statistic arg0, int arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void incrementStatistic(Statistic stat, int amount) throws IllegalArgumentException {
+        setStatistic(stat, getStatistic(stat) + amount);
+    }
 
-	@Override
-	public void incrementStatistic(Statistic arg0, Material arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void incrementStatistic(Statistic stat, Material material) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + material.name();
+        nukkit.namedTag.putInt(key, (nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) : 0) + 1);
+    }
 
-	@Override
-	public void incrementStatistic(Statistic arg0, Material arg1, int arg2) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void incrementStatistic(Statistic stat, Material material, int amount) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + material.name();
+        nukkit.namedTag.putInt(key, (nukkit.namedTag.contains(key) ? nukkit.namedTag.getInt(key) : 0) + amount);
+    }
 
 	@Override
 	public boolean isBanned() {
@@ -713,23 +726,22 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean isConversing() {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
 	public boolean isFlying() {
-		return nukkit.getAdventureSettings().get(AdventureSettings.Type.ALLOW_FLIGHT) && !nukkit.isOnGround();
+		return nukkit.getAdventureSettings().get(AdventureSettings.Type.FLYING);
 	}
 
 	@Override
 	public boolean isHandRaised() {
-		return false;
+		return nukkit.isUsingItem();
 	}
 
 	@Override
 	public boolean isHealthScaled() {
-		return false;
+		return healthScaled;
 	}
 
 	@Override
@@ -758,7 +770,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean isPlayerTimeRelative() {
-		return true; // You can't change the player's time with Nukkit, so this will be always true.
+		return playerTimeRelative;
 	}
 
 	@Override
@@ -768,7 +780,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean isSleepingIgnored() {
-		return false; // Silently unsupported!
+		return sleepingIgnored;
 	}
 
 	@Override
@@ -792,19 +804,23 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}
 
 	@Override
+	public boolean isAllowingServerListings() {
+		return false;
+	}
+
+	@Override
 	public void kickPlayer(String reason) {
 		nukkit.kick(reason);
 	}
 
 	@Override
-	public void loadData() {
-		Pokkit.notImplemented();
-	}
-
-	@Override
-	public InventoryView openEnchanting(Location arg0, boolean arg1) {
-		throw Pokkit.unsupported();
-
+	public InventoryView openEnchanting(Location location, boolean force) {
+		cn.nukkit.level.Position pos = location != null
+				? PokkitLocation.toNukkit(location)
+				: nukkit.getPosition();
+		nukkit.craftingType = cn.nukkit.Player.CRAFTING_ENCHANT;
+		nukkit.getUIInventory().getCraftingGrid().sendContents(nukkit);
+		return new PokkitInventoryView(getInventory(), this);
 	}
 
 	@Override
@@ -819,15 +835,16 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}
 
 	@Override
-	public InventoryView openMerchant(Villager arg0, boolean arg1) {
-		throw Pokkit.unsupported();
-
+	public InventoryView openMerchant(Villager trader, boolean force) {
+		nukkit.craftingType = cn.nukkit.Player.TRADE_WINDOW_ID;
+		return null;
 	}
 
 	@Override
-	public InventoryView openWorkbench(Location arg0, boolean arg1) {
-		throw Pokkit.unsupported();
-
+	public InventoryView openWorkbench(Location location, boolean force) {
+		nukkit.craftingType = cn.nukkit.Player.CRAFTING_BIG;
+		nukkit.getUIInventory().getCraftingGrid().sendContents(nukkit);
+		return new PokkitInventoryView(getInventory(), this);
 	}
 
 	@Override
@@ -837,12 +854,12 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void playEffect(Location arg0, Effect arg1, int arg2) {
-		// Silently unsupported!
+		getWorld().playEffect(arg0, arg1, arg2);
 	}
 
 	@Override
 	public <T> void playEffect(Location arg0, Effect arg1, T arg2) {
-		// Silently unsupported!
+		getWorld().playEffect(arg0, arg1, arg2);
 	}
 
 	@Override
@@ -985,6 +1002,8 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void resetPlayerTime() {
+		playerTimeOffset = 0;
+		playerTimeRelative = true;
 		nukkit.level.sendTime(nukkit);
 	}
 
@@ -1004,6 +1023,10 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}
 
 	@Override
+	public void loadData() {
+	}
+
+	@Override
 	public void sendBlockChange(Location location, BlockData block) {
 		PokkitBlockData materialData = (PokkitBlockData) block;
 
@@ -1018,7 +1041,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		packet.x = x;
 		packet.y = y;
 		packet.z = z;
-		packet.blockRuntimeId = GlobalBlockPalette.getOrCreateRuntimeId(nukkitBlockId, nukkitBlockData);
+		packet.blockRuntimeId = GlobalBlockPalette.getOrCreateRuntimeId(nukkit.getGameVersion(), nukkitBlockId, nukkitBlockData);
 		packet.flags = flags;
 		nukkit.dataPacket(packet, false);
 	}
@@ -1029,14 +1052,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}
 
 	@Override
-	public boolean sendChunkChange(Location arg0, int arg1, int arg2, int arg3, byte[] arg4) {
-		throw Pokkit.unsupported();
-
-	}
-
-	@Override
 	public void sendMap(MapView arg0) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
@@ -1052,8 +1068,12 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}
 
 	@Override
-	public void sendPluginMessage(Plugin arg0, String arg1, byte[] arg2) {
-		Pokkit.notImplemented();
+	public void sendPluginMessage(Plugin source, String channel, byte[] message) {
+		if (!(nukkit instanceof cn.nukkit.Player)) return;
+		cn.nukkit.network.protocol.ScriptCustomEventPacket pk = new cn.nukkit.network.protocol.ScriptCustomEventPacket();
+		pk.eventName = channel;
+		pk.eventData = message;
+		((cn.nukkit.Player) nukkit).dataPacket(pk);
 	}
 
 	@Override
@@ -1061,15 +1081,15 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		nukkit.sendMessage(message);
 	}
 
-	@Override
-	public void sendSignChange(Location arg0, String[] arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void sendSignChange(Location arg0, String[] arg1) throws IllegalArgumentException {
+        sendSignChange(arg0, arg1, DyeColor.BLACK);
+    }
 
-	@Override
-	public void sendSignChange(Location location, String[] strings, DyeColor dyeColor) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void sendSignChange(Location location, String[] lines, DyeColor dyeColor) throws IllegalArgumentException {
+        sendSignChange(location, lines, dyeColor, false);
+    }
 
 	@Override
 	public void sendTitle(String title, String subtitle) {
@@ -1089,8 +1109,10 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public Map<String, Object> serialize() {
-		throw Pokkit.unsupported();
-
+		Map<String, Object> data = new LinkedHashMap<>();
+		data.put("name", getName());
+		data.put("uuid", getUniqueId().toString());
+		return data;
 	}
 
 	@Override
@@ -1110,11 +1132,13 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean sleep(Location location, boolean b) {
+		nukkit.namedTag.putInt("SleepStartTick", nukkit.getServer().getTick());
 		return nukkit.sleepOn(PokkitLocation.toNukkit(location));
 	}
 
 	@Override
 	public void wakeup(boolean b) {
+		nukkit.namedTag.remove("SleepStartTick");
 		nukkit.stopSleep();
 
 		if (b) {
@@ -1158,10 +1182,10 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		nukkit.setDisplayName(displayName);
 	}
 
-	@Override
-	public void setExhaustion(float arg0) {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void setExhaustion(float arg0) {
+        nukkit.namedTag.putFloat("BukkitExhaustion", arg0);
+    }
 
 	@Override
 	public void setExp(float exp) {
@@ -1186,10 +1210,10 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		nukkit.getAdventureSettings().update();
 	}
 
-	@Override
-	public void setFlySpeed(float arg0) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void setFlySpeed(float arg0) throws IllegalArgumentException {
+        nukkit.setFlySpeed(arg0);
+    }
 
 	@Override
 	public void setFoodLevel(int arg0) {
@@ -1198,17 +1222,19 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void setGameMode(GameMode gamemode) {
+		this.previousGameMode = getGameMode();
 		nukkit.setGamemode(PokkitGameMode.toNukkit(gamemode));
 	}
 
 	@Override
 	public void setHealthScale(double arg0) throws IllegalArgumentException {
-		Pokkit.notImplemented();
+		this.healthScale = arg0;
+		this.healthScaled = true;
 	}
 
 	@Override
 	public void setHealthScaled(boolean arg0) {
-		Pokkit.notImplemented();
+		this.healthScaled = arg0;
 	}
 
 	@Override
@@ -1238,45 +1264,83 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void setPlayerListFooter(String footer) {
-		// Ignore - not implemented
+		this.playerListFooter = footer;
+		sendPlayerListHeaderFooterPacket();
 	}
 
 	@Override
 	public void setPlayerListHeader(String header) {
-		// Ignore - not implemented
+		this.playerListHeader = header;
+		sendPlayerListHeaderFooterPacket();
 	}
 
 	@Override
 	public void setPlayerListHeaderFooter(String header, String footer) {
-		// Ignore - not implemented
+		this.playerListHeader = header;
+		this.playerListFooter = footer;
+		sendPlayerListHeaderFooterPacket();
 	}
 
-	@Override
-	public void setPlayerListName(String arg0) {
-		Pokkit.notImplemented();
+	private void sendPlayerListHeaderFooterPacket() {
+		if (playerListHeader != null) {
+			SetTitlePacket pk = new SetTitlePacket();
+			pk.type = SetTitlePacket.TYPE_SUBTITLE;
+			pk.text = playerListHeader;
+			pk.fadeInTime = 0;
+			pk.stayTime = 0x7fffffff;
+			pk.fadeOutTime = 0;
+			nukkit.dataPacket(pk);
+		}
+		if (playerListFooter != null) {
+			SetTitlePacket pk = new SetTitlePacket();
+			pk.type = SetTitlePacket.TYPE_ACTION_BAR;
+			pk.text = playerListFooter;
+			pk.fadeInTime = 0;
+			pk.stayTime = 0x7fffffff;
+			pk.fadeOutTime = 0;
+			nukkit.dataPacket(pk);
+		}
 	}
 
+    @Override
+    public void setPlayerListName(String arg0) {
+        nukkit.setDisplayName(arg0 != null ? arg0 : nukkit.getName());
+    }
+
 	@Override
-	public void setPlayerTime(long arg0, boolean arg1) {
+	public void setPlayerTime(long time, boolean relative) {
+		playerTimeOffset = time;
+		playerTimeRelative = relative;
 		SetTimePacket pk = new SetTimePacket();
-		pk.time = (int) arg0;
+		pk.time = (int) getPlayerTime();
 		nukkit.dataPacket(pk);
 	}
 
 	@Override
-	public void setPlayerWeather(WeatherType arg0) {
-		Pokkit.notImplemented();
+	public void setPlayerWeather(WeatherType type) {
+		LevelEventPacket pk = new LevelEventPacket();
+		if (type == WeatherType.DOWNFALL) {
+			pk.evid = LevelEventPacket.EVENT_START_RAIN;
+		} else {
+			pk.evid = LevelEventPacket.EVENT_STOP_RAIN;
+		}
+		nukkit.dataPacket(pk);
 	}
 
-	@Override
-	public void setResourcePack(String url) {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void setResourcePack(String url) {
+        setResourcePack(url, null);
+    }
 
-	@Override
-	public void setResourcePack(String url, byte[] hash) {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void setResourcePack(String url, byte[] hash) {
+        cn.nukkit.resourcepacks.ResourcePack[] packs = nukkit.getServer().getResourcePackManager().getResourceStack();
+        ResourcePackStackPacket pk = new ResourcePackStackPacket();
+        pk.mustAccept = nukkit.getServer().forceResources;
+        pk.resourcePackStack = packs;
+        pk.behaviourPackStack = new cn.nukkit.resourcepacks.ResourcePack[0];
+        nukkit.dataPacket(pk);
+    }
 
 	@Override
 	public void setSaturation(float arg0) {
@@ -1285,13 +1349,13 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void setScoreboard(Scoreboard scoreboard) throws IllegalArgumentException, IllegalStateException {
-		Validate.notNull(scoreboard);
+		Objects.requireNonNull(scoreboard);
 		this.scoreboard = scoreboard;
 	}
 
 	@Override
-	public void setSleepingIgnored(boolean arg0) {
-		Pokkit.notImplemented();
+	public void setSleepingIgnored(boolean sleepingIgnored) {
+		this.sleepingIgnored = sleepingIgnored;
 	}
 
 	@Override
@@ -1300,8 +1364,18 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	}
 
 	@Override
-	public void setSpectatorTarget(Entity arg0) {
-		Pokkit.notImplemented();
+	public void setSpectatorTarget(Entity entity) {
+		if (entity == null) {
+			spectatorTarget = null;
+			return;
+		}
+		if (!nukkit.isSpectator()) return;
+		spectatorTarget = entity;
+		cn.nukkit.entity.Entity nukkitEntity = nl.rutgerkok.pokkit.entity.PokkitEntity.toNukkit(entity);
+		CameraPacket pk = new CameraPacket();
+		pk.cameraUniqueId = nukkitEntity.getId();
+		pk.playerUniqueId = nukkit.getId();
+		nukkit.dataPacket(pk);
 	}
 
 	@Override
@@ -1309,24 +1383,25 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		nukkit.setSprinting(value);
 	}
 
-	@Override
-	public void setStatistic(Statistic arg0, EntityType arg1, int arg2) {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void setStatistic(Statistic stat, EntityType entityType, int value) {
+        String key = "Stat_" + stat.name() + "_" + entityType.name();
+        nukkit.namedTag.putInt(key, value);
+    }
 
-	@Override
-	public void setStatistic(Statistic arg0, int arg1) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void setStatistic(Statistic stat, int value) throws IllegalArgumentException {
+        nukkit.namedTag.putInt("Stat_" + stat.name(), value);
+    }
 
-	@Override
-	public void setStatistic(Statistic arg0, Material arg1, int arg2) throws IllegalArgumentException {
-		Pokkit.notImplemented();
-	}
+    @Override
+    public void setStatistic(Statistic stat, Material material, int value) throws IllegalArgumentException {
+        String key = "Stat_" + stat.name() + "_" + material.name();
+        nukkit.namedTag.putInt(key, value);
+    }
 
 	@Override
 	public void setTexturePack(String arg0) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
@@ -1337,7 +1412,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void sendExperienceChange(float progress) {
-		//nukkit.sendExperience(progress);
+		nukkit.sendExperience((int) (progress * nukkit.calculateRequireExperience(nukkit.getExperienceLevel())));
 	}
 
 	@Override
@@ -1354,6 +1429,10 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	@Override
 	public void setWhitelisted(boolean value) {
 		nukkit.setWhitelisted(value);
+	}
+
+	@Override
+	public void showDemoScreen() {
 	}
 
 	private void showPlayer(Class<?> clazz, Player player) {
@@ -1410,11 +1489,11 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 				realOffsetX = offsetX / 2;
 				x = x + random.nextDouble(-realOffsetX, realOffsetX);
 			}
-			if (offsetX != 0) {
+			if (offsetY != 0) {
 				realOffsetY = offsetY / 2;
 				y = y + random.nextDouble(-realOffsetY, realOffsetY);
 			}
-			if (offsetX != 0) {
+			if (offsetZ != 0) {
 				realOffsetZ = offsetZ / 2;
 				z = z + random.nextDouble(-realOffsetZ, realOffsetZ);
 			}
@@ -1477,12 +1556,15 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void stopSound(Sound sound) {
-		// Silently unsupported!
+		StopSoundPacket pk = new StopSoundPacket();
+		pk.name = sound.name().toLowerCase();
+		pk.stopAll = false;
+		nukkit.dataPacket(pk);
 	}
 
 	@Override
 	public void stopSound(Sound sound, SoundCategory category) {
-		// Silently unsupported!
+		stopSound(sound);
 	}
 
 	@Override
@@ -1505,7 +1587,65 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void openBook(ItemStack itemStack) {
-		Pokkit.notImplemented();
+	}
+
+	@Override
+	public void openSign(org.bukkit.block.Sign sign, org.bukkit.block.sign.Side side) {
+		openSign(sign);
+	}
+
+	@Override
+	public void openSign(org.bukkit.block.Sign sign) {
+		org.bukkit.Location loc = sign.getLocation();
+		cn.nukkit.level.Position pos = PokkitLocation.toNukkit(loc);
+		cn.nukkit.blockentity.BlockEntity blockEntity = pos.getLevel().getBlockEntity(
+				new cn.nukkit.math.BlockVector3(pos.getFloorX(), pos.getFloorY(), pos.getFloorZ()));
+		if (blockEntity instanceof cn.nukkit.blockentity.BlockEntitySign) {
+			cn.nukkit.blockentity.BlockEntitySign nukkitSign = (cn.nukkit.blockentity.BlockEntitySign) blockEntity;
+			nukkitSign.setEditorEntityRuntimeId(nukkit.getId());
+			cn.nukkit.network.protocol.BlockEntityDataPacket packet = new cn.nukkit.network.protocol.BlockEntityDataPacket();
+			packet.x = pos.getFloorX();
+			packet.y = pos.getFloorY();
+			packet.z = pos.getFloorZ();
+			try {
+				packet.namedTag = cn.nukkit.nbt.NBTIO.writeNetwork(nukkitSign.getSpawnCompound());
+			} catch (java.io.IOException e) {
+				return;
+			}
+			nukkit.dataPacket(packet);
+		}
+	}
+
+	@Override
+	public int getPing() {
+		return nukkit.getPing();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX,
+			double offsetY, double offsetZ, double extra, T data, boolean force) {
+		spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, extra, data);
+	}
+
+	@Override
+	public <T> void spawnParticle(Particle particle, Location location, int count, double offsetX,
+			double offsetY, double offsetZ, double extra, T data, boolean force) {
+		spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, extra, data);
+	}
+
+	@Override
+	public void sendHealthUpdate() {
+		SetHealthPacket pk = new SetHealthPacket();
+		pk.health = (int) nukkit.getHealth();
+		nukkit.dataPacket(pk);
+	}
+
+	@Override
+	public void sendHealthUpdate(double health, int food, float saturation) {
+		SetHealthPacket pk = new SetHealthPacket();
+		pk.health = (int) health;
+		nukkit.dataPacket(pk);
 	}
 
 	@Override
@@ -1521,4 +1661,421 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		}
 		return new PokkitInventoryView(PokkitInventory.toBukkit(nukkit.getCraftingGrid()), this);
 	}
+
+    @Override
+    public boolean canSee(org.bukkit.entity.Entity entity) {
+        if (entity instanceof Player) {
+            return canSee((Player) entity);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isOnGround() { return nukkit.isOnGround(); }
+
+    @Override
+    public boolean isTransferred() { return false; }
+
+    @Override
+    public org.bukkit.GameMode getPreviousGameMode() { return previousGameMode; }
+
+    @Override
+    public void setWorldBorder(org.bukkit.WorldBorder border) { }
+
+    @Override
+    public org.bukkit.WorldBorder getWorldBorder() { return null; }
+
+    @Override
+    public int getExpCooldown() { return expCooldown; }
+
+    @Override
+    public void setExpCooldown(int ticks) { this.expCooldown = ticks; }
+
+    @Override
+    public org.bukkit.Location getRespawnLocation() { return getBedSpawnLocation(); }
+
+    @Override
+    public void setRespawnLocation(org.bukkit.Location location) {
+        setRespawnLocation(location, false);
+    }
+
+    @Override
+    public void setRespawnLocation(org.bukkit.Location location, boolean force) {
+        if (location != null) {
+            nukkit.setSpawn(PokkitLocation.toNukkit(location));
+        }
+    }
+
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, org.bukkit.Sound sound, float volume, float pitch) { playSound(entity.getLocation(), sound, volume, pitch); }
+
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, java.lang.String sound, float volume, float pitch) { playSound(entity.getLocation(), sound, volume, pitch); }
+
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, org.bukkit.Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) { playSound(entity.getLocation(), sound, category, volume, pitch); }
+
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, java.lang.String sound, org.bukkit.SoundCategory category, float volume, float pitch) { playSound(entity.getLocation(), sound, category, volume, pitch); }
+
+    @Override
+    public void playSound(org.bukkit.Location location, org.bukkit.Sound sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) { playSound(location, sound, category, volume, pitch); }
+
+    @Override
+    public void playSound(org.bukkit.Location location, java.lang.String sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) { playSound(location, sound, category, volume, pitch); }
+
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, org.bukkit.Sound sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) { playSound(entity, sound, category, volume, pitch); }
+
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, java.lang.String sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) { playSound(entity, sound, category, volume, pitch); }
+
+    @Override
+    public void stopAllSounds() {
+        StopSoundPacket pk = new StopSoundPacket();
+        pk.name = "";
+        pk.stopAll = true;
+        nukkit.dataPacket(pk);
+    }
+
+    @Override
+    public void stopSound(org.bukkit.SoundCategory category) {
+        StopSoundPacket pk = new StopSoundPacket();
+        pk.name = "";
+        pk.stopAll = true;
+        nukkit.dataPacket(pk);
+    }
+
+    @Override
+    public boolean breakBlock(org.bukkit.block.Block block) {
+        org.bukkit.Location loc = block.getLocation();
+        cn.nukkit.level.Position pos = PokkitLocation.toNukkit(loc);
+        cn.nukkit.block.Block nukkitBlock = pos.getLevel().getBlock(
+                pos.getFloorX(), pos.getFloorY(), pos.getFloorZ());
+        cn.nukkit.event.block.BlockBreakEvent event = new cn.nukkit.event.block.BlockBreakEvent(
+                nukkit, nukkitBlock, nukkit.getInventory().getItemInHand(), new cn.nukkit.item.Item[0], true, true);
+        nukkit.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) return false;
+        nukkitBlock.getLevel().useBreakOn(pos, null, nukkit, true);
+        return true;
+    }
+
+    @Override
+    public void sendBlockDamage(org.bukkit.Location location, float progress) {
+        sendBlockDamagePacket(location, progress);
+    }
+
+    @Override
+    public void sendBlockDamage(org.bukkit.Location location, float progress, org.bukkit.entity.Entity source) {
+        sendBlockDamagePacket(location, progress);
+    }
+
+    @Override
+    public void sendBlockDamage(org.bukkit.Location location, float progress, int id) {
+        sendBlockDamagePacket(location, progress);
+    }
+
+    private void sendBlockDamagePacket(org.bukkit.Location location, float progress) {
+        LevelEventPacket pk = new LevelEventPacket();
+        if (progress <= 0) {
+            pk.evid = LevelEventPacket.EVENT_BLOCK_STOP_BREAK;
+            pk.x = (float) location.getBlockX();
+            pk.y = (float) location.getBlockY();
+            pk.z = (float) location.getBlockZ();
+            pk.data = 0;
+        } else {
+            pk.evid = LevelEventPacket.EVENT_BLOCK_UPDATE_BREAK;
+            pk.x = (float) location.getBlockX();
+            pk.y = (float) location.getBlockY();
+            pk.z = (float) location.getBlockZ();
+            pk.data = (int) (65535 * Math.min(1.0f, Math.max(0.0f, progress)));
+        }
+        nukkit.dataPacket(pk);
+    }
+
+    @Override
+    public void sendBlockChanges(java.util.Collection<org.bukkit.block.BlockState> blockStates) {
+        sendBlockChanges(blockStates, false);
+    }
+
+    @Override
+    public void sendBlockChanges(java.util.Collection<org.bukkit.block.BlockState> blockStates, boolean suppressLightUpdates) {
+        for (org.bukkit.block.BlockState state : blockStates) {
+            org.bukkit.Location loc = state.getLocation();
+            org.bukkit.Material mat = state.getType();
+            cn.nukkit.block.Block nukkitBlock = nl.rutgerkok.pokkit.blockdata.PokkitBlockData.toNukkit(state.getBlockData());
+            UpdateBlockPacket pk = new UpdateBlockPacket();
+            pk.x = loc.getBlockX();
+            pk.y = loc.getBlockY();
+            pk.z = loc.getBlockZ();
+            pk.blockRuntimeId = cn.nukkit.level.GlobalBlockPalette.getOrCreateRuntimeId(nukkit.getGameVersion(), nukkitBlock.getId(), nukkitBlock.getDamage());
+            pk.flags = UpdateBlockPacket.FLAG_ALL;
+            pk.dataLayer = 0;
+            nukkit.dataPacket(pk);
+        }
+    }
+
+    @Override
+    public void sendBlockUpdate(org.bukkit.Location location, org.bukkit.block.TileState tileState) {
+        try {
+            cn.nukkit.nbt.tag.CompoundTag nbt = new cn.nukkit.nbt.tag.CompoundTag();
+            nbt.putString("id", tileState.getBlock().getType().name().toLowerCase());
+            BlockEntityDataPacket pk = new BlockEntityDataPacket();
+            pk.x = location.getBlockX();
+            pk.y = location.getBlockY();
+            pk.z = location.getBlockZ();
+            pk.namedTag = cn.nukkit.nbt.NBTIO.writeNetwork(nbt);
+            nukkit.dataPacket(pk);
+        } catch (java.io.IOException e) {
+        }
+    }
+
+    @Override
+    public void sendEquipmentChange(org.bukkit.entity.LivingEntity entity, org.bukkit.inventory.EquipmentSlot slot, org.bukkit.inventory.ItemStack item) {
+        long eid = nl.rutgerkok.pokkit.entity.PokkitLivingEntity.toNukkit(entity).getId();
+        cn.nukkit.item.Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
+        if (slot == org.bukkit.inventory.EquipmentSlot.HAND || slot == org.bukkit.inventory.EquipmentSlot.OFF_HAND) {
+            MobEquipmentPacket pk = new MobEquipmentPacket();
+            pk.eid = eid;
+            pk.item = nukkitItem != null ? nukkitItem : cn.nukkit.item.Item.get(0);
+            pk.inventorySlot = slot == org.bukkit.inventory.EquipmentSlot.HAND ? 0 : 1;
+            pk.hotbarSlot = pk.inventorySlot;
+            pk.windowId = 0;
+            nukkit.dataPacket(pk);
+        } else {
+            MobArmorEquipmentPacket pk = new MobArmorEquipmentPacket();
+            pk.eid = eid;
+            cn.nukkit.item.Item air = cn.nukkit.item.Item.get(0);
+            pk.slots = new cn.nukkit.item.Item[4];
+            pk.slots[0] = air;
+            pk.slots[1] = air;
+            pk.slots[2] = air;
+            pk.slots[3] = air;
+            pk.body = air;
+            int idx = slot == org.bukkit.inventory.EquipmentSlot.FEET ? 0 :
+                      slot == org.bukkit.inventory.EquipmentSlot.LEGS ? 1 :
+                      slot == org.bukkit.inventory.EquipmentSlot.CHEST ? 2 : 3;
+            pk.slots[idx] = nukkitItem != null ? nukkitItem : air;
+            nukkit.dataPacket(pk);
+        }
+    }
+
+    @Override
+    public void sendEquipmentChange(org.bukkit.entity.LivingEntity entity, java.util.Map<org.bukkit.inventory.EquipmentSlot, org.bukkit.inventory.ItemStack> items) {
+        for (java.util.Map.Entry<org.bukkit.inventory.EquipmentSlot, org.bukkit.inventory.ItemStack> entry : items.entrySet()) {
+            sendEquipmentChange(entity, entry.getKey(), entry.getValue());
+        }
+    }
+
+    @Override
+    public void sendHurtAnimation(float yaw) {
+        EntityEventPacket pk = new EntityEventPacket();
+        pk.eid = nukkit.getId();
+        pk.event = EntityEventPacket.HURT_ANIMATION;
+        cn.nukkit.Server.broadcastPacket(nukkit.hasSpawned.values(), pk);
+    }
+
+    @Override
+    public void sendPotionEffectChange(org.bukkit.entity.LivingEntity entity, org.bukkit.potion.PotionEffect effect) {
+        MobEffectPacket pk = new MobEffectPacket();
+        pk.eid = nl.rutgerkok.pokkit.entity.PokkitLivingEntity.toNukkit(entity).getId();
+        pk.eventId = MobEffectPacket.EVENT_ADD;
+        pk.effectId = effect.getType().getId();
+        pk.amplifier = effect.getAmplifier();
+        pk.particles = effect.hasParticles();
+        pk.duration = effect.getDuration();
+        pk.ambient = effect.isAmbient();
+        nukkit.dataPacket(pk);
+    }
+
+    @Override
+    public void sendPotionEffectChangeRemove(org.bukkit.entity.LivingEntity entity, org.bukkit.potion.PotionEffectType type) {
+        MobEffectPacket pk = new MobEffectPacket();
+        pk.eid = nl.rutgerkok.pokkit.entity.PokkitLivingEntity.toNukkit(entity).getId();
+        pk.eventId = MobEffectPacket.EVENT_REMOVE;
+        pk.effectId = type.getId();
+        pk.amplifier = 0;
+        pk.particles = true;
+        pk.duration = 0;
+        pk.ambient = false;
+        nukkit.dataPacket(pk);
+    }
+
+    @Override
+    public void addCustomChatCompletions(java.util.Collection<java.lang.String> completions) { }
+
+    @Override
+    public void removeCustomChatCompletions(java.util.Collection<java.lang.String> completions) { }
+
+    @Override
+    public void setCustomChatCompletions(java.util.Collection<java.lang.String> completions) { }
+
+    @Override
+    public void showEntity(org.bukkit.plugin.Plugin plugin, org.bukkit.entity.Entity entity) {
+        if (entity instanceof Player) {
+            showPlayer(plugin, (Player) entity);
+            return;
+        }
+        cn.nukkit.entity.Entity nukkitEntity = nl.rutgerkok.pokkit.entity.PokkitEntity.toNukkit(entity);
+        nukkitEntity.spawnTo(nukkit);
+    }
+
+    @Override
+    public void hideEntity(org.bukkit.plugin.Plugin plugin, org.bukkit.entity.Entity entity) {
+        if (entity instanceof Player) {
+            hidePlayer(plugin, (Player) entity);
+            return;
+        }
+        cn.nukkit.entity.Entity nukkitEntity = nl.rutgerkok.pokkit.entity.PokkitEntity.toNukkit(entity);
+        nukkitEntity.despawnFrom(nukkit);
+    }
+
+    @Override
+    public void addResourcePack(java.util.UUID id, java.lang.String url, byte[] hash, java.lang.String prompt, boolean force) {
+        setResourcePack(url, hash);
+    }
+
+    @Override
+    public void removeResourcePacks() {
+        ResourcePackStackPacket pk = new ResourcePackStackPacket();
+        pk.mustAccept = false;
+        pk.resourcePackStack = new cn.nukkit.resourcepacks.ResourcePack[0];
+        pk.behaviourPackStack = new cn.nukkit.resourcepacks.ResourcePack[0];
+        nukkit.dataPacket(pk);
+    }
+
+    @Override
+    public void removeResourcePack(java.util.UUID id) {
+        removeResourcePacks();
+    }
+
+    @Override
+    public void storeCookie(org.bukkit.NamespacedKey key, byte[] value) { }
+
+    @Override
+    public java.util.concurrent.CompletableFuture<byte[]> retrieveCookie(org.bukkit.NamespacedKey key) {
+        return java.util.concurrent.CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public org.bukkit.profile.PlayerProfile getPlayerProfile() {
+        return Bukkit.createPlayerProfile(nukkit.getUniqueId(), nukkit.getName());
+    }
+
+    @Override
+    public org.bukkit.BanEntry ban(java.lang.String reason, java.util.Date expires, java.lang.String source) {
+        org.bukkit.BanEntry entry = org.bukkit.Bukkit.getBanList(org.bukkit.BanList.Type.NAME).addBan(getName(), reason, expires, source);
+        if (isOnline()) kickPlayer(reason);
+        return entry;
+    }
+
+    @Override
+    public org.bukkit.BanEntry ban(java.lang.String reason, java.time.Instant expires, java.lang.String source) {
+        java.util.Date date = expires != null ? java.util.Date.from(expires) : null;
+        return ban(reason, date, source);
+    }
+
+    @Override
+    public org.bukkit.BanEntry ban(java.lang.String reason, java.time.Duration duration, java.lang.String source) {
+        java.util.Date date = duration != null ? new java.util.Date(System.currentTimeMillis() + duration.toMillis()) : null;
+        return ban(reason, date, source);
+    }
+
+    @Override
+    public org.bukkit.BanEntry ban(java.lang.String reason, java.util.Date expires, java.lang.String source, boolean kickIfOnline) {
+        org.bukkit.BanEntry entry = org.bukkit.Bukkit.getBanList(org.bukkit.BanList.Type.NAME).addBan(getName(), reason, expires, source);
+        if (kickIfOnline && isOnline()) kickPlayer(reason);
+        return entry;
+    }
+
+    @Override
+    public org.bukkit.BanEntry ban(java.lang.String reason, java.time.Instant expires, java.lang.String source, boolean kickIfOnline) {
+        java.util.Date date = expires != null ? java.util.Date.from(expires) : null;
+        return ban(reason, date, source, kickIfOnline);
+    }
+
+    @Override
+    public org.bukkit.BanEntry ban(java.lang.String reason, java.time.Duration duration, java.lang.String source, boolean kickIfOnline) {
+        java.util.Date date = duration != null ? new java.util.Date(System.currentTimeMillis() + duration.toMillis()) : null;
+        return ban(reason, date, source, kickIfOnline);
+    }
+
+    @Override
+    public org.bukkit.BanEntry banIp(java.lang.String address, java.util.Date expires, java.lang.String source, boolean kickIfOnline) {
+        org.bukkit.BanEntry entry = org.bukkit.Bukkit.getBanList(org.bukkit.BanList.Type.IP).addBan(address, null, expires, source);
+        if (kickIfOnline && isOnline()) kickPlayer("Banned");
+        return entry;
+    }
+
+    @Override
+    public org.bukkit.BanEntry banIp(java.lang.String address, java.time.Instant expires, java.lang.String source, boolean kickIfOnline) {
+        java.util.Date date = expires != null ? java.util.Date.from(expires) : null;
+        return banIp(address, date, source, kickIfOnline);
+    }
+
+    @Override
+    public org.bukkit.BanEntry banIp(java.lang.String address, java.time.Duration duration, java.lang.String source, boolean kickIfOnline) {
+        java.util.Date date = duration != null ? new java.util.Date(System.currentTimeMillis() + duration.toMillis()) : null;
+        return banIp(address, date, source, kickIfOnline);
+    }
+
+    @Override
+    public void sendSignChange(Location location, String[] lines, DyeColor dyeColor, boolean hasGlowingText) throws IllegalArgumentException {
+        if (lines == null) {
+            lines = new String[4];
+        }
+        if (lines.length < 4) {
+            throw new IllegalArgumentException("Lines must have at least 4 entries");
+        }
+        try {
+            cn.nukkit.nbt.tag.CompoundTag nbt = new cn.nukkit.nbt.tag.CompoundTag()
+                    .putString("id", "Sign")
+                    .putString("Text1", lines[0] != null ? lines[0] : "")
+                    .putString("Text2", lines[1] != null ? lines[1] : "")
+                    .putString("Text3", lines[2] != null ? lines[2] : "")
+                    .putString("Text4", lines[3] != null ? lines[3] : "")
+                    .putInt("x", location.getBlockX())
+                    .putInt("y", location.getBlockY())
+                    .putInt("z", location.getBlockZ());
+            cn.nukkit.network.protocol.BlockEntityDataPacket pk = new cn.nukkit.network.protocol.BlockEntityDataPacket();
+            pk.x = location.getBlockX();
+            pk.y = location.getBlockY();
+            pk.z = location.getBlockZ();
+            pk.namedTag = cn.nukkit.nbt.NBTIO.writeNetwork(nbt);
+            nukkit.dataPacket(pk);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void setResourcePack(String url, byte[] hash, String prompt) {
+        setResourcePack(url, hash);
+    }
+
+    @Override
+    public void setResourcePack(String url, byte[] hash, boolean force) {
+        setResourcePack(url, hash);
+    }
+
+    @Override
+    public void setResourcePack(String url, byte[] hash, String prompt, boolean force) {
+        setResourcePack(url, hash);
+    }
+
+    @Override
+    public void setResourcePack(java.util.UUID id, String url, byte[] hash, String prompt, boolean force) {
+        setResourcePack(url, hash);
+    }
+
+    @Override
+    public void sendRawMessage(java.util.UUID uuid, java.lang.String s) { sendRawMessage(s); }
+
+    @Override
+    public void transfer(java.lang.String address, int port) { nukkit.transfer(address, port); }
+
+    @Override
+    public void sendLinks(org.bukkit.ServerLinks links) {
+        throw Pokkit.unsupported();
+    }
 }

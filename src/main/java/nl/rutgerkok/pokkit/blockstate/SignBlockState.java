@@ -8,7 +8,9 @@ import com.google.common.base.Preconditions;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Player;
 
 import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.blockdata.PokkitBlockData;
@@ -97,12 +99,11 @@ public final class SignBlockState extends PokkitBlockState implements Sign {
 
 	@Override
 	public void setEditable(boolean editable) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public PersistentDataContainer getPersistentDataContainer() {
-		throw Pokkit.unsupported();
+		return null;
 	}
 
 	@Override
@@ -116,5 +117,83 @@ public final class SignBlockState extends PokkitBlockState implements Sign {
 	@Override
 	public void setColor(DyeColor dyeColor) {
 		color = new BlockColor(dyeColor.getColor().asRGB());
+	}
+
+	@Override
+	public BlockState copy(Location location) {
+		return this;
+	}
+
+	@Override
+	public BlockState copy() {
+		return this;
+	}
+
+	@Override
+	public Player getAllowedEditor() {
+		return null;
+	}
+
+	@Override
+	public org.bukkit.block.sign.SignSide getSide(org.bukkit.block.sign.Side side) {
+		return new org.bukkit.block.sign.SignSide() {
+			@Override
+			public String getLine(int index) throws IndexOutOfBoundsException {
+				return lines[index];
+			}
+
+			@Override
+			public String[] getLines() {
+				return lines;
+			}
+
+			@Override
+			public void setLine(int index, String line) throws IndexOutOfBoundsException {
+				lines[index] = line == null ? "" : line;
+			}
+
+			@Override
+			public boolean isGlowingText() {
+				return SignBlockState.this.isGlowingText();
+			}
+
+			@Override
+			public void setGlowingText(boolean glowing) {
+				SignBlockState.this.setGlowingText(glowing);
+			}
+
+			@Override
+			public DyeColor getColor() {
+				return SignBlockState.this.getColor();
+			}
+
+			@Override
+			public void setColor(DyeColor color) {
+				SignBlockState.this.setColor(color);
+			}
+		};
+	}
+
+	@Override
+	public org.bukkit.block.sign.SignSide getTargetSide(Player player) {
+		return getSide(org.bukkit.block.sign.Side.FRONT);
+	}
+
+	@Override
+	public boolean isWaxed() {
+		return false;
+	}
+
+	@Override
+	public void setWaxed(boolean waxed) {
+	}
+
+	@Override
+	public boolean isGlowingText() {
+		return false;
+	}
+
+	@Override
+	public void setGlowingText(boolean glowing) {
 	}
 }

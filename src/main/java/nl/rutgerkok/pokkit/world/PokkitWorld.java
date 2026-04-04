@@ -2,6 +2,7 @@ package nl.rutgerkok.pokkit.world;
 
 import cn.nukkit.Server;
 import cn.nukkit.entity.item.EntityFallingBlock;
+import cn.nukkit.level.DimensionEnum;
 import cn.nukkit.level.biome.EnumBiome;
 import cn.nukkit.level.generator.Flat;
 import cn.nukkit.level.generator.object.tree.ObjectTree;
@@ -28,7 +29,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BoundingBox;
-import org.bukkit.util.Consumer;
+import java.util.function.Consumer;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
@@ -59,6 +60,7 @@ import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
+import cn.nukkit.network.protocol.LevelEventPacket;
 
 public final class PokkitWorld implements World {
 
@@ -92,6 +94,8 @@ public final class PokkitWorld implements World {
 
 	private final World.Spigot spigot;
 	private final Level nukkit;
+	private final Map<Long, Set<Plugin>> pluginChunkTickets = new HashMap<>();
+	private final Set<Long> forceLoadedChunks = new HashSet<>();
 
 	private PokkitWorld(Level nukkit) {
 		this.nukkit = Objects.requireNonNull(nukkit);
@@ -110,17 +114,17 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public boolean canGenerateStructures() {
-		return false;
+		return nukkit.getGenerator() != null;
 	}
 
 	@Override
 	public boolean isHardcore() {
-		return false;
+		return cn.nukkit.Server.getInstance().isHardcore();
 	}
 
 	@Override
 	public void setHardcore(boolean b) {
-
+		cn.nukkit.Server.getInstance().setPropertyBoolean("hardcore", b);
 	}
 
 	@Override
@@ -152,7 +156,7 @@ public final class PokkitWorld implements World {
 		Explosion explosion = new Explosion(
 			new Position(x, y, z, level),
 			power,
-			null);
+			(cn.nukkit.entity.Entity) null);
 		if (breakBlocks) {
 			explosion.explodeA();
 		}
@@ -222,7 +226,7 @@ public final class PokkitWorld implements World {
 				ObjectTree.growTree(nukkit, location.getBlockX(), location.getBlockY(), location.getBlockZ(), new NukkitRandom(), 5);
 				return true;
 			default:
-				throw Pokkit.unsupported();
+				return false;
 		}
 	}
 
@@ -234,22 +238,22 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public boolean getAllowAnimals() {
-		return false;
+		return cn.nukkit.Server.getInstance().spawnAnimals;
 	}
 
 	@Override
 	public boolean getAllowMonsters() {
-		return false;
+		return cn.nukkit.Server.getInstance().spawnMonsters;
 	}
 
 	@Override
 	public int getAmbientSpawnLimit() {
-		return 0;
+		return -1;
 	}
 
 	@Override
 	public int getAnimalSpawnLimit() {
-	    return 0;
+		return cn.nukkit.Server.getInstance().spawnAnimals ? -1 : 0;
 	}
 
 	@Override
@@ -368,7 +372,12 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public Environment getEnvironment() {
-		return Environment.NORMAL;
+		int dimId = nukkit.getDimension();
+		switch (dimId) {
+			case 1: return Environment.NETHER;
+			case 2: return Environment.THE_END;
+			default: return Environment.NORMAL;
+		}
 	}
 
 	@Override
@@ -433,8 +442,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public ChunkGenerator getGenerator() {
-		throw Pokkit.unsupported();
-
+		return null;
 	}
 
 	@Override
@@ -448,23 +456,23 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
-	public int getHighestBlockYAt(int i, int i1, HeightMap heightMap) {
-		return 0;
+	public int getHighestBlockYAt(int x, int z, HeightMap heightMap) {
+		return nukkit.getHighestBlockAt(x, z);
 	}
 
 	@Override
 	public int getHighestBlockYAt(Location location, HeightMap heightMap) {
-		return 0;
+		return nukkit.getHighestBlockAt(location.getBlockX(), location.getBlockZ());
 	}
 
 	@Override
-	public Block getHighestBlockAt(int i, int i1, HeightMap heightMap) {
-		return null;
+	public Block getHighestBlockAt(int x, int z, HeightMap heightMap) {
+		return getBlockAt(x, getHighestBlockYAt(x, z, heightMap), z);
 	}
 
 	@Override
 	public Block getHighestBlockAt(Location location, HeightMap heightMap) {
-		return null;
+		return getBlockAt(location.getBlockX(), getHighestBlockYAt(location, heightMap), location.getBlockZ());
 	}
 
 	@Override
@@ -479,24 +487,29 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public double getHumidity(int x, int z) {
-		throw Pokkit.unsupported();
-
+		int biomeId = nukkit.getBiomeId(x, z);
+		cn.nukkit.level.biome.Biome biome = EnumBiome.getBiome(biomeId);
+		if (biome != null) {
+			if (biome.isFreezing()) return 0.3;
+			if (biome.canRain()) return 0.8;
+			return 0.0;
+		}
+		return 0.5;
 	}
 
 	@Override
-	public double getHumidity(int i, int i1, int i2) {
-		return 0;
+	public double getHumidity(int x, int y, int z) {
+		return getHumidity(x, z);
 	}
 
 	@Override
 	public boolean getKeepSpawnInMemory() {
-		return false;
+		return nukkit.isSpawnChunk(nukkit.getSpawnLocation().getChunkX(), nukkit.getSpawnLocation().getChunkZ());
 	}
 
 	@Override
 	public Set<String> getListeningPluginChannels() {
-		throw Pokkit.unsupported();
-
+		return org.bukkit.Bukkit.getMessenger().getIncomingChannels();
 	}
 
 	@Override
@@ -527,7 +540,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public int getMaxHeight() {
-		return 256;
+		return nukkit.getDimensionData().getMaxHeight();
 	}
 
 	@Override
@@ -537,7 +550,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public int getMonsterSpawnLimit() {
-		return 0;
+		return cn.nukkit.Server.getInstance().spawnMonsters ? -1 : 0;
 	}
 
 	@Override
@@ -551,7 +564,7 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
-	public Collection<Entity> getNearbyEntities(Location location, double x, double y, double z, Predicate<Entity> predicate) {
+	public Collection<Entity> getNearbyEntities(Location location, double x, double y, double z, Predicate<? super Entity> predicate) {
 		if (predicate == null) {
 			cn.nukkit.entity.Entity[] entities = nukkit.getNearbyEntities(new SimpleAxisAlignedBB(location.getX()-0.5*x, location.getY()-0.5*y, location.getZ()-0.5*z, location.getX()+0.5*x, location.getY()+0.5*y, location.getZ()+0.5*z));
 			Collection<Entity> out = new ArrayList<>();
@@ -559,7 +572,17 @@ public final class PokkitWorld implements World {
 				out.add(PokkitEntity.toBukkit(entity));
 			}
 			return out;
-		} else throw Pokkit.unsupported();
+		} else {
+			cn.nukkit.entity.Entity[] entities = nukkit.getNearbyEntities(new SimpleAxisAlignedBB(location.getX()-0.5*x, location.getY()-0.5*y, location.getZ()-0.5*z, location.getX()+0.5*x, location.getY()+0.5*y, location.getZ()+0.5*z));
+			Collection<Entity> out = new ArrayList<>();
+			for (cn.nukkit.entity.Entity entity : entities) {
+				Entity bukkitEntity = PokkitEntity.toBukkit(entity);
+				if (predicate.test(bukkitEntity)) {
+					out.add(bukkitEntity);
+				}
+			}
+			return out;
+		}
 	}
 
 	@Override
@@ -568,7 +591,7 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
-	public Collection<Entity> getNearbyEntities(BoundingBox boundingBox, Predicate<Entity> filter) {
+	public Collection<Entity> getNearbyEntities(BoundingBox boundingBox, Predicate<? super Entity> filter) {
 		if (filter == null) {
 			cn.nukkit.entity.Entity[] entities = nukkit.getNearbyEntities(new SimpleAxisAlignedBB(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ()));
 			Collection<Entity> out = new ArrayList<>();
@@ -576,47 +599,105 @@ public final class PokkitWorld implements World {
 				out.add(PokkitEntity.toBukkit(entity));
 			}
 			return out;
-		} else throw Pokkit.unsupported();
+		} else {
+			cn.nukkit.entity.Entity[] entities = nukkit.getNearbyEntities(new SimpleAxisAlignedBB(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ()));
+			Collection<Entity> out = new ArrayList<>();
+			for (cn.nukkit.entity.Entity entity : entities) {
+				Entity bukkitEntity = PokkitEntity.toBukkit(entity);
+				if (filter.test(bukkitEntity)) {
+					out.add(bukkitEntity);
+				}
+			}
+			return out;
+		}
 	}
 
 	@Override
-	public RayTraceResult rayTraceEntities(Location location, Vector vector, double v) {
-		throw Pokkit.unsupported();
+	public RayTraceResult rayTraceEntities(Location start, Vector direction, double maxDistance) {
+		return rayTraceEntitiesInternal(start, direction, maxDistance, null);
 	}
 
 	@Override
-	public RayTraceResult rayTraceEntities(Location location, Vector vector, double v, double v1) {
-		throw Pokkit.unsupported();
+	public RayTraceResult rayTraceEntities(Location start, Vector direction, double maxDistance, double raySize) {
+		return rayTraceEntitiesInternal(start, direction, maxDistance, null);
 	}
 
 	@Override
-	public RayTraceResult rayTraceEntities(Location location, Vector vector, double v, Predicate<Entity> predicate) {
-		throw Pokkit.unsupported();
+	public RayTraceResult rayTraceEntities(Location start, Vector direction, double maxDistance, Predicate<? super Entity> predicate) {
+		return rayTraceEntitiesInternal(start, direction, maxDistance, predicate);
 	}
 
 	@Override
-	public RayTraceResult rayTraceEntities(Location location, Vector vector, double v, double v1, Predicate<Entity> predicate) {
-		throw Pokkit.unsupported();
+	public RayTraceResult rayTraceEntities(Location start, Vector direction, double maxDistance, double raySize, Predicate<? super Entity> predicate) {
+		return rayTraceEntitiesInternal(start, direction, maxDistance, predicate);
 	}
 
 	@Override
-	public RayTraceResult rayTraceBlocks(Location location, Vector vector, double v) {
-		throw Pokkit.unsupported();
+	public RayTraceResult rayTraceBlocks(Location start, Vector direction, double maxDistance) {
+		return rayTraceBlocks(start, direction, maxDistance, FluidCollisionMode.NEVER);
 	}
 
 	@Override
-	public RayTraceResult rayTraceBlocks(Location location, Vector vector, double v, FluidCollisionMode fluidCollisionMode) {
-		throw Pokkit.unsupported();
+	public RayTraceResult rayTraceBlocks(Location start, Vector direction, double maxDistance, FluidCollisionMode fluidCollisionMode) {
+		return rayTraceBlocks(start, direction, maxDistance, fluidCollisionMode, false);
 	}
 
 	@Override
-	public RayTraceResult rayTraceBlocks(Location location, Vector vector, double v, FluidCollisionMode fluidCollisionMode, boolean b) {
-		throw Pokkit.unsupported();
+	public RayTraceResult rayTraceBlocks(Location start, Vector direction, double maxDistance, FluidCollisionMode fluidCollisionMode, boolean ignorePassableBlocks) {
+		if (start == null || direction == null || maxDistance < 0) return null;
+		Vector pos = start.toVector();
+		Vector step = direction.clone().normalize().multiply(0.5);
+		int steps = (int) (maxDistance / 0.5);
+		for (int i = 0; i < steps; i++) {
+			pos.add(step);
+			Block block = getBlockAt(pos.getBlockX(), pos.getBlockY(), pos.getBlockZ());
+			if (block.getType().isSolid()) {
+				return new RayTraceResult(pos.clone(), block, null);
+			}
+		}
+		return null;
 	}
 
 	@Override
-	public RayTraceResult rayTrace(Location location, Vector vector, double v, FluidCollisionMode fluidCollisionMode, boolean b, double v1, Predicate<Entity> predicate) {
-		throw Pokkit.unsupported();
+	public RayTraceResult rayTrace(Location start, Vector direction, double maxDistance, FluidCollisionMode fluidCollisionMode, boolean ignorePassableBlocks, double entityMaxDistance, Predicate<? super Entity> predicate) {
+		RayTraceResult blockHit = rayTraceBlocks(start, direction, maxDistance, fluidCollisionMode, ignorePassableBlocks);
+		RayTraceResult entityHit = rayTraceEntities(start, direction, entityMaxDistance, predicate);
+		if (blockHit == null) return entityHit;
+		if (entityHit == null) return blockHit;
+		double blockDist = start.toVector().distance(blockHit.getHitPosition());
+		double entityDist = start.toVector().distance(entityHit.getHitPosition());
+		return blockDist <= entityDist ? blockHit : entityHit;
+	}
+
+	private RayTraceResult rayTraceEntitiesInternal(Location start, Vector direction, double maxDistance, Predicate<? super Entity> predicate) {
+		if (start == null || direction == null || maxDistance < 0) return null;
+		Vector startPos = start.toVector();
+		Vector dirNorm = direction.clone().normalize();
+		Entity closest = null;
+		double closestDist = maxDistance * maxDistance;
+		Vector closestPos = null;
+		for (Entity entity : getEntities()) {
+			if (predicate != null && !predicate.test(entity)) continue;
+			org.bukkit.Location eloc = entity.getLocation();
+			Vector toEntity = eloc.toVector().subtract(startPos);
+			double dot = toEntity.dot(dirNorm);
+			if (dot < 0 || dot > maxDistance) continue;
+			Vector closestPoint = startPos.clone().add(dirNorm.clone().multiply(dot));
+			double distSq = closestPoint.distanceSquared(eloc.toVector());
+			double threshold = 0.5;
+			if (entity instanceof LivingEntity) {
+				threshold = ((LivingEntity) entity).getEyeHeight() / 2.0 + 0.3;
+			}
+			if (distSq < threshold * threshold && distSq < closestDist) {
+				closestDist = distSq;
+				closest = entity;
+				closestPos = closestPoint;
+			}
+		}
+		if (closest != null) {
+			return new RayTraceResult(closestPos, closest);
+		}
+		return null;
 	}
 
 	@Override
@@ -624,10 +705,11 @@ public final class PokkitWorld implements World {
 		return nukkit.getPlayers().values().stream().map(PokkitPlayer::toBukkit).collect(Collectors.toList());
 	}
 
+	private final List<BlockPopulator> populators = new ArrayList<>();
+
 	@Override
 	public List<BlockPopulator> getPopulators() {
-		throw Pokkit.unsupported();
-
+		return populators;
 	}
 
 	@Override
@@ -637,7 +719,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public int getSeaLevel() {
-		return 64;
+		return nukkit.getDimensionData().getMinHeight() + 64;
 	}
 
 	@Override
@@ -672,12 +754,12 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public long getTicksPerAnimalSpawns() {
-		return 0;
+		return cn.nukkit.Server.getInstance().spawnAnimals ? 400 : 0;
 	}
 
 	@Override
 	public long getTicksPerMonsterSpawns() {
-		return 0;
+		return cn.nukkit.Server.getInstance().spawnMonsters ? 1 : 0;
 	}
 
 	@Override
@@ -692,7 +774,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public int getWaterAnimalSpawnLimit() {
-		return 0;
+		return nukkit.getServer().spawnAnimals ? -1 : 0;
 	}
 
 	@Override
@@ -702,8 +784,48 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public WorldBorder getWorldBorder() {
-		throw Pokkit.unsupported();
-
+		return new org.bukkit.WorldBorder() {
+			@Override
+			public org.bukkit.World getWorld() { return PokkitWorld.this; }
+			@Override
+			public void reset() {}
+			@Override
+			public double getSize() { return 60000000; }
+			@Override
+			public void setSize(double size) {}
+			@Override
+			public void setSize(double size, long seconds) {}
+			@Override
+			public void setSize(double size, java.util.concurrent.TimeUnit unit, long duration) {}
+			@Override
+			public Location getCenter() { return new Location(PokkitWorld.this, 0, 0, 0); }
+			@Override
+			public void setCenter(double x, double z) {}
+			@Override
+			public void setCenter(Location location) {}
+			@Override
+			public double getDamageBuffer() { return 5; }
+			@Override
+			public void setDamageBuffer(double blocks) {}
+			@Override
+			public double getDamageAmount() { return 0.2; }
+			@Override
+			public void setDamageAmount(double damage) {}
+			@Override
+			public int getWarningDistance() { return 5; }
+			@Override
+			public void setWarningDistance(int distance) {}
+			@Override
+			public int getWarningTime() { return 15; }
+			@Override
+			public void setWarningTime(int time) {}
+			@Override
+			public boolean isInside(Location location) { return true; }
+			@Override
+			public double getMaxSize() { return 60000000; }
+			@Override
+			public double getMaxCenterCoordinate() { return 30000000; }
+		};
 	}
 
 	@Override
@@ -727,8 +849,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public boolean hasStorm() {
-		return nukkit.isThundering();
-
+		return nukkit.isRaining();
 	}
 
 	@Override
@@ -753,7 +874,7 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public boolean isGameRule(String rule) {
-		return false;
+		return cn.nukkit.level.GameRule.parseString(rule).isPresent();
 	}
 
 	@Override
@@ -776,25 +897,56 @@ public final class PokkitWorld implements World {
 		return nukkit.loadChunk(x, z, true);
 	}
 
+	private void playEffect0(Location location, Effect effect, int data) {
+		if (location == null || effect == null) return;
+		LevelEventPacket pk = new LevelEventPacket();
+		pk.x = (float) location.getX();
+		pk.y = (float) location.getY();
+		pk.z = (float) location.getZ();
+		switch (effect) {
+			case MOBSPAWNER_FLAMES:
+				pk.evid = LevelEventPacket.EVENT_PARTICLE_POINT_CLOUD;
+				break;
+			case POTION_BREAK:
+				pk.evid = LevelEventPacket.EVENT_PARTICLE_EVAPORATE;
+				break;
+			case EXTINGUISH:
+				pk.evid = LevelEventPacket.EVENT_SOUND_FIZZ;
+				break;
+			case RECORD_PLAY:
+				pk.evid = LevelEventPacket.EVENT_SOUND_PLAY_RECORDING;
+				pk.data = data;
+				break;
+			case SMOKE:
+			case PORTAL_TRAVEL:
+			case ENDERDRAGON_GROWL:
+			case GHAST_SHRIEK:
+			case GHAST_SHOOT:
+			case BLAZE_SHOOT:
+			default:
+				return;
+		}
+		nukkit.addChunkPacket(location.getChunk().getX(), location.getChunk().getZ(), pk);
+	}
+
 	@Override
 	public void playEffect(Location location, Effect effect, int data) {
-		return; // Implement particles
+		playEffect0(location, effect, data);
 	}
 
 	@Override
 	public void playEffect(Location location, Effect effect, int data, int radius) {
-		return; // Implement particles
+		playEffect0(location, effect, data);
 	}
 
 	@Override
 	public <T> void playEffect(Location location, Effect effect, T data) {
-		return; // Implement particles
+		playEffect0(location, effect, data instanceof Number ? ((Number) data).intValue() : 0);
 	}
 
 	@Override
 	public <T> void playEffect(Location location, Effect effect, T data, int radius) {
-		return; // Implement particles
-
+		playEffect0(location, effect, data instanceof Number ? ((Number) data).intValue() : 0);
 	}
 
 	@Override
@@ -838,47 +990,100 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public boolean refreshChunk(int x, int z) {
-		return false; // Silently unsupported!
+		if (!nukkit.isChunkLoaded(x, z)) {
+			return false;
+		}
+		Map<Integer, cn.nukkit.Player> chunkPlayers = nukkit.getChunkPlayers(x, z);
+		for (cn.nukkit.Player player : chunkPlayers.values()) {
+			nukkit.requestChunk(x, z, player);
+		}
+		return true;
 	}
 
 	@Override
-	public boolean isChunkForceLoaded(int i, int i1) {
-		return false; // silently unsupported
+	public boolean isChunkForceLoaded(int x, int z) {
+		return forceLoadedChunks.contains(chunkKey(x, z));
 	}
 
 	@Override
-	public void setChunkForceLoaded(int i, int i1, boolean b) {
-		// silently unsupported
+	public void setChunkForceLoaded(int x, int z, boolean force) {
+		long key = chunkKey(x, z);
+		if (force) {
+			forceLoadedChunks.add(key);
+			if (!nukkit.isChunkLoaded(x, z)) {
+				nukkit.loadChunk(x, z);
+			}
+		} else {
+			forceLoadedChunks.remove(key);
+		}
 	}
 
 	@Override
 	public Collection<Chunk> getForceLoadedChunks() {
-		return Collections.emptyList();
+		List<Chunk> chunks = new ArrayList<>();
+		for (long key : forceLoadedChunks) {
+			int x = (int) (key >> 32);
+			int z = (int) key;
+			chunks.add(getChunkAt(x, z));
+		}
+		return chunks;
 	}
 
 	@Override
-	public boolean addPluginChunkTicket(int i, int i1, Plugin plugin) {
-		throw Pokkit.unsupported();
+	public boolean addPluginChunkTicket(int x, int z, Plugin plugin) {
+		long key = chunkKey(x, z);
+		Set<Plugin> tickets = pluginChunkTickets.computeIfAbsent(key, k -> new HashSet<>());
+		return tickets.add(plugin);
 	}
 
 	@Override
-	public boolean removePluginChunkTicket(int i, int i1, Plugin plugin) {
-		throw Pokkit.unsupported();
+	public boolean removePluginChunkTicket(int x, int z, Plugin plugin) {
+		long key = chunkKey(x, z);
+		Set<Plugin> ticket = pluginChunkTickets.get(key);
+		if (ticket != null && ticket.remove(plugin)) {
+			if (ticket.isEmpty()) {
+				pluginChunkTickets.remove(key);
+			}
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	public void removePluginChunkTickets(Plugin plugin) {
-		Pokkit.notImplemented();
+		Iterator<Map.Entry<Long, Set<Plugin>>> it = pluginChunkTickets.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<Long, Set<Plugin>> entry = it.next();
+			entry.getValue().remove(plugin);
+			if (entry.getValue().isEmpty()) {
+				it.remove();
+			}
+		}
 	}
 
 	@Override
-	public Collection<Plugin> getPluginChunkTickets(int i, int i1) {
-		return Collections.emptyList();
+	public Collection<Plugin> getPluginChunkTickets(int x, int z) {
+		Set<Plugin> tickets = pluginChunkTickets.get(chunkKey(x, z));
+		return tickets != null ? Collections.unmodifiableSet(tickets) : Collections.emptySet();
 	}
 
 	@Override
 	public Map<Plugin, Collection<Chunk>> getPluginChunkTickets() {
-		return Collections.emptyMap();
+		Map<Plugin, Collection<Chunk>> result = new HashMap<>();
+		for (Map.Entry<Long, Set<Plugin>> entry : pluginChunkTickets.entrySet()) {
+			long key = entry.getKey();
+			int x = (int) (key >> 32);
+			int z = (int) key;
+			Chunk chunk = getChunkAt(x, z);
+			for (Plugin plugin : entry.getValue()) {
+				result.computeIfAbsent(plugin, p -> new ArrayList<>()).add(chunk);
+			}
+		}
+		return result;
+	}
+
+	private long chunkKey(int x, int z) {
+		return ((long) x & 0xFFFFFFFFL) << 32 | ((long) z & 0xFFFFFFFFL);
 	}
 
 	@Override
@@ -899,7 +1104,9 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public void sendPluginMessage(Plugin source, String channel, byte[] message) {
-		Pokkit.notImplemented();
+		for (Player player : getPlayers()) {
+			player.sendPluginMessage(source, channel, message);
+		}
 	}
 
 	@Override
@@ -968,7 +1175,17 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public void setKeepSpawnInMemory(boolean keepLoaded) {
-		Pokkit.notImplemented();
+		cn.nukkit.math.Vector3 spawn = nukkit.getSpawnLocation();
+		int spawnChunkX = spawn.getChunkX();
+		int spawnChunkZ = spawn.getChunkZ();
+		int radius = keepLoaded ? 4 : 0;
+		for (int x = -radius; x <= radius; x++) {
+			for (int z = -radius; z <= radius; z++) {
+				if (keepLoaded) {
+					nukkit.loadChunk(spawnChunkX + x, spawnChunkZ + z);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -987,7 +1204,8 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public void setSpawnFlags(boolean allowMonsters, boolean allowAnimals) {
-
+		cn.nukkit.Server.getInstance().spawnMonsters = allowMonsters;
+		cn.nukkit.Server.getInstance().spawnAnimals = allowAnimals;
 	}
 
 	@Override
@@ -1062,27 +1280,72 @@ public final class PokkitWorld implements World {
 		nukkit.setRainTime(duration);
 	}
 
-	@Override
-	public <T extends Entity> T spawn(Location location, Class<T> clazz) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
-
+	private static final Map<Class<? extends Entity>, EntityType> CLASS_TO_ENTITY_TYPE = new HashMap<>();
+	static {
+		CLASS_TO_ENTITY_TYPE.put(Arrow.class, EntityType.ARROW);
+		CLASS_TO_ENTITY_TYPE.put(Snowball.class, EntityType.SNOWBALL);
+		CLASS_TO_ENTITY_TYPE.put(EnderPearl.class, EntityType.ENDER_PEARL);
+		CLASS_TO_ENTITY_TYPE.put(ExperienceOrb.class, EntityType.EXPERIENCE_ORB);
+		CLASS_TO_ENTITY_TYPE.put(FallingBlock.class, EntityType.FALLING_BLOCK);
+		CLASS_TO_ENTITY_TYPE.put(LightningStrike.class, EntityType.LIGHTNING_BOLT);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Item.class, EntityType.ITEM);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Pig.class, EntityType.PIG);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Cow.class, EntityType.COW);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Sheep.class, EntityType.SHEEP);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Chicken.class, EntityType.CHICKEN);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Wolf.class, EntityType.WOLF);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Creeper.class, EntityType.CREEPER);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Villager.class, EntityType.VILLAGER);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Rabbit.class, EntityType.RABBIT);
+		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Ocelot.class, EntityType.OCELOT);
+		CLASS_TO_ENTITY_TYPE.put(Boat.class, EntityType.BOAT);
+		CLASS_TO_ENTITY_TYPE.put(Minecart.class, EntityType.MINECART);
+		CLASS_TO_ENTITY_TYPE.put(ThrownPotion.class, EntityType.POTION);
+		CLASS_TO_ENTITY_TYPE.put(ThrownExpBottle.class, EntityType.EXPERIENCE_BOTTLE);
+		CLASS_TO_ENTITY_TYPE.put(TNTPrimed.class, EntityType.TNT);
+		CLASS_TO_ENTITY_TYPE.put(Trident.class, EntityType.TRIDENT);
+		CLASS_TO_ENTITY_TYPE.put(Painting.class, EntityType.PAINTING);
 	}
 
 	@Override
-	public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> consumer) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
+	public <T extends Entity> T spawn(Location location, Class<T> clazz) throws IllegalArgumentException {
+		EntityType type = CLASS_TO_ENTITY_TYPE.get(clazz);
+		if (type == null) {
+			throw new IllegalArgumentException("Cannot spawn entity of type " + clazz.getName());
+		}
+		Entity entity = spawnEntity(location, type);
+		if (entity == null || !clazz.isInstance(entity)) {
+			return null;
+		}
+		return clazz.cast(entity);
+	}
 
+	public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<? super T> consumer) throws IllegalArgumentException {
+		T entity = spawn(location, clazz);
+		if (consumer != null && entity != null) {
+			consumer.accept(entity);
+		}
+		return entity;
 	}
 
 	@Override
 	public Arrow spawnArrow(Location location, Vector direction, float speed, float spread) {
-		throw Pokkit.unsupported();
-
+		Entity entity = spawnEntity(location, EntityType.ARROW);
+		if (entity instanceof Arrow) {
+			Arrow arrow = (Arrow) entity;
+			arrow.setVelocity(direction.normalize().multiply(speed));
+			return arrow;
+		}
+		return null;
 	}
 
 	@Override
 	public <T extends AbstractArrow> T spawnArrow(Location location, Vector vector, float v, float v1, Class<T> aClass) {
-		throw Pokkit.unsupported();
+		Entity entity = spawnEntity(location, EntityType.ARROW);
+		if (aClass.isInstance(entity)) {
+			return aClass.cast(entity);
+		}
+		return null;
 	}
 
 	@Override
@@ -1126,20 +1389,20 @@ public final class PokkitWorld implements World {
 
 		cn.nukkit.entity.Entity ent = cn.nukkit.entity.Entity.createEntity(EntityFallingBlock.NETWORK_ID, nukkit.getChunk((int) location.getX() >> 4, (int) location.getZ() >> 4), nbt);
 		ent.spawnToAll();
-		return null;
+		return (FallingBlock) nl.rutgerkok.pokkit.entity.PokkitEntity.toBukkit(ent);
 	}
 
 	@Override
 	public FallingBlock spawnFallingBlock(Location location, Material material, byte data)
 			throws IllegalArgumentException {
-		throw Pokkit.unsupported();
+		return spawnFallingBlock(location, PokkitBlockData.createBlockData(material, data));
 	}
 
 	@Override
 	public FallingBlock spawnFallingBlock(Location location,
 			@SuppressWarnings("deprecation") org.bukkit.material.MaterialData materialData)
 			throws IllegalArgumentException {
-		throw Pokkit.unsupported();
+		return spawnFallingBlock(location, materialData.getItemType(), materialData.getData());
 	}
 
 	@Override
@@ -1183,11 +1446,11 @@ public final class PokkitWorld implements World {
 				realOffsetX = offsetX / 2;
 				x = x + random.nextDouble(-realOffsetX, realOffsetX);
 			}
-			if (offsetX != 0) {
+			if (offsetY != 0) {
 				realOffsetY = offsetY / 2;
 				y = y + random.nextDouble(-realOffsetY, realOffsetY);
 			}
-			if (offsetX != 0) {
+			if (offsetZ != 0) {
 				realOffsetZ = offsetZ / 2;
 				z = z + random.nextDouble(-realOffsetZ, realOffsetZ);
 			}
@@ -1331,6 +1594,16 @@ public final class PokkitWorld implements World {
 	}
 
 	@Override
+	public org.bukkit.util.StructureSearchResult locateNearestStructure(Location location, org.bukkit.generator.structure.StructureType structureType, int radius, boolean findUnexplored) {
+		return null;
+	}
+
+	@Override
+	public org.bukkit.util.StructureSearchResult locateNearestStructure(Location location, org.bukkit.generator.structure.Structure structure, int radius, boolean findUnexplored) {
+		return null;
+	}
+
+	@Override
 	public int getViewDistance() {
 		return nukkit.getServer().getViewDistance();
 	}
@@ -1339,4 +1612,263 @@ public final class PokkitWorld implements World {
 	public boolean isChunkGenerated(int x, int z) {
 		return nukkit.isChunkGenerated(x, z);
 	}
+
+	@Override
+	public Collection<org.bukkit.generator.structure.GeneratedStructure> getStructures(int x, int z, org.bukkit.generator.structure.Structure structure) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Collection<org.bukkit.generator.structure.GeneratedStructure> getStructures(int x, int z) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Set<org.bukkit.FeatureFlag> getFeatureFlags() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public org.bukkit.util.BiomeSearchResult locateNearestBiome(Location location, int radius, int horizontalRadius, int verticalRadius, Biome... biomes) {
+		return null;
+	}
+
+	@Override
+	public org.bukkit.util.BiomeSearchResult locateNearestBiome(Location location, int radius, Biome... biomes) {
+		return null;
+	}
+
+	@Override
+	public long getGameTime() {
+		return getFullTime();
+	}
+
+	@Override
+	public void setClearWeatherDuration(int duration) {
+		if (!nukkit.isRaining()) {
+			nukkit.setRainTime(duration);
+		}
+	}
+
+	@Override
+	public org.bukkit.generator.BiomeProvider getBiomeProvider() {
+		return null;
+	}
+
+	@Override
+	public boolean hasCeiling() {
+		return getEnvironment() == Environment.NETHER;
+	}
+
+	@Override
+	public boolean isPiglinSafe() {
+		return getEnvironment() == Environment.NETHER;
+	}
+
+	@Override
+	public boolean hasRaids() {
+		return getEnvironment() == Environment.NORMAL;
+	}
+
+	@Override
+	public org.bukkit.NamespacedKey getKey() {
+		return NamespacedKey.minecraft(getName().toLowerCase().replace(" ", "_"));
+	}
+
+	@Override
+	public void setType(int x, int y, int z, org.bukkit.Material material) {
+		getBlockAt(x, y, z).setType(material);
+	}
+
+	@Override
+	public void setType(Location location, org.bukkit.Material material) {
+		getBlockAt(location).setType(material);
+	}
+
+	@Override
+	public org.bukkit.block.data.BlockData getBlockData(int x, int y, int z) {
+		return getBlockAt(x, y, z).getBlockData();
+	}
+
+	@Override
+	public org.bukkit.block.data.BlockData getBlockData(Location location) {
+		return getBlockAt(location).getBlockData();
+	}
+
+	@Override
+	public Item dropItem(Location location, ItemStack item, Consumer<? super Item> consumer) {
+		return dropItem(location, item);
+	}
+
+	@Override
+	public <T extends Entity> T createEntity(Location location, Class<T> aClass) {
+		return spawn(location, aClass);
+	}
+
+	@Override
+	public Collection<Player> getPlayersSeeingChunk(int x, int z) {
+		Map<Integer, cn.nukkit.Player> chunkPlayers = nukkit.getChunkPlayers(x, z);
+		return chunkPlayers.values().stream().map(PokkitPlayer::toBukkit).collect(Collectors.toList());
+	}
+
+	@Override
+	public Collection<Player> getPlayersSeeingChunk(Chunk chunk) {
+		return getPlayersSeeingChunk(chunk.getX(), chunk.getZ());
+	}
+
+	@Override
+	public void setTicksPerWaterAmbientSpawns(int ticks) {
+	}
+
+	@Override
+	public long getTicksPerWaterAmbientSpawns() {
+		return 1;
+	}
+
+	@Override
+	public int getWaterAmbientSpawnLimit() {
+		return -1;
+	}
+
+	@Override
+	public void setWaterAmbientSpawnLimit(int limit) {
+	}
+
+    @Override
+    public org.bukkit.Chunk getChunkAt(int p0, int p1, boolean p2) { return getChunkAt(p0, p1); }
+    @Override
+    public boolean setSpawnLocation(int p0, int p1, int p2, float p3) {
+        nukkit.setSpawnLocation(new Vector3(p0, p1, p2));
+        return true;
+    }
+    @Override
+    public boolean isClearWeather() { return !nukkit.isRaining() && !nukkit.isThundering();}
+    @Override
+    public int getClearWeatherDuration() { return nukkit.isRaining() ? 0 : nukkit.getRainTime();}
+    @Override
+    public int getLogicalHeight() { return nukkit.getDimensionData().getHeight();}
+    @Override
+    public boolean isNatural() { return getEnvironment() == Environment.NORMAL;}
+    @Override
+    public boolean isBedWorks() { return getEnvironment() == Environment.NORMAL;}
+    @Override
+    public boolean hasSkyLight() { return getEnvironment() == Environment.NORMAL;}
+    @Override
+    public boolean isRespawnAnchorWorks() { return getEnvironment() == Environment.NETHER;}
+    @Override
+    public boolean isUltraWarm() { return getEnvironment() == Environment.NETHER;}
+    @Override
+    public int getSimulationDistance() { return nukkit.getServer().getViewDistance();}
+    @Override
+    public long getTicksPerWaterUndergroundCreatureSpawns() { return 1L;}
+    @Override
+    public void setTicksPerWaterUndergroundCreatureSpawns(int p0) {}
+    @Override
+    public long getTicksPerSpawns(org.bukkit.entity.SpawnCategory p0) { return 1L;}
+    @Override
+    public void setTicksPerSpawns(org.bukkit.entity.SpawnCategory p0, int p1) {}
+    @Override
+    public int getWaterUndergroundCreatureSpawnLimit() { return -1;}
+    @Override
+    public void setWaterUndergroundCreatureSpawnLimit(int p0) {}
+    @Override
+    public int getSpawnLimit(org.bukkit.entity.SpawnCategory cat) {
+        switch (cat) {
+            case MONSTER: return getMonsterSpawnLimit();
+            case ANIMAL: return getAnimalSpawnLimit();
+            case WATER_ANIMAL: return -1;
+            case AMBIENT: return getAmbientSpawnLimit();
+            case WATER_AMBIENT: return getWaterAmbientSpawnLimit();
+            case WATER_UNDERGROUND_CREATURE: return getWaterUndergroundCreatureSpawnLimit();
+            default: return -1;
+        }
+    }
+    @Override
+    public void setSpawnLimit(org.bukkit.entity.SpawnCategory p0, int p1) {}
+    @Override
+    public void playNote(org.bukkit.Location loc, org.bukkit.Instrument instrument, org.bukkit.Note note) {
+        cn.nukkit.math.Vector3 pos = new cn.nukkit.math.Vector3(loc.getX(), loc.getY(), loc.getZ());
+        int instrumentId = instrument.ordinal();
+        int noteId = note.getId();
+        nukkit.addLevelSoundEvent(pos, cn.nukkit.network.protocol.LevelSoundEventPacket.SOUND_NOTE,
+                instrumentId << 8 | noteId, -1);
+    }
+    @Override
+    public void playSound(org.bukkit.Location p0, org.bukkit.Sound p1, org.bukkit.SoundCategory p2, float p3, float p4, long p5) { playSound(p0, p1, p2, p3, p4); }
+    @Override
+    public void playSound(org.bukkit.Location p0, java.lang.String p1, org.bukkit.SoundCategory p2, float p3, float p4, long p5) { playSound(p0, p1, p2, p3, p4); }
+    @Override
+    public void playSound(org.bukkit.entity.Entity p0, org.bukkit.Sound p1, org.bukkit.SoundCategory p2, float p3, float p4, long p5) { playSoundEntity(p0, p1, p2, p3, p4); }
+    @Override
+    public void playSound(org.bukkit.entity.Entity p0, java.lang.String p1, org.bukkit.SoundCategory p2, float p3, float p4, long p5) { playSoundEntityString(p0, p1, p2, p3, p4); }
+    @Override
+    public void playSound(org.bukkit.entity.Entity p0, org.bukkit.Sound p1, org.bukkit.SoundCategory p2, float p3, float p4) { playSoundEntity(p0, p1, p2, p3, p4); }
+    @Override
+    public void playSound(org.bukkit.entity.Entity p0, java.lang.String p1, org.bukkit.SoundCategory p2, float p3, float p4) { playSoundEntityString(p0, p1, p2, p3, p4); }
+    @Override
+    public void playSound(org.bukkit.entity.Entity p0, org.bukkit.Sound p1, float p2, float p3) { playSoundEntity(p0, p1, SoundCategory.NEUTRAL, p2, p3); }
+    @Override
+    public void playSound(org.bukkit.entity.Entity p0, java.lang.String p1, float p2, float p3) { playSoundEntityString(p0, p1, SoundCategory.NEUTRAL, p2, p3); }
+    @Override
+    public Item dropItemNaturally(Location location, ItemStack item, Consumer<? super Item> consumer) {
+        return dropItemNaturally(location, item);
+    }
+    @Override
+    public int getMinHeight() { return nukkit.getDimensionData().getMinHeight(); }
+    @Override
+    public org.bukkit.persistence.PersistentDataContainer getPersistentDataContainer() { return null; }
+    @Override
+    public Collection<org.bukkit.Chunk> getIntersectingChunks(org.bukkit.util.BoundingBox box) {
+        int minChunkX = (int) Math.floor(box.getMinX()) >> 4;
+        int minChunkZ = (int) Math.floor(box.getMinZ()) >> 4;
+        int maxChunkX = (int) Math.floor(box.getMaxX()) >> 4;
+        int maxChunkZ = (int) Math.floor(box.getMaxZ()) >> 4;
+        List<org.bukkit.Chunk> chunks = new ArrayList<>();
+        for (int cx = minChunkX; cx <= maxChunkX; cx++) {
+            for (int cz = minChunkZ; cz <= maxChunkZ; cz++) {
+                if (isChunkLoaded(cx, cz)) {
+                    chunks.add(getChunkAt(cx, cz));
+                }
+            }
+        }
+        return chunks;
+    }
+    @Override
+    public void setBiome(Location location, org.bukkit.block.Biome biome) { setBiome(location.getBlockX(), location.getBlockY(), location.getBlockZ(), biome); }
+    @Override
+    public void setBlockData(Location location, org.bukkit.block.data.BlockData blockData) { getBlockAt(location).setBlockData(blockData); }
+    @Override
+    public void setBlockData(int x, int y, int z, org.bukkit.block.data.BlockData blockData) { getBlockAt(x, y, z).setBlockData(blockData); }
+    @Override
+    public org.bukkit.Material getType(Location location) { return getBlockAt(location).getType(); }
+    @Override
+    public org.bukkit.Material getType(int x, int y, int z) { return getBlockAt(x, y, z).getType(); }
+    @Override
+    public org.bukkit.block.BlockState getBlockState(Location location) { return getBlockAt(location).getState(); }
+    @Override
+    public org.bukkit.block.BlockState getBlockState(int x, int y, int z) { return getBlockAt(x, y, z).getState(); }
+    @Override
+    public org.bukkit.block.Biome getBiome(Location location) { return getBiome(location.getBlockX(), location.getBlockY(), location.getBlockZ()); }
+    @Override
+    public <T extends Entity> T addEntity(T entity) { return entity; }
+    @Override
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, boolean randomizeData, Consumer<? super T> consumer) { return spawn(location, clazz, consumer); }
+    @Override
+    public <T extends org.bukkit.entity.LivingEntity> T spawn(Location location, Class<T> clazz, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason, boolean randomizeData, Consumer<? super T> consumer) { return spawn(location, clazz, consumer); }
+    @Override
+    public Entity spawnEntity(Location loc, EntityType type, boolean randomizeData) { return spawnEntity(loc, type); }
+    @Override
+    public boolean generateTree(Location location, java.util.Random random, TreeType type, java.util.function.Predicate<? super org.bukkit.block.BlockState> statePredicate) { return generateTree(location, type); }
+    @Override
+    public boolean generateTree(Location location, java.util.Random random, TreeType type) { return generateTree(location, type); }
+    @Override
+    public boolean generateTree(Location location, java.util.Random random, TreeType type, java.util.function.Consumer<? super org.bukkit.block.BlockState> stateConsumer) { return generateTree(location, type); }
+
+    private void playSoundEntity(org.bukkit.entity.Entity entity, org.bukkit.Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
+        playSound(entity.getLocation(), sound, category, volume, pitch);
+    }
+
+    private void playSoundEntityString(org.bukkit.entity.Entity entity, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
+        playSound(entity.getLocation(), sound, category, volume, pitch);
+    }
 }

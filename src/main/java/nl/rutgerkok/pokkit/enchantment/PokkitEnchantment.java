@@ -1,127 +1,101 @@
 package nl.rutgerkok.pokkit.enchantment;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 
 public class PokkitEnchantment {
 
-	private static final Enchantment[] nukkitToBukkit = new Enchantment[38];
+	private static final Enchantment[] nukkitToBukkit = new Enchantment[42];
 	private static final Map<NamespacedKey, Integer> bukkitToNukkit = new HashMap<>();
+	private static boolean initialized = false;
 
-	static {
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_ALL, Enchantment.PROTECTION_ENVIRONMENTAL);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_FIRE, Enchantment.PROTECTION_FIRE);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_FALL, Enchantment.PROTECTION_FALL);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_EXPLOSION, Enchantment.PROTECTION_EXPLOSIONS);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_PROJECTILE, Enchantment.PROTECTION_PROJECTILE);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_THORNS, Enchantment.THORNS);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_WATER_BREATHING, Enchantment.OXYGEN);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_WATER_WORKER, Enchantment.WATER_WORKER);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_WATER_WALKER, Enchantment.DEPTH_STRIDER);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_DAMAGE_ALL, Enchantment.DAMAGE_ALL);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_DAMAGE_SMITE, Enchantment.DAMAGE_UNDEAD);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_DAMAGE_ARTHROPODS, Enchantment.DAMAGE_ARTHROPODS);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_KNOCKBACK, Enchantment.KNOCKBACK);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_FIRE_ASPECT, Enchantment.FIRE_ASPECT);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_LOOTING, Enchantment.LOOT_BONUS_MOBS);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_EFFICIENCY, Enchantment.DIG_SPEED);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_SILK_TOUCH, Enchantment.SILK_TOUCH);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_DURABILITY, Enchantment.DURABILITY);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_FORTUNE_DIGGING, Enchantment.LOOT_BONUS_BLOCKS);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BOW_POWER, Enchantment.ARROW_DAMAGE);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BOW_KNOCKBACK, Enchantment.ARROW_KNOCKBACK);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BOW_FLAME, Enchantment.ARROW_FIRE);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BOW_INFINITY, Enchantment.ARROW_INFINITE);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_FORTUNE_FISHING, Enchantment.LUCK);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_LURE, Enchantment.LURE);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_FROST_WALKER, Enchantment.FROST_WALKER);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_MENDING, Enchantment.MENDING);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BINDING_CURSE, Enchantment.BINDING_CURSE);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_VANISHING_CURSE, Enchantment.VANISHING_CURSE);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_TRIDENT_IMPALING, Enchantment.IMPALING);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_TRIDENT_LOYALTY, Enchantment.LOYALTY);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_TRIDENT_RIPTIDE, Enchantment.RIPTIDE);
-		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_TRIDENT_CHANNELING, Enchantment.CHANNELING);
-
-		//Not in Bukkit 1.13.2
-		nukkitToBukkit[cn.nukkit.item.enchantment.Enchantment.ID_CROSSBOW_MULTISHOT] = Enchantment.CHANNELING;
-		nukkitToBukkit[cn.nukkit.item.enchantment.Enchantment.ID_CROSSBOW_PIERCING] = Enchantment.CHANNELING;
-		nukkitToBukkit[cn.nukkit.item.enchantment.Enchantment.ID_CROSSBOW_QUICK_CHARGE] = Enchantment.CHANNELING;
-		nukkitToBukkit[cn.nukkit.item.enchantment.Enchantment.ID_SOUL_SPEED] = Enchantment.CHANNELING;
-		nukkitToBukkit[cn.nukkit.item.enchantment.Enchantment.ID_SWIFT_SNEAK] = Enchantment.CHANNELING;
-	}
-
-	/**
-	 * Called when Pokkit initialises.
-	 */
-	public static void registerNukkitEnchantmentsInBukkit() {
-		if (!Enchantment.isAcceptingRegistrations()) {
-			// Already initialized
+	private static synchronized void ensureInitialized() {
+		if (initialized) {
 			return;
 		}
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_ALL, "protection");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_FIRE, "fire_protection");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_FALL, "feather_falling");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_EXPLOSION, "blast_protection");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_PROTECTION_PROJECTILE, "projectile_protection");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_THORNS, "thorns");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_WATER_BREATHING, "respiration");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_WATER_WORKER, "aqua_affinity");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_WATER_WALKER, "depth_strider");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_DAMAGE_ALL, "sharpness");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_DAMAGE_SMITE, "smite");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_DAMAGE_ARTHROPODS, "bane_of_arthropods");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_KNOCKBACK, "knockback");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_FIRE_ASPECT, "fire_aspect");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_LOOTING, "looting");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_EFFICIENCY, "efficiency");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_SILK_TOUCH, "silk_touch");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_DURABILITY, "unbreaking");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_FORTUNE_DIGGING, "fortune");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BOW_POWER, "power");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BOW_KNOCKBACK, "punch");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BOW_FLAME, "flame");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BOW_INFINITY, "infinity");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_FORTUNE_FISHING, "luck_of_the_sea");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_LURE, "lure");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_FROST_WALKER, "frost_walker");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_MENDING, "mending");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BINDING_CURSE, "binding_curse");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_VANISHING_CURSE, "vanishing_curse");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_TRIDENT_IMPALING, "impaling");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_TRIDENT_LOYALTY, "loyalty");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_TRIDENT_RIPTIDE, "riptide");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_TRIDENT_CHANNELING, "channeling");
 
-		List<NamespacedKey> registered = new ArrayList<>();
-		for (cn.nukkit.item.enchantment.Enchantment nukkitEnchantment : cn.nukkit.item.enchantment.Enchantment.getEnchantments()) {
-			Enchantment bukkitWrapper = toBukkit(nukkitEnchantment.getId());
-
-			if (registered.contains(bukkitWrapper.getKey())) {
-				continue; //Ignore unsupported enchantments that are mapped to other values
-			}
-
-			Enchantment bukkitImpl = new PokkitEnchantmentImpl(nukkitEnchantment, bukkitWrapper.getKey());
-			Enchantment.registerEnchantment(bukkitImpl);
-			registered.add(bukkitWrapper.getKey());
-		}
-
-		Enchantment.stopAcceptingRegistrations();
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_CROSSBOW_MULTISHOT, "multishot");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_CROSSBOW_PIERCING, "piercing");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_CROSSBOW_QUICK_CHARGE, "quick_charge");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_SOUL_SPEED, "soul_speed");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_SWIFT_SNEAK, "swift_sneak");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_DENSITY, "density");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_BREACH, "breach");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_WIND_BURST, "wind_burst");
+		twoWay(cn.nukkit.item.enchantment.Enchantment.ID_LUNGE, "lunge");
+		initialized = true;
 	}
 
-	/**
-	 * Gets a Bukkit enchantment.
-	 *
-	 * @param nukkit
-	 *            The Nukkit enchantment id.
-	 * @return The Bukkit enchantment, or null if not found. There exists a test
-	 *         that should prevent null from being returned for all known
-	 *         enchantments, but it is possible that this test has been
-	 *         disabled. It is also possible that this method is called with a
-	 *         bogus enchantment id.
-	 */
+	public static void registerNukkitEnchantmentsInBukkit() {
+		// In 1.20.6+, enchantments are pre-registered in the Bukkit Registry
+	}
+
 	public static Enchantment toBukkit(int nukkit) {
+		ensureInitialized();
 		if (nukkit < 0 || nukkit >= nukkitToBukkit.length) {
 			return null;
 		}
 		return nukkitToBukkit[nukkit];
 	}
 
-	/**
-	 * Gets a Nukkit enchantment.
-	 *
-	 * @param enchantment
-	 *            The Bukkit enchantment.
-	 * @return The Nukkit enchantment id, or -1 if not found. There exists a
-	 *         test that should prevent -1 from being returned for all known
-	 *         enchantments, but it is possible that this test has been
-	 *         disabled.
-	 */
 	public static int toNukkit(Enchantment enchantment) {
+		ensureInitialized();
 		NamespacedKey bukkitId = enchantment.getKey();
 		return bukkitToNukkit.getOrDefault(bukkitId, -1);
 	}
 
-	private static void twoWay(int nukkit, Enchantment bukkit) {
+	private static void twoWay(int nukkit, String bukkitKey) {
+		NamespacedKey key = NamespacedKey.minecraft(bukkitKey);
+		Enchantment bukkit = Registry.ENCHANTMENT.get(key);
 		nukkitToBukkit[nukkit] = bukkit;
 
-		NamespacedKey bukkitId = bukkit.getKey();
-		if (bukkitToNukkit.containsKey(bukkitId)) {
+		if (bukkitToNukkit.containsKey(key)) {
 			throw new RuntimeException("bukkitToNukkit already mapped");
 		}
 
-		bukkitToNukkit.put(bukkitId, nukkit);
+		bukkitToNukkit.put(key, nukkit);
+	}
+
+	private static void oneWay(int nukkit, String bukkitKey) {
+		NamespacedKey key = NamespacedKey.minecraft(bukkitKey);
+		Enchantment bukkit = Registry.ENCHANTMENT.get(key);
+		nukkitToBukkit[nukkit] = bukkit;
 	}
 }

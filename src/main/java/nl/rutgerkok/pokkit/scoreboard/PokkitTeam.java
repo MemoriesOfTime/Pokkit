@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -38,7 +37,7 @@ final class PokkitTeam implements Team {
 
 	@Override
 	public void addEntry(String entry) throws IllegalStateException, IllegalArgumentException {
-		Validate.notNull(entry, "entry");
+		Objects.requireNonNull(entry, "entry");
 		PokkitScoreboard scoreboard = checkScoreboard();
 		this.playerNames.add(entry.toLowerCase());
 		scoreboard.markPlayerInTeam(entry, this);
@@ -113,7 +112,7 @@ final class PokkitTeam implements Team {
 	@Override
 	public OptionStatus getOption(Option option) throws IllegalStateException {
 		checkScoreboard();
-		Validate.notNull(option, "option");
+		Objects.requireNonNull(option, "option");
 		return options.getOrDefault(option, OptionStatus.ALWAYS);
 	}
 
@@ -149,28 +148,28 @@ final class PokkitTeam implements Team {
 
 	@Override
 	public boolean hasEntry(String entry) throws IllegalArgumentException, IllegalStateException {
-		Validate.notNull(entry, "entry");
+		Objects.requireNonNull(entry, "entry");
 		checkScoreboard();
 		return playerNames.contains(entry.toLowerCase());
 	}
 
 	@Override
 	public boolean hasPlayer(OfflinePlayer player) throws IllegalArgumentException, IllegalStateException {
-		Validate.notNull(player, "player");
+		Objects.requireNonNull(player, "player");
 		checkScoreboard();
 		return playerNames.contains(player.getName().toLowerCase());
 	}
 
 	@Override
 	public boolean removeEntry(String entry) throws IllegalStateException, IllegalArgumentException {
-		Validate.notNull(entry, "entry");
+		Objects.requireNonNull(entry, "entry");
 		checkScoreboard();
 		return playerNames.remove(entry.toLowerCase());
 	}
 
 	@Override
 	public boolean removePlayer(OfflinePlayer player) throws IllegalStateException, IllegalArgumentException {
-		Validate.notNull(player, "player");
+		Objects.requireNonNull(player, "player");
 		checkScoreboard();
 		return playerNames.remove(player.getName().toLowerCase());
 	}
@@ -189,21 +188,21 @@ final class PokkitTeam implements Team {
 
 	@Override
 	public void setColor(ChatColor color) {
-		Validate.notNull(color, "color");
+		Objects.requireNonNull(color, "color");
 		checkScoreboard();
 		this.color = color;
 	}
 
 	@Override
 	public void setDisplayName(String displayName) throws IllegalStateException, IllegalArgumentException {
-		Validate.notNull(displayName, "displayName");
+		Objects.requireNonNull(displayName, "displayName");
 		checkScoreboard();
 		this.displayName = displayName;
 	}
 
 	@Override
 	public void setNameTagVisibility(NameTagVisibility visibility) throws IllegalArgumentException {
-		Validate.notNull(visibility, "visibility");
+		Objects.requireNonNull(visibility, "visibility");
 		checkScoreboard();
 		switch (visibility) {
 		case ALWAYS:
@@ -226,21 +225,21 @@ final class PokkitTeam implements Team {
 	@Override
 	public void setOption(Option option, OptionStatus status) throws IllegalStateException {
 		checkScoreboard();
-		Validate.notNull(option, "option");
-		Validate.notNull(status, "status");
+		Objects.requireNonNull(option, "option");
+		Objects.requireNonNull(status, "status");
 		options.put(option, status);
 	}
 
 	@Override
 	public void setPrefix(String prefix) throws IllegalStateException, IllegalArgumentException {
-		Validate.notNull(prefix, "prefix");
+		Objects.requireNonNull(prefix, "prefix");
 		checkScoreboard();
 		this.prefix = prefix;
 	}
 
 	@Override
 	public void setSuffix(String suffix) throws IllegalStateException, IllegalArgumentException {
-		Validate.notNull(suffix, "suffix");
+		Objects.requireNonNull(suffix, "suffix");
 		checkScoreboard();
 		this.suffix = suffix;
 	}

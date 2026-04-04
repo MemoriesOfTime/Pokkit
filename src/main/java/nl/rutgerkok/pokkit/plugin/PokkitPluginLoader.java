@@ -8,7 +8,14 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
+import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
 
@@ -103,9 +110,32 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 	@SuppressWarnings("deprecation")
 	private JavaPluginLoader getPluginLoader() {
 		if (bukkit == null) {
-			bukkit = new JavaPluginLoader(Bukkit.getServer());
+			bukkit = new JavaPluginLoader(createServerProxy());
 		}
 		return bukkit;
+	}
+
+	/**
+	 * Creates a Server proxy that returns a {@link SimplePluginManager} from
+	 * {@code getPluginManager()}. This is needed because Spigot's
+	 * {@link JavaPluginLoader} casts the plugin manager to
+	 * {@link SimplePluginManager}.
+	 */
+	private Server createServerProxy() {
+		final Server realServer = Bukkit.getServer();
+		final SimplePluginManager spm = new SimplePluginManager(realServer, new SimpleCommandMap(realServer));
+		return (Server) Proxy.newProxyInstance(
+				Server.class.getClassLoader(),
+				new Class<?>[] { Server.class },
+				new InvocationHandler() {
+					@Override
+					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+						if (method.getName().equals("getPluginManager")) {
+							return spm;
+						}
+						return method.invoke(realServer, args);
+					}
+				});
 	}
 
 	@Override

@@ -5,12 +5,12 @@ import static java.util.stream.Collectors.toList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.item.PokkitItemStack;
 import nl.rutgerkok.pokkit.player.PokkitPlayer;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
@@ -97,14 +97,28 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 
 	@Override
 	public HashMap<Integer, ? extends ItemStack> all(ItemStack item) {
-		throw Pokkit.unsupported();
-
+		HashMap<Integer, ItemStack> result = new HashMap<>();
+		if (item == null) return result;
+		for (int i = 0; i < contents.size(); i++) {
+			ItemStack atPosition = contents.get(i);
+			if (item.equals(atPosition)) {
+				result.put(i, atPosition);
+			}
+		}
+		return result;
 	}
 
 	@Override
 	public HashMap<Integer, ? extends ItemStack> all(Material material) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
-
+		HashMap<Integer, ItemStack> result = new HashMap<>();
+		if (material == null) return result;
+		for (int i = 0; i < contents.size(); i++) {
+			ItemStack atPosition = contents.get(i);
+			if (atPosition != null && atPosition.getType() == material) {
+				result.put(i, atPosition);
+			}
+		}
+		return result;
 	}
 
 	@Override
@@ -133,13 +147,27 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 
 	@Override
 	public boolean contains(ItemStack item, int amount) {
-		throw Pokkit.unsupported();
-
+		if (item == null) {
+			return false;
+		}
+		if (amount < 1) {
+			return true;
+		}
+		int remaining = amount;
+		for (ItemStack stack : contents) {
+			if (item.equals(stack)) {
+				remaining--;
+				if (remaining <= 0) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override
 	public boolean contains(Material material, int amount) throws IllegalArgumentException {
-		Validate.notNull(material, "material");
+		Objects.requireNonNull(material, "material");
 		if (amount < 1) {
 			return true;
 		}
@@ -195,7 +223,7 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 
 	@Override
 	public int first(Material material) throws IllegalArgumentException {
-		Validate.notNull(material);
+		Objects.requireNonNull(material);
 
 		for (int i = 0; i < contents.size(); i++) {
 			ItemStack stack = contents.get(i);
@@ -276,8 +304,40 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 
 	@Override
 	public HashMap<Integer, ItemStack> removeItem(ItemStack... items) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
+		HashMap<Integer, ItemStack> leftover = new HashMap<>();
+		if (items == null) return leftover;
+		for (int i = 0; i < items.length; i++) {
+			ItemStack item = items[i];
+			if (item == null) continue;
+			int remaining = item.getAmount();
+			for (int slot = 0; slot < contents.size(); slot++) {
+				ItemStack atPosition = contents.get(slot);
+				if (!item.isSimilar(atPosition)) continue;
+				int transfer = Math.min(remaining, atPosition.getAmount());
+				remaining -= transfer;
+				int newAmount = atPosition.getAmount() - transfer;
+				if (newAmount <= 0) {
+					contents.set(slot, null);
+				} else {
+					atPosition.setAmount(newAmount);
+				}
+				if (remaining <= 0) break;
+			}
+			if (remaining > 0) {
+				ItemStack leftoverItem = item.clone();
+				leftoverItem.setAmount(remaining);
+				leftover.put(i, leftoverItem);
+			}
+		}
+		return leftover;
+	}
 
+	@Override
+	public boolean isEmpty() {
+		for (ItemStack item : contents) {
+			if (item != null) return false;
+		}
+		return true;
 	}
 
 	@Override

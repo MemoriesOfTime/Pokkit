@@ -221,16 +221,16 @@ public class ItemMap {
 		registerTwoWay(ItemID.IRON_NUGGET, Material.IRON_NUGGET);
 		registerTwoWay(ItemID.NAUTILUS_SHELL, Material.NAUTILUS_SHELL);
 		registerTwoWay(ItemID.HEART_OF_THE_SEA, Material.HEART_OF_THE_SEA);
-		registerTwoWay(ItemID.SCUTE, Material.SCUTE);
+		registerTwoWay(ItemID.SCUTE, Material.TURTLE_SCUTE);
 		registerTwoWay(ItemID.PHANTOM_MEMBRANE, Material.PHANTOM_MEMBRANE);
 		registerTwoWay(ItemID.SHIELD, Material.SHIELD);
 
 		// Unsupported items
 		registerNukkitToBukkit(ItemID.LEATHER_HORSE_ARMOR, Material.LEATHER);
-		registerNukkitToBukkit(734, Material.LEATHER); //SUSPICIOUS_STEW
-		registerNukkitToBukkit(471, Material.LEATHER); //CROSSBOW
-		registerNukkitToBukkit(736, Material.LEATHER); //HONEYCOMB
-		registerNukkitToBukkit(737, Material.LEATHER); //HONEY_BOTTLE
+		registerTwoWay(ItemID.CROSSBOW, Material.CROSSBOW);
+		registerTwoWay(ItemID.SUSPICIOUS_STEW, Material.SUSPICIOUS_STEW);
+		registerTwoWay(ItemID.HONEYCOMB, Material.HONEYCOMB);
+		registerTwoWay(ItemID.HONEY_BOTTLE, Material.HONEY_BOTTLE);
 
 		// Legacy items
 		registerBukkitToNukkit(ItemID.IRON_SHOVEL, Material.LEGACY_IRON_SPADE);

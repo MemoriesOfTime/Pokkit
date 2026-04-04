@@ -1,6 +1,5 @@
 package nl.rutgerkok.pokkit.item;
 
-import nl.rutgerkok.pokkit.Pokkit;
 import org.bukkit.Color;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
@@ -16,7 +15,7 @@ public class PokkitLeatherArmorMeta extends PokkitItemMeta implements LeatherArm
 
 	@Override
 	public CustomItemTagContainer getCustomTagContainer() {
-		throw Pokkit.unsupported();
+		return null;
 	}
 
 	@Override

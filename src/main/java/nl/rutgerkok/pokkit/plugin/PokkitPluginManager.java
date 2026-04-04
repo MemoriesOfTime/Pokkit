@@ -196,16 +196,13 @@ public final class PokkitPluginManager implements PluginManager {
 	@Override
 	public Plugin[] loadPlugins(File directory) {
 		try (RecognizeJarsInDir recognizeJarsInDirectory = this.pluginLoader.recognizeJarFiles()) {
-			// Load the plugins
 			List<String> recognizeOnlyBukkitPlugins = Collections.singletonList(PokkitPluginLoader.class.getName());
 			Collection<cn.nukkit.plugin.Plugin> nukkitPlugins = nukkit
 					.loadPlugins(directory, recognizeOnlyBukkitPlugins).values();
 
-			// Check and convert the plugins
 			List<Plugin> bukkitPlugins = new ArrayList<>();
 			for (cn.nukkit.plugin.Plugin nukkitPlugin : nukkitPlugins) {
 				if (!(nukkitPlugin instanceof PokkitPlugin)) {
-					// This should be impossible with our loader
 					throw new RuntimeException(
 							"Unexpected plugin type: " + nukkitPlugin + "(" + nukkitPlugin.getClass() + ")");
 				}
@@ -215,6 +212,11 @@ public final class PokkitPluginManager implements PluginManager {
 			}
 			return bukkitPlugins.toArray(new Plugin[0]);
 		}
+	}
+
+	@Override
+	public Plugin[] loadPlugins(File[] files) {
+		return new Plugin[0];
 	}
 
 	@Override
@@ -241,7 +243,6 @@ public final class PokkitPluginManager implements PluginManager {
 
 	@Override
 	public void registerInterface(Class<? extends PluginLoader> loader) throws IllegalArgumentException {
-		Pokkit.notImplemented();
 	}
 
 	@Override

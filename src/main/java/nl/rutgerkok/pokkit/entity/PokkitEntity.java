@@ -16,13 +16,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
+import org.bukkit.entity.SpawnCategory;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.metadata.MetadataValue;
@@ -35,6 +38,7 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import nl.rutgerkok.pokkit.Pokkit;
+import nl.rutgerkok.pokkit.persistence.PokkitPersistentDataContainer;
 import nl.rutgerkok.pokkit.PokkitLocation;
 import nl.rutgerkok.pokkit.metadata.PokkitMetadataValue;
 import nl.rutgerkok.pokkit.player.PokkitPlayer;
@@ -42,6 +46,7 @@ import nl.rutgerkok.pokkit.player.PokkitTeleportCause;
 import nl.rutgerkok.pokkit.world.PokkitWorld;
 
 import cn.nukkit.math.Vector3;
+import cn.nukkit.network.protocol.EntityEventPacket;
 import cn.nukkit.network.protocol.RemoveEntityPacket;
 
 public class PokkitEntity implements Entity {
@@ -51,8 +56,10 @@ public class PokkitEntity implements Entity {
         }
 
         if (nukkit instanceof cn.nukkit.entity.EntityLiving) {
-            // Return more specific type
             return PokkitLivingEntity.toBukkit((cn.nukkit.entity.EntityLiving) nukkit);
+        }
+        if (nukkit instanceof cn.nukkit.entity.item.EntityFallingBlock) {
+            return new PokkitFallingBlock((cn.nukkit.entity.item.EntityFallingBlock) nukkit);
         }
         return new PokkitEntity(nukkit);
     }
@@ -97,7 +104,11 @@ public class PokkitEntity implements Entity {
 
     @Override
     public boolean addScoreboardTag(String tag) {
-        throw Pokkit.unsupported();
+        if (nukkit.containTag(tag)) {
+            return false;
+        }
+        nukkit.addTag(tag);
+        return true;
     }
 
     @Override
@@ -162,7 +173,7 @@ public class PokkitEntity implements Entity {
 
     @Override
     public int getMaxFireTicks() {
-        return 32767;
+        return nukkit.fireProof ? 0 : 32767;
     }
 
     @Override
@@ -206,12 +217,16 @@ public class PokkitEntity implements Entity {
 
     @Override
     public int getPortalCooldown() {
-        return 80;
+        return nukkit.namedTag.contains("PortalCooldown") ? nukkit.namedTag.getInt("PortalCooldown") : 80;
     }
 
     @Override
     public Set<String> getScoreboardTags() {
-        return Collections.emptySet();
+        Set<String> tags = new HashSet<>();
+        for (cn.nukkit.nbt.tag.StringTag tag : nukkit.getAllTags()) {
+            tags.add(tag.data);
+        }
+        return tags;
     }
 
     @Override
@@ -233,7 +248,7 @@ public class PokkitEntity implements Entity {
             case EntityHusk.NETWORK_ID: return EntityType.HUSK;
             case EntityStray.NETWORK_ID: return EntityType.STRAY;
             case EntityWitch.NETWORK_ID: return EntityType.WITCH;
-            case EntityZombieVillagerV1.NETWORK_ID: return EntityType.ZOMBIE_VILLAGER;
+            case EntityZombieVillagerV2.NETWORK_ID: return EntityType.ZOMBIE_VILLAGER;
             case EntityBlaze.NETWORK_ID: return EntityType.BLAZE;
             case EntityMagmaCube.NETWORK_ID: return EntityType.MAGMA_CUBE;
             case EntityGhast.NETWORK_ID: return EntityType.GHAST;
@@ -241,7 +256,7 @@ public class PokkitEntity implements Entity {
             case EntitySilverfish.NETWORK_ID: return EntityType.SILVERFISH;
             case EntityEnderman.NETWORK_ID: return EntityType.ENDERMAN;
             case EntitySlime.NETWORK_ID: return EntityType.SLIME;
-            case EntityZombiePigman.NETWORK_ID: return EntityType.PIG_ZOMBIE;
+            case EntityZombiePigman.NETWORK_ID: return EntityType.ZOMBIFIED_PIGLIN;
             case EntitySpider.NETWORK_ID: return EntityType.SPIDER;
             case EntitySkeleton.NETWORK_ID: return EntityType.SKELETON;
             case EntityCreeper.NETWORK_ID: return EntityType.CREEPER;
@@ -255,20 +270,20 @@ public class PokkitEntity implements Entity {
             case EntitySquid.NETWORK_ID: return EntityType.SQUID;
             case EntityDrowned.NETWORK_ID: return EntityType.DROWNED;
             case EntitySheep.NETWORK_ID: return EntityType.SHEEP;
-            case EntityMooshroom.NETWORK_ID: return EntityType.MUSHROOM_COW;
+            case EntityMooshroom.NETWORK_ID: return EntityType.MOOSHROOM;
             case EntityPanda.NETWORK_ID: return EntityType.PANDA;
             case EntitySalmon.NETWORK_ID: return EntityType.SALMON;
             case EntityPig.NETWORK_ID: return EntityType.PIG;
-            case EntityVillagerV1.NETWORK_ID: return EntityType.VILLAGER;
+            case EntityVillagerV2.NETWORK_ID: return EntityType.VILLAGER;
             case EntityCod.NETWORK_ID: return EntityType.COD;
             case EntityPufferfish.NETWORK_ID: return EntityType.PUFFERFISH;
-            case EntityCow.NETWORK_ID: return EntityType.COD;
+            case EntityCow.NETWORK_ID: return EntityType.COW;
             case EntityChicken.NETWORK_ID: return EntityType.CHICKEN;
             case 107: return EntityType.UNKNOWN;
             case EntityLlama.NETWORK_ID: return EntityType.LLAMA;
             case EntityIronGolem.NETWORK_ID: return EntityType.IRON_GOLEM;
             case EntityRabbit.NETWORK_ID: return EntityType.RABBIT;
-            case EntitySnowGolem.NETWORK_ID: return EntityType.SNOWMAN;
+            case EntitySnowGolem.NETWORK_ID: return EntityType.SNOW_GOLEM;
             case EntityBat.NETWORK_ID: return EntityType.BAT;
             case EntityOcelot.NETWORK_ID: return EntityType.OCELOT;
             case EntityHorse.NETWORK_ID: return EntityType.HORSE;
@@ -280,25 +295,25 @@ public class PokkitEntity implements Entity {
             case EntityGuardian.NETWORK_ID: return EntityType.GUARDIAN;
             case EntityElderGuardian.NETWORK_ID: return EntityType.ELDER_GUARDIAN;
             case EntityVindicator.NETWORK_ID: return EntityType.VINDICATOR;
-            case EntityWither.NETWORK_ID: return EntityType.WITCH;
+            case EntityWither.NETWORK_ID: return EntityType.WITHER;
             case EntityEnderDragon.NETWORK_ID: return EntityType.ENDER_DRAGON;
             case EntityShulker.NETWORK_ID: return EntityType.SHULKER;
             case EntityEndermite.NETWORK_ID: return EntityType.ENDERMITE;
             case EntityMinecartEmpty.NETWORK_ID: return EntityType.MINECART;
-            case EntityMinecartHopper.NETWORK_ID: return EntityType.MINECART_HOPPER;
-            case EntityMinecartTNT.NETWORK_ID: return EntityType.MINECART_TNT;
-            case EntityMinecartChest.NETWORK_ID: return EntityType.MINECART_CHEST;
-            case 100: return EntityType.MINECART_COMMAND;
+            case EntityMinecartHopper.NETWORK_ID: return EntityType.HOPPER_MINECART;
+            case EntityMinecartTNT.NETWORK_ID: return EntityType.TNT_MINECART;
+            case EntityMinecartChest.NETWORK_ID: return EntityType.CHEST_MINECART;
+            case 100: return EntityType.COMMAND_BLOCK_MINECART;
             case EntityArmorStand.NETWORK_ID: return EntityType.ARMOR_STAND;
-            case EntityItem.NETWORK_ID: return EntityType.DROPPED_ITEM;
-            case EntityPrimedTNT.NETWORK_ID: return EntityType.PRIMED_TNT;
+            case EntityItem.NETWORK_ID: return EntityType.ITEM;
+            case EntityPrimedTNT.NETWORK_ID: return EntityType.TNT;
             case EntityFallingBlock.NETWORK_ID: return EntityType.FALLING_BLOCK;
-            case EntityExpBottle.NETWORK_ID: return EntityType.THROWN_EXP_BOTTLE;
+            case EntityExpBottle.NETWORK_ID: return EntityType.EXPERIENCE_BOTTLE;
             case EntityXPOrb.NETWORK_ID: return EntityType.EXPERIENCE_ORB;
-            case 70: return EntityType.ENDER_SIGNAL;
-            case EntityEndCrystal.NETWORK_ID: return EntityType.ENDER_CRYSTAL;
+            case 70: return EntityType.EYE_OF_ENDER;
+            case EntityEndCrystal.NETWORK_ID: return EntityType.END_CRYSTAL;
             case 76: return EntityType.SHULKER_BULLET;
-            case EntityFishingHook.NETWORK_ID: return EntityType.FISHING_HOOK;
+            case EntityFishingHook.NETWORK_ID: return EntityType.FISHING_BOBBER;
             case 79: return EntityType.DRAGON_FIREBALL;
             case EntityArrow.NETWORK_ID: return EntityType.ARROW;
             case EntitySnowball.NETWORK_ID: return EntityType.SNOWBALL;
@@ -306,18 +321,18 @@ public class PokkitEntity implements Entity {
             case EntityPainting.NETWORK_ID: return EntityType.PAINTING;
             case EntityThrownTrident.NETWORK_ID: return EntityType.TRIDENT;
             case 85: return EntityType.FIREBALL;
-            case EntityPotion.NETWORK_ID: return EntityType.SPLASH_POTION;
+            case EntityPotion.NETWORK_ID: return EntityType.POTION;
             case EntityEnderPearl.NETWORK_ID: return EntityType.ENDER_PEARL;
-            case 88: return EntityType.LEASH_HITCH;
+            case 88: return EntityType.LEASH_KNOT;
             case 89: return EntityType.WITHER_SKULL;
             case 91: return EntityType.WITHER_SKULL;
             case EntityBoat.NETWORK_ID: return EntityType.BOAT;
-            case EntityLightning.NETWORK_ID: return EntityType.LIGHTNING;
+            case EntityLightning.NETWORK_ID: return EntityType.LIGHTNING_BOLT;
             case 94: return EntityType.SMALL_FIREBALL;
             case 102: return EntityType.LLAMA_SPIT;
             case EntityAreaEffectCloud.NETWORK_ID: return EntityType.AREA_EFFECT_CLOUD;
-            case EntityPotionLingering.NETWORK_ID: return EntityType.SPLASH_POTION;
-            case EntityFirework.NETWORK_ID: return EntityType.FIREWORK;
+            case EntityPotionLingering.NETWORK_ID: return EntityType.POTION;
+            case EntityFirework.NETWORK_ID: return EntityType.FIREWORK_ROCKET;
             case 103: return EntityType.EVOKER_FANGS;
             case 104: return EntityType.EVOKER;
             case EntityVex.NETWORK_ID: return EntityType.VEX;
@@ -332,27 +347,25 @@ public class PokkitEntity implements Entity {
             case EntityZombieVillager.NETWORK_ID: return EntityType.ZOMBIE_VILLAGER;
             case EntityFox.NETWORK_ID: return EntityType.FOX;
             case EntityBee.NETWORK_ID: return EntityType.BEE;
-            // Spigot TODO
-            case EntityPiglin.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityHoglin.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityStrider.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityZoglin.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityPiglinBrute.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityGoat.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityGlowSquid.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityAxolotl.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityWarden.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityFrog.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityTadpole.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityAllay.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityChestBoat.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityCamel.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntitySniffer.NETWORK_ID: return EntityType.UNKNOWN;
-            case EntityBreeze.NETWORK_ID: return EntityType.UNKNOWN;
-            case 141: return EntityType.UNKNOWN;
-            case EntityArmadillo.NETWORK_ID: return EntityType.UNKNOWN;
-            case 143: return EntityType.UNKNOWN;
-            case EntityBogged.NETWORK_ID: return EntityType.UNKNOWN;
+            case EntityPiglin.NETWORK_ID: return EntityType.PIGLIN;
+            case EntityHoglin.NETWORK_ID: return EntityType.HOGLIN;
+            case EntityStrider.NETWORK_ID: return EntityType.STRIDER;
+            case EntityZoglin.NETWORK_ID: return EntityType.ZOGLIN;
+            case EntityPiglinBrute.NETWORK_ID: return EntityType.PIGLIN_BRUTE;
+            case EntityGoat.NETWORK_ID: return EntityType.GOAT;
+            case EntityGlowSquid.NETWORK_ID: return EntityType.GLOW_SQUID;
+            case EntityAxolotl.NETWORK_ID: return EntityType.AXOLOTL;
+            case EntityWarden.NETWORK_ID: return EntityType.WARDEN;
+            case EntityFrog.NETWORK_ID: return EntityType.FROG;
+            case EntityTadpole.NETWORK_ID: return EntityType.TADPOLE;
+            case EntityAllay.NETWORK_ID: return EntityType.ALLAY;
+            case EntityChestBoat.NETWORK_ID: return EntityType.CHEST_BOAT;
+            case EntityCamel.NETWORK_ID: return EntityType.CAMEL;
+            case EntitySniffer.NETWORK_ID: return EntityType.SNIFFER;
+            case EntityBreeze.NETWORK_ID: return EntityType.BREEZE;
+            case 141: return EntityType.BREEZE_WIND_CHARGE;
+            case EntityArmadillo.NETWORK_ID: return EntityType.ARMADILLO;
+            case EntityBogged.NETWORK_ID: return EntityType.BOGGED;
             default:
                 return EntityType.UNKNOWN;
         }
@@ -360,7 +373,7 @@ public class PokkitEntity implements Entity {
 
     @Override
     public UUID getUniqueId() {
-        throw Pokkit.unsupported();
+        return nukkit.getUniqueId();
     }
 
     @Override
@@ -436,12 +449,12 @@ public class PokkitEntity implements Entity {
 
     @Override
     public boolean isEmpty() {
-        return false; // No vehicle support yet
+        return nukkit.passengers.isEmpty();
     }
 
     @Override
     public boolean isGlowing() {
-        return false; // No glow support yet
+        return nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_ENCHANTED);
     }
 
     @Override
@@ -474,14 +487,14 @@ public class PokkitEntity implements Entity {
         return false; // Permissions cannot be set for entities in Nukkit
     }
 
-    @Override
+	@Override
 	public boolean isPersistent() {
-		return true; // By default all entities are persistent
+		return nukkit.canBeSavedWithChunk();
 	}
 
     @Override
     public boolean isSilent() {
-        return false; // No silence support yet
+        return nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_SILENT);
     }
 
     @Override
@@ -499,8 +512,31 @@ public class PokkitEntity implements Entity {
 
     @Override
     public void playEffect(EntityEffect type) {
-        // Not supported yet. As effects are usually unimportant, it's not worth
-        // to crash a plugin over this, so let this method fail silently
+        EntityEventPacket pk = new EntityEventPacket();
+        pk.eid = nukkit.getId();
+        switch (type) {
+            case HURT:
+                pk.event = EntityEventPacket.HURT_ANIMATION;
+                break;
+            case WOLF_HEARTS:
+                pk.event = EntityEventPacket.LOVE_PARTICLES;
+                break;
+            case WOLF_SHAKE:
+                pk.event = EntityEventPacket.SHAKE_WET;
+                break;
+            case SHEEP_EAT:
+                pk.event = EntityEventPacket.EAT_GRASS_ANIMATION;
+                break;
+            case TOTEM_RESURRECT:
+                pk.event = EntityEventPacket.CONSUME_TOTEM;
+                break;
+            case GUARDIAN_TARGET:
+                pk.event = EntityEventPacket.GUARDIAN_ATTACK;
+                break;
+            default:
+                return;
+        }
+        cn.nukkit.Server.broadcastPacket(nukkit.hasSpawned.values(), pk);
     }
 
     @Override
@@ -520,22 +556,25 @@ public class PokkitEntity implements Entity {
 
     @Override
     public void removeAttachment(PermissionAttachment attachment) {
-        Pokkit.notImplemented();
     }
 
     @Override
     public void removeMetadata(String metadataKey, Plugin owningPlugin) {
-        Pokkit.notImplemented();
+        nukkit.removeMetadata(metadataKey, nl.rutgerkok.pokkit.plugin.PokkitPlugin.toNukkit(owningPlugin));
     }
 
-    @Override
+	@Override
 	public boolean removePassenger(Entity passenger) {
         return nukkit.dismountEntity(toNukkit(passenger));
 	}
 
     @Override
     public boolean removeScoreboardTag(String tag) {
-        throw Pokkit.unsupported();
+        if (!nukkit.containTag(tag)) {
+            return false;
+        }
+        nukkit.removeTag(tag);
+        return true;
     }
 
     @Override
@@ -570,7 +609,7 @@ public class PokkitEntity implements Entity {
 
     @Override
     public void setGlowing(boolean flag) {
-        // not supported in bedrock edition
+        nukkit.setDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_ENCHANTED, flag);
     }
 
     @Override
@@ -590,7 +629,7 @@ public class PokkitEntity implements Entity {
 
     @Override
     public void setMetadata(String metadataKey, MetadataValue newMetadataValue) {
-        Pokkit.notImplemented();
+        nukkit.setMetadata(metadataKey, PokkitMetadataValue.toNukkit(newMetadataValue));
     }
 
     @Override
@@ -603,14 +642,14 @@ public class PokkitEntity implements Entity {
         return nukkit.mountEntity(toNukkit(passenger));
     }
 
-    @Override
-	public void setPersistent(boolean persistent) {
-        Pokkit.notImplemented();
-	}
+	@Override
+    public void setPersistent(boolean persistent) {
+        nukkit.setCanBeSavedWithChunk(persistent);
+    }
 
     @Override
     public void setPortalCooldown(int cooldown) {
-        //silently unsupported
+        nukkit.namedTag.putInt("PortalCooldown", cooldown);
     }
 
 	@Override
@@ -659,12 +698,184 @@ public class PokkitEntity implements Entity {
 	}
 
     @Override
+    public Entity copy() {
+        return copy(getLocation());
+    }
+
+    @Override
+    public Entity copy(Location location) {
+        cn.nukkit.level.Position pos = nl.rutgerkok.pokkit.PokkitLocation.toNukkit(location);
+        cn.nukkit.nbt.tag.CompoundTag nbt = nukkit.namedTag.copy();
+        cn.nukkit.entity.Entity copy = cn.nukkit.entity.Entity.createEntity(
+                nukkit.getNetworkId(), pos.getChunk(), nbt);
+        if (copy == null) return null;
+        copy.spawnToAll();
+        return PokkitEntity.toBukkit(copy);
+    }
+
+    @Override
+    public EntitySnapshot createSnapshot() {
+        return null;
+    }
+
+    @Override
     public Pose getPose() {
-        throw Pokkit.unsupported();
+        if (nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_SLEEPING)) {
+            return Pose.SLEEPING;
+        }
+        if (nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_SWIMMING)) {
+            return Pose.SWIMMING;
+        }
+        if (nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_CRAWLING)) {
+            return Pose.SWIMMING;
+        }
+        if (nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_SNEAKING)) {
+            return Pose.SNEAKING;
+        }
+        if (nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_GLIDING)) {
+            return Pose.FALL_FLYING;
+        }
+        if (nukkit.riding != null) {
+            return Pose.STANDING;
+        }
+        return Pose.STANDING;
     }
 
     @Override
     public PersistentDataContainer getPersistentDataContainer() {
-        throw Pokkit.unsupported();
+        cn.nukkit.nbt.tag.CompoundTag pdcTag;
+        if (nukkit.namedTag.containsCompound("BukkitPDC")) {
+            pdcTag = nukkit.namedTag.getCompound("BukkitPDC");
+        } else {
+            pdcTag = new cn.nukkit.nbt.tag.CompoundTag();
+            nukkit.namedTag.putCompound("BukkitPDC", pdcTag);
+        }
+        return new PokkitPersistentDataContainer(pdcTag, "");
+    }
+
+    @Override
+    public String getAsString() {
+        return "PokkitEntity{type=" + getType() + "}";
+    }
+
+    @Override
+    public SpawnCategory getSpawnCategory() {
+        EntityType type = getType();
+        if (type == EntityType.UNKNOWN || type == EntityType.ARMOR_STAND || type == EntityType.PLAYER) {
+            return SpawnCategory.MISC;
+        }
+        if (type == EntityType.BAT || type == EntityType.PARROT) return SpawnCategory.AMBIENT;
+        if (type == EntityType.SQUID || type == EntityType.DOLPHIN || type == EntityType.COD
+                || type == EntityType.SALMON || type == EntityType.TROPICAL_FISH || type == EntityType.PUFFERFISH
+                || type == EntityType.GUARDIAN || type == EntityType.ELDER_GUARDIAN || type == EntityType.TURTLE
+                || type == EntityType.GLOW_SQUID || type == EntityType.TADPOLE) {
+            return SpawnCategory.WATER_ANIMAL;
+        }
+        switch (type) {
+            case BLAZE: case CAVE_SPIDER: case CREEPER: case DROWNED:
+            case ENDERMAN: case ENDERMITE: case EVOKER: case GHAST:
+            case HUSK: case MAGMA_CUBE: case PHANTOM: case PIGLIN: case PIGLIN_BRUTE:
+            case PILLAGER: case RAVAGER: case SHULKER: case SILVERFISH: case SKELETON:
+            case SLIME: case SPIDER: case STRAY: case VEX: case VINDICATOR:
+            case WITCH: case WITHER: case WITHER_SKELETON: case ZOGLIN: case ZOMBIE:
+            case ZOMBIE_VILLAGER: case ZOMBIFIED_PIGLIN: case ENDER_DRAGON:
+                return SpawnCategory.MONSTER;
+            case BEE: case CAT: case CHICKEN: case COW: case DONKEY:
+            case FOX: case GOAT: case HORSE:
+            case IRON_GOLEM: case LLAMA: case MOOSHROOM: case MULE: case OCELOT:
+            case PANDA: case PIG: case POLAR_BEAR:
+            case RABBIT: case SHEEP: case SKELETON_HORSE: case SNOW_GOLEM:
+            case STRIDER: case WOLF:
+            case ZOMBIE_HORSE: case FROG: case ALLAY:
+            case CAMEL: case SNIFFER: case ARMADILLO:
+            case WANDERING_TRADER:
+                return SpawnCategory.ANIMAL;
+            default:
+                return SpawnCategory.MISC;
+        }
+    }
+
+    @Override
+    public int getFreezeTicks() {
+        return nukkit.freezingTicks;
+    }
+
+    @Override
+    public int getMaxFreezeTicks() {
+        return 140;
+    }
+
+    @Override
+    public boolean isFrozen() {
+        return nukkit.freezingTicks >= getMaxFreezeTicks();
+    }
+
+    @Override
+    public void setFreezeTicks(int ticks) {
+        nukkit.setFreezingTicks(ticks);
+    }
+
+    @Override
+    public Sound getSwimSound() {
+        return Sound.ENTITY_GENERIC_SWIM;
+    }
+
+    @Override
+    public Sound getSwimSplashSound() {
+        return Sound.ENTITY_GENERIC_SPLASH;
+    }
+
+    @Override
+    public Sound getSwimHighSpeedSplashSound() {
+        return Sound.ENTITY_GENERIC_SPLASH;
+    }
+
+    @Override
+    public boolean isVisualFire() {
+        return nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_ONFIRE);
+    }
+
+    @Override
+    public void setVisualFire(boolean fire) {
+        nukkit.setDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_ONFIRE, fire);
+    }
+
+    @Override
+    public boolean isInWorld() {
+        return nukkit.isValid();
+    }
+
+    @Override
+    public boolean isInWater() {
+        return nukkit.isInsideOfWater();
+    }
+
+    @Override
+    public boolean isVisibleByDefault() {
+        return !nukkit.namedTag.contains("VisibleByDefault") || nukkit.namedTag.getBoolean("VisibleByDefault");
+    }
+
+    @Override
+    public void setVisibleByDefault(boolean visible) {
+        nukkit.namedTag.putBoolean("VisibleByDefault", visible);
+    }
+
+    @Override
+    public Set<Player> getTrackedBy() {
+        Set<Player> players = new HashSet<>();
+        for (cn.nukkit.Player p : nukkit.hasSpawned.values()) {
+            players.add(PokkitPlayer.toBukkit(p));
+        }
+        return players;
+    }
+
+    @Override
+    public void sendMessage(UUID sender, String message) {
+        sendMessage(message);
+    }
+
+    @Override
+    public void sendMessage(UUID sender, String... messages) {
+        sendMessage(messages);
     }
 }

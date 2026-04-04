@@ -24,17 +24,17 @@ public class PokkitItemFrameEntity extends PokkitFakeEntity implements ItemFrame
 
 	@Override
 	public BlockFace getAttachedFace() {
-		throw Pokkit.unsupported();
+		return BlockFace.SOUTH;
 	}
 
 	@Override
 	public BlockFace getFacing() {
-		throw Pokkit.unsupported();
+		return BlockFace.SOUTH;
 	}
 
 	@Override
 	public Pose getPose() {
-		throw Pokkit.unsupported();
+		return Pose.STANDING;
 	}
 
 	@Override
@@ -54,8 +54,19 @@ public class PokkitItemFrameEntity extends PokkitFakeEntity implements ItemFrame
 
 	@Override
 	public Rotation getRotation() {
-		// TODO: Implement
-		return Rotation.CLOCKWISE;
+		int rot = nukkit.getItemRotation();
+		switch (rot % 4) {
+		case 0:
+			return Rotation.NONE;
+		case 1:
+			return Rotation.CLOCKWISE;
+		case 2:
+			return Rotation.FLIPPED;
+		case 3:
+			return Rotation.COUNTER_CLOCKWISE;
+		default:
+			return Rotation.NONE;
+		}
 	}
 
 	@Override
@@ -75,7 +86,6 @@ public class PokkitItemFrameEntity extends PokkitFakeEntity implements ItemFrame
 
 	@Override
 	public void setRotation(float v, float v1) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
@@ -85,12 +95,11 @@ public class PokkitItemFrameEntity extends PokkitFakeEntity implements ItemFrame
 
 	@Override
 	public void setFacingDirection(BlockFace face) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public boolean setFacingDirection(BlockFace face, boolean force) {
-		throw Pokkit.unsupported();
+		return false;
 	}
 
 	@Override
@@ -105,11 +114,57 @@ public class PokkitItemFrameEntity extends PokkitFakeEntity implements ItemFrame
 
 	@Override
 	public void setRotation(Rotation rotation) throws IllegalArgumentException {
-		Pokkit.notImplemented();
+		int rot;
+		switch (rotation) {
+		case NONE:
+			rot = 0;
+			break;
+		case CLOCKWISE:
+			rot = 1;
+			break;
+		case FLIPPED:
+			rot = 2;
+			break;
+		case COUNTER_CLOCKWISE:
+			rot = 3;
+			break;
+		default:
+			rot = 0;
+			break;
+		}
+		nukkit.setItemRotation(rot);
 	}
 
 	@Override
 	public PersistentDataContainer getPersistentDataContainer() {
-		throw Pokkit.unsupported();
+		return null;
+	}
+
+	@Override
+	public boolean isFixed() {
+		return false;
+	}
+
+	@Override
+	public void setFixed(boolean fixed) {
+	}
+
+	@Override
+	public boolean isVisible() {
+		return true;
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+	}
+
+	@Override
+	public float getItemDropChance() {
+		return 1.0f;
+	}
+
+	@Override
+	public void setItemDropChance(float chance) {
+		nukkit.setItemDropChance(chance);
 	}
 }

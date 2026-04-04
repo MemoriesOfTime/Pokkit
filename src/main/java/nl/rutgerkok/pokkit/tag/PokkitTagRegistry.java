@@ -1,17 +1,16 @@
 package nl.rutgerkok.pokkit.tag;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
 import java.util.HashSet;
 
 import org.bukkit.Material;
 
 public class PokkitTagRegistry {
 	
-	HashSet<Material> TagRegistry = new HashSet<>();
-	boolean blockTags;
-	boolean itemTags;
-	String tagName;
+	HashSet<Material> TagRegistry = new HashSet<Material>();
+	boolean blockTags = false;
+	boolean itemTags = true;
+	String tagName = "";
 	
 	/*
 	 * tagName is the name of the tag.
@@ -113,23 +112,24 @@ public class PokkitTagRegistry {
 	private HashSet<Material> ReflectionMaterialEntries(String stringContains, String doesNotContain) {
 		Field[] MaterialFields = Material.class.getFields();
 		
-		HashSet<Material> materialsWithTagName = new HashSet<>();
-        for (Field field : MaterialFields) {
-            if (!field.getName().toLowerCase().contains("legacy")) {
-                if (doesNotContain.isEmpty() || !field.getName().toLowerCase().contains(doesNotContain)) {
-                    if (field.getName().toLowerCase().contains(stringContains)) {
-                        try {
-                            Material materialField = (Material) field.get(null);
-                            if ((blockTags && materialField.isBlock()) || (!blockTags && materialField.isItem())) {
-                                materialsWithTagName.add(materialField);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
+		HashSet<Material> materialsWithTagName = new HashSet<Material>();
+		for (int i = 0; i < MaterialFields.length; i++) {
+			if (!MaterialFields[i].getName().toLowerCase().contains("legacy")) {
+				if (doesNotContain.length() == 0 || !MaterialFields[i].getName().toLowerCase().contains(doesNotContain))
+				{
+					if (MaterialFields[i].getName().toLowerCase().contains(stringContains)) {
+						try {
+							Material materialField = (Material) MaterialFields[i].get(null);
+							if (true) { // isBlock/isItem triggers Registry init cycle
+								materialsWithTagName.add(materialField);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}	
+					}
+				}
+			}
+		}
 		return materialsWithTagName;
 	}
 	
@@ -138,11 +138,13 @@ public class PokkitTagRegistry {
 	}
 	
 	private HashSet<Material> CombineMaterialEntries(HashSet<Material> materialsWithTagName, Material...materials) {
-        Collections.addAll(materialsWithTagName, materials);
+		for (int i = 0; i < materials.length; i++) {
+			materialsWithTagName.add(materials[i]);
+		}
 		return materialsWithTagName;
 	}
 	
 	private HashSet<Material> CombineMaterialEntries(Material...materials) {
-		return CombineMaterialEntries(new HashSet<>(), materials);
+		return CombineMaterialEntries(new HashSet<Material>(), materials);
 	}
 }

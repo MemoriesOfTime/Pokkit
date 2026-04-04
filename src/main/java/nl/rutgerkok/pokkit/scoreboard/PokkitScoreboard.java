@@ -10,10 +10,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.Validate;
+import nl.rutgerkok.pokkit.Pokkit;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.*;
+import org.bukkit.scoreboard.Criteria;
 
 public final class PokkitScoreboard implements Scoreboard {
 
@@ -40,7 +41,7 @@ public final class PokkitScoreboard implements Scoreboard {
 
 	@Override
 	public void clearSlot(DisplaySlot slot) throws IllegalArgumentException {
-		Validate.notNull(slot, "slot");
+		Objects.requireNonNull(slot, "slot");
 		this.objectivesByDisplaySlot.remove(slot);
 	}
 
@@ -60,19 +61,19 @@ public final class PokkitScoreboard implements Scoreboard {
 
 	@Override
 	public Team getEntryTeam(String entry) throws IllegalArgumentException {
-		Validate.notNull(entry, "entry");
+		Objects.requireNonNull(entry, "entry");
 		return teamsByPlayer.get(entry.toLowerCase());
 	}
 
 	@Override
 	public Objective getObjective(DisplaySlot slot) throws IllegalArgumentException {
-		Validate.notNull(slot, "slot");
+		Objects.requireNonNull(slot, "slot");
 		return objectivesByDisplaySlot.get(slot);
 	}
 
 	@Override
 	public Objective getObjective(String name) throws IllegalArgumentException {
-		Validate.notNull(name, "name");
+		Objects.requireNonNull(name, "name");
 		return objectivesByName.get(name.toLowerCase());
 	}
 
@@ -82,8 +83,13 @@ public final class PokkitScoreboard implements Scoreboard {
 	}
 
 	@Override
+	public Set<Objective> getObjectivesByCriteria(Criteria criteria) throws IllegalArgumentException {
+		return Collections.emptySet();
+	}
+
+	@Override
 	public Set<Objective> getObjectivesByCriteria(String criteria) throws IllegalArgumentException {
-		Validate.notNull(criteria, "criteria");
+		Objects.requireNonNull(criteria, "criteria");
 		return Collections.unmodifiableSet(objectivesByName.values().stream()
 				.filter(objective -> criteria.equalsIgnoreCase(objective.getCriteria())).collect(Collectors.toSet()));
 	}
@@ -102,26 +108,26 @@ public final class PokkitScoreboard implements Scoreboard {
 
 	@Override
 	public Team getPlayerTeam(OfflinePlayer player) throws IllegalArgumentException {
-		Validate.notNull(player, "player");
+		Objects.requireNonNull(player, "player");
 		return getEntryTeam(player.getName());
 	}
 
 	@Override
 	public Set<Score> getScores(OfflinePlayer player) throws IllegalArgumentException {
-		Validate.notNull(player, "player");
+		Objects.requireNonNull(player, "player");
 		return getScores(player.getName());
 	}
 
 	@Override
 	public Set<Score> getScores(String entry) throws IllegalArgumentException {
-		Validate.notNull(entry, "entry");
+		Objects.requireNonNull(entry, "entry");
 		return Collections.unmodifiableSet(scoresByPlayer.getOrDefault(entry.toLowerCase(), Collections.emptyMap())
 				.values().stream().collect(Collectors.toSet()));
 	}
 
 	@Override
 	public Team getTeam(String name) throws IllegalArgumentException {
-		Validate.notNull(name, "name");
+		Objects.requireNonNull(name, "name");
 		return teamsByName.get(name.toLowerCase());
 	}
 
@@ -146,8 +152,8 @@ public final class PokkitScoreboard implements Scoreboard {
 
 	@Override
 	public Objective registerNewObjective(String name, String criteria) throws IllegalArgumentException {
-		Validate.notNull(name, "name");
-		Validate.notNull(criteria, "criteria");
+		Objects.requireNonNull(name, "name");
+		Objects.requireNonNull(criteria, "criteria");
 		Objective objective = new PokkitObjective(name, criteria, this, RenderType.INTEGER);
 		this.objectivesByName.put(objective.getName().toLowerCase(), objective);
 		return objective;
@@ -162,8 +168,8 @@ public final class PokkitScoreboard implements Scoreboard {
 
 	@Override
 	public Objective registerNewObjective(String name, String criteria, String displayName, RenderType renderType) throws IllegalArgumentException {
-		Validate.notNull(name, "name");
-		Validate.notNull(criteria, "criteria");
+		Objects.requireNonNull(name, "name");
+		Objects.requireNonNull(criteria, "criteria");
 		Objective objective = new PokkitObjective(name, criteria, this, renderType);
 		this.objectivesByName.put(objective.getName().toLowerCase(), objective);
 		objective.setDisplayName(displayName);
@@ -171,8 +177,18 @@ public final class PokkitScoreboard implements Scoreboard {
 	}
 
 	@Override
+	public Objective registerNewObjective(String name, Criteria criteria, String displayName, RenderType renderType) throws IllegalArgumentException {
+		return registerNewObjective(name, criteria.getName(), displayName, renderType);
+	}
+
+	@Override
+	public Objective registerNewObjective(String name, Criteria criteria, String displayName) throws IllegalArgumentException {
+		return registerNewObjective(name, criteria.getName(), displayName);
+	}
+
+	@Override
 	public Team registerNewTeam(String name) throws IllegalArgumentException {
-		Validate.notNull(name, "name");
+		Objects.requireNonNull(name, "name");
 		PokkitTeam team = new PokkitTeam(name, this);
 		if (teamsByName.putIfAbsent(name.toLowerCase(), team) != null) {
 			throw new IllegalArgumentException(name + " is already registered");
@@ -199,13 +215,13 @@ public final class PokkitScoreboard implements Scoreboard {
 
 	@Override
 	public void resetScores(OfflinePlayer player) throws IllegalArgumentException {
-		Validate.notNull(player, "player");
+		Objects.requireNonNull(player, "player");
 		this.scoresByPlayer.remove(player.getName().toLowerCase());
 	}
 
 	@Override
 	public void resetScores(String entry) throws IllegalArgumentException {
-		Validate.notNull(entry, "entry");
+		Objects.requireNonNull(entry, "entry");
 		this.scoresByPlayer.remove(entry.toLowerCase());
 	}
 

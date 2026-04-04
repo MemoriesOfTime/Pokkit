@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
@@ -87,12 +86,32 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 	@Override
 	public HashMap<Integer, ? extends ItemStack> all(ItemStack item) {
-		throw Pokkit.unsupported();
+		HashMap<Integer, ItemStack> result = new HashMap<>();
+		if (item == null) return result;
+		Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
+		int size = getSize();
+		for (int i = 0; i < size; i++) {
+			Item atPosition = nukkit.getItem(i);
+			if (atPosition != null && atPosition.equals(nukkitItem)) {
+				result.put(i, PokkitItemStack.toBukkitCopy(atPosition));
+			}
+		}
+		return result;
 	}
 
 	@Override
 	public HashMap<Integer, ? extends ItemStack> all(Material material) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
+		HashMap<Integer, ItemStack> result = new HashMap<>();
+		if (material == null) return result;
+		int nukkitTypeId = PokkitBlockData.createBlockData(material, 0).getNukkitId();
+		int size = getSize();
+		for (int i = 0; i < size; i++) {
+			Item atPosition = nukkit.getItem(i);
+			if (atPosition.getId() == nukkitTypeId) {
+				result.put(i, PokkitItemStack.toBukkitCopy(atPosition));
+			}
+		}
+		return result;
 	}
 
 	@Override
@@ -151,7 +170,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 	@Override
 	public boolean contains(Material material, int amount) throws IllegalArgumentException {
-		Validate.notNull(material, "material");
+		Objects.requireNonNull(material, "material");
 		int nukkitTypeId = PokkitBlockData.createBlockData(material, 0).getNukkitId();
 
 		int remaining = amount;
@@ -194,7 +213,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 	@Override
 	public int first(Material material) throws IllegalArgumentException {
-		Validate.notNull(material, "material");
+		Objects.requireNonNull(material, "material");
 		int nukkitTypeId = PokkitBlockData.createBlockData(material, 0).getNukkitId();
 
 		int size = getSize();
@@ -286,7 +305,43 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 	@Override
 	public HashMap<Integer, ItemStack> removeItem(ItemStack... items) throws IllegalArgumentException {
-		throw Pokkit.unsupported();
+		HashMap<Integer, ItemStack> leftover = new HashMap<>();
+		if (items == null) return leftover;
+		for (int i = 0; i < items.length; i++) {
+			ItemStack item = items[i];
+			if (item == null) continue;
+			int remaining = item.getAmount();
+			Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
+			int size = getSize();
+			for (int slot = 0; slot < size; slot++) {
+				Item atPosition = nukkit.getItem(slot);
+				if (!atPosition.equals(nukkitItem)) continue;
+				int transfer = Math.min(remaining, atPosition.count);
+				remaining -= transfer;
+				atPosition.count -= transfer;
+				if (atPosition.count <= 0) {
+					nukkit.clear(slot);
+				} else {
+					nukkit.setItem(slot, atPosition);
+				}
+				if (remaining <= 0) break;
+			}
+			if (remaining > 0) {
+				ItemStack leftoverItem = item.clone();
+				leftoverItem.setAmount(remaining);
+				leftover.put(i, leftoverItem);
+			}
+		}
+		return leftover;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		int size = getSize();
+		for (int i = 0; i < size; i++) {
+			if (nukkit.getItem(i).getId() != Item.AIR) return false;
+		}
+		return true;
 	}
 
 	@Override

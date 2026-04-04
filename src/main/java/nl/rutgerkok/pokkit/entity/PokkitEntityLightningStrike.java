@@ -1,6 +1,8 @@
 package nl.rutgerkok.pokkit.entity;
 
+import nl.rutgerkok.pokkit.Pokkit;
 import org.bukkit.entity.LightningStrike;
+import org.bukkit.entity.Player;
 
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.weather.EntityLightningStrike;
@@ -52,6 +54,33 @@ public class PokkitEntityLightningStrike extends PokkitEntity implements Lightni
 	@Override
 	public org.bukkit.entity.LightningStrike.Spigot spigot() {
 		return new org.bukkit.entity.LightningStrike.Spigot();
+	}
+
+	@Override
+	public Player getCausingPlayer() {
+		return null;
+	}
+
+	@Override
+	public void setCausingPlayer(Player player) {
+	}
+
+	@Override
+	public int getLifeTicks() {
+		return -1;
+	}
+
+	@Override
+	public void setLifeTicks(int ticks) {
+	}
+
+	@Override
+	public int getFlashes() {
+		return -1;
+	}
+
+	@Override
+	public void setFlashes(int flashes) {
 	}
 
 }

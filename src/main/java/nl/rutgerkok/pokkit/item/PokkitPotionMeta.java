@@ -43,7 +43,7 @@ final class PokkitPotionMeta extends PokkitItemMeta implements PotionMeta {
 
 	@Override
 	public Color getColor() {
-		throw Pokkit.unsupported();
+		return null;
 	}
 
 	@Override
@@ -84,12 +84,25 @@ final class PokkitPotionMeta extends PokkitItemMeta implements PotionMeta {
 
 	@Override
 	public void setColor(Color arg0) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public boolean setMainEffect(PotionEffectType type) {
 		return true;
+	}
+
+	@Override
+	public boolean hasBasePotionType() {
+		return false;
+	}
+
+	@Override
+	public PotionType getBasePotionType() {
+		return null;
+	}
+
+	@Override
+	public void setBasePotionType(PotionType type) {
 	}
 
 }

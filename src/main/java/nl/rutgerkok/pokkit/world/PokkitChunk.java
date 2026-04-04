@@ -11,6 +11,7 @@ import cn.nukkit.level.format.FullChunk;
 import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.blockstate.PokkitBlockState;
 import nl.rutgerkok.pokkit.entity.PokkitEntity;
+import nl.rutgerkok.pokkit.persistence.ChunkPersistentDataStore;
 
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
@@ -20,6 +21,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public final class PokkitChunk implements Chunk {
@@ -122,12 +124,12 @@ public final class PokkitChunk implements Chunk {
 
 	@Override
 	public boolean addPluginChunkTicket(Plugin plugin) {
-		throw Pokkit.unsupported();
+		return false;
 	}
 
 	@Override
 	public boolean removePluginChunkTicket(Plugin plugin) {
-		throw Pokkit.unsupported();
+		return false;
 	}
 
 	@Override
@@ -137,17 +139,16 @@ public final class PokkitChunk implements Chunk {
 
 	@Override
 	public long getInhabitedTime() {
-		throw Pokkit.unsupported();
+		return 0;
 	}
 
 	@Override
 	public void setInhabitedTime(long l) {
-		Pokkit.notImplemented();
 	}
 
 	@Override
 	public boolean contains(BlockData blockData) {
-		throw Pokkit.unsupported();
+		return false;
 	}
 
 	@Override
@@ -168,5 +169,46 @@ public final class PokkitChunk implements Chunk {
 	@Override
 	public boolean unload(boolean save) {
 		return world.unloadChunk(nukkit.getX(), nukkit.getZ(), save);
+	}
+
+	@Override
+	public Collection<Player> getPlayersSeeingChunk() {
+		return world.getPlayersSeeingChunk(nukkit.getX(), nukkit.getZ());
+	}
+
+	@Override
+	public Collection<org.bukkit.generator.structure.GeneratedStructure> getStructures(org.bukkit.generator.structure.Structure structure) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Collection<org.bukkit.generator.structure.GeneratedStructure> getStructures() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public org.bukkit.Chunk.LoadLevel getLoadLevel() {
+		return org.bukkit.Chunk.LoadLevel.ENTITY_TICKING;
+	}
+
+	@Override
+	public boolean isEntitiesLoaded() {
+		return true;
+	}
+
+	@Override
+	public boolean isGenerated() {
+		return true;
+	}
+
+	@Override
+	public boolean contains(org.bukkit.block.Biome biome) {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.persistence.PersistentDataContainer getPersistentDataContainer() {
+		return ChunkPersistentDataStore.getInstance().getContainer(
+				world.getName(), nukkit.getX(), nukkit.getZ());
 	}
 }

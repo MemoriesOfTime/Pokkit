@@ -78,4 +78,69 @@ public class PokkitUnsafe implements UnsafeValues {
 	public Material toLegacy(Material material) {
 		return material;
 	}
+
+	@Override
+	public <B extends org.bukkit.Keyed> B get(org.bukkit.Registry<B> registry, org.bukkit.NamespacedKey key) {
+		return null;
+	}
+
+	@Override
+	public String get(Class<?> type, String name) {
+		return null;
+	}
+
+	@Override
+	public com.google.common.collect.Multimap<org.bukkit.attribute.Attribute, org.bukkit.attribute.AttributeModifier> getDefaultAttributeModifiers(Material material, org.bukkit.inventory.EquipmentSlot slot) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public org.bukkit.inventory.CreativeCategory getCreativeCategory(Material material) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public String getBlockTranslationKey(Material material) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public String getItemTranslationKey(Material material) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public String getTranslationKey(org.bukkit.entity.EntityType entityType) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public String getTranslationKey(ItemStack itemStack) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public String getTranslationKey(org.bukkit.attribute.Attribute attribute) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public org.bukkit.FeatureFlag getFeatureFlag(NamespacedKey key) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public org.bukkit.potion.PotionType.InternalPotionData getInternalPotionData(NamespacedKey key) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public org.bukkit.damage.DamageEffect getDamageEffect(String name) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public org.bukkit.damage.DamageSource.Builder createDamageSourceBuilder(org.bukkit.damage.DamageType damageType) {
+		throw Pokkit.unsupported();
+	}
 }

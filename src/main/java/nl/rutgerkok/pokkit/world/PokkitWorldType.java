@@ -21,7 +21,8 @@ public final class PokkitWorldType {
 			return Generator.getGenerator(Generator.TYPE_FLAT);
 		case NORMAL:
 			return Generator.getGenerator(Generator.TYPE_INFINITE);
-		case VERSION_1_1:
+		case LARGE_BIOMES:
+		case AMPLIFIED:
 			return Generator.getGenerator(Generator.TYPE_OLD);
 		default:
 			throw new IllegalArgumentException("World type does not exist on Pocket Edition: " + worldType);

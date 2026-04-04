@@ -50,6 +50,10 @@ public abstract class PokkitBlockState implements BlockState {
 		return new PlainBlockState(location, blockData);
 	}
 
+	public static BlockState fromBlockData(PokkitBlockData blockData) {
+		return new PlainBlockState(null, blockData);
+	}
+
 	/**
 	 * Gets a virtual block state.
 	 *

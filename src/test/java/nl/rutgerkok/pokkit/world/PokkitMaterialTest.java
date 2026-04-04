@@ -31,8 +31,8 @@ public class PokkitMaterialTest {
 
 	@Test
 	public void testIdRemap() {
-		// GRASS_PATH has a different block id in Bukkit and Nukkit
-		assertEquals(Block.GRASS_PATH, PokkitBlockData.createBlockData(Material.GRASS_PATH, 0).getNukkitId());
+		// DIRT_PATH has a different block id in Bukkit and Nukkit
+		assertEquals(Block.GRASS_PATH, PokkitBlockData.createBlockData(Material.DIRT_PATH, 0).getNukkitId());
 	}
 
 	@Test

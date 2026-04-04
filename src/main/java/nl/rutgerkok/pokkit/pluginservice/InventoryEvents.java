@@ -1,5 +1,6 @@
 package nl.rutgerkok.pokkit.pluginservice;
 
+import nl.rutgerkok.pokkit.entity.PokkitEntity;
 import nl.rutgerkok.pokkit.entity.PokkitItemEntity;
 import nl.rutgerkok.pokkit.inventory.PokkitInventory;
 import nl.rutgerkok.pokkit.inventory.PokkitInventoryView;
@@ -8,10 +9,13 @@ import nl.rutgerkok.pokkit.player.PokkitPlayer;
 import nl.rutgerkok.pokkit.world.PokkitBlock;
 
 import org.bukkit.block.Block;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.Inventory;
@@ -28,7 +32,7 @@ public class InventoryEvents extends EventTranslator {
 
 	@EventHandler(ignoreCancelled = false)
 	public void onDrop(cn.nukkit.event.player.PlayerDropItemEvent event) {
-		if (canIgnore(PlayerItemHeldEvent.getHandlerList())) {
+		if (canIgnore(PlayerDropItemEvent.getHandlerList())) {
 			return;
 		}
 
@@ -102,17 +106,52 @@ public class InventoryEvents extends EventTranslator {
 
 	@EventHandler(ignoreCancelled = false)
 	public void onInventoryTransaction(cn.nukkit.event.inventory.InventoryTransactionEvent event) {
-		// We'll need to translate these to events that Bukkit plugins can
-		// understand them
-		/*
-		Bukkit.getLogger().warning("Starting transaction");
-		for (Transaction transaction : event.getTransaction().getTransactions()) {
-			Bukkit.getLogger().info("InventoryTransaction: now in first inventory " + transaction.getSourceItem()
-					+ " and in second inventory " + transaction.getTargetItem() + ", moved to slot "
-					+ transaction.getSlot());
+		// Drag events with multiple SlotChangeActions are handled by InventoryDragEvents.
+		// Simple single-click transactions are handled by onInventoryClick.
+	}
+
+	@EventHandler(ignoreCancelled = false)
+	public void onInventoryClick(cn.nukkit.event.inventory.InventoryClickEvent event) {
+		if (canIgnore(org.bukkit.event.inventory.InventoryClickEvent.getHandlerList())) {
+			return;
 		}
-		Bukkit.getLogger().warning("Ending transaction");
-		*/
+
+		PokkitPlayer player = PokkitPlayer.toBukkit(event.getPlayer());
+		Inventory bukkitInventory = PokkitInventory.toBukkit(event.getInventory());
+		InventoryView view = new PokkitInventoryView(bukkitInventory, player);
+
+		int rawSlot = event.getSlot();
+		ItemStack sourceItem = PokkitItemStack.toBukkitCopy(event.getSourceItem());
+		ItemStack heldItem = PokkitItemStack.toBukkitCopy(event.getHeldItem());
+
+		InventoryType.SlotType slotType = InventoryType.SlotType.CONTAINER;
+		if (rawSlot < 0) {
+			slotType = InventoryType.SlotType.OUTSIDE;
+		} else if (rawSlot >= bukkitInventory.getSize()
+				&& rawSlot < bukkitInventory.getSize() + 9) {
+			slotType = InventoryType.SlotType.QUICKBAR;
+		}
+
+		InventoryAction action = determineAction(sourceItem, heldItem);
+		org.bukkit.event.inventory.InventoryClickEvent bukkitEvent = new org.bukkit.event.inventory.InventoryClickEvent(
+				view, slotType, rawSlot, ClickType.LEFT, action);
+		callCancellable(event, bukkitEvent);
+	}
+
+	private InventoryAction determineAction(ItemStack source, ItemStack held) {
+		boolean sourceEmpty = source == null || source.getType().isAir();
+		boolean heldEmpty = held == null || held.getType().isAir();
+
+		if (sourceEmpty && heldEmpty) {
+			return InventoryAction.NOTHING;
+		}
+		if (!sourceEmpty && heldEmpty) {
+			return InventoryAction.PICKUP_ALL;
+		}
+		if (sourceEmpty) {
+			return InventoryAction.PLACE_ALL;
+		}
+		return InventoryAction.SWAP_WITH_CURSOR;
 	}
 
 	@EventHandler(ignoreCancelled = false)
@@ -133,5 +172,20 @@ public class InventoryEvents extends EventTranslator {
 			PlayerItemHeldEvent bukkitEvent = new PlayerItemHeldEvent(player, previousSlot, event.getSlot());
 			callCancellable(event, bukkitEvent);
 		}
+	}
+
+	@EventHandler(ignoreCancelled = false)
+	public void onInventoryPickupItem(cn.nukkit.event.inventory.InventoryPickupItemEvent event) {
+		if (canIgnore(org.bukkit.event.inventory.InventoryPickupItemEvent.getHandlerList())) {
+			return;
+		}
+
+		org.bukkit.event.inventory.InventoryPickupItemEvent bukkitEvent =
+				new org.bukkit.event.inventory.InventoryPickupItemEvent(
+						PokkitInventory.toBukkit(event.getInventory()),
+						(org.bukkit.entity.Item) PokkitEntity.toBukkit(event.getItem()));
+
+		callCancellable(event, bukkitEvent);
+		event.setCancelled(bukkitEvent.isCancelled());
 	}
 }

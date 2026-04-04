@@ -70,7 +70,9 @@ public final class CraftServers extends Server.Spigot implements Server {
 	public static CraftServers instance;
 	
 	public CraftServers() {
-        Bukkit.setServer(this);
+        if (Bukkit.getServer() == null) {
+            Bukkit.setServer(this);
+        }
         instance = this;
 	}
 	
@@ -722,7 +724,7 @@ public final class CraftServers extends Server.Spigot implements Server {
 	}
 
 	@Override
-	public BlockData createBlockData(Material material, Consumer<BlockData> consumer) {
+	public BlockData createBlockData(Material material, Consumer<? super BlockData> consumer) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -752,7 +754,7 @@ public final class CraftServers extends Server.Spigot implements Server {
 
                 return (org.bukkit.Tag<T>) new PokkitItemTag(tag);
             default:
-                throw new IllegalArgumentException();
+                return (org.bukkit.Tag<T>) new nl.rutgerkok.pokkit.tag.PokkitEmptyTag<>(tag);
         }
 	}
 
@@ -785,4 +787,70 @@ public final class CraftServers extends Server.Spigot implements Server {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends Keyed> org.bukkit.Registry<T> getRegistry(Class<T> aClass) {
+		if (aClass == org.bukkit.block.BlockType.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createBlockTypeRegistry();
+		} else if (aClass == org.bukkit.enchantments.Enchantment.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createEnchantmentRegistry();
+		} else if (aClass == org.bukkit.inventory.ItemType.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createItemTypeRegistry();
+		} else if (aClass == org.bukkit.MusicInstrument.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createMusicInstrumentRegistry();
+		}
+		return (org.bukkit.Registry<T>) new nl.rutgerkok.pokkit.PokkitRegistry<>();
+	}
+
+	@Override public org.bukkit.structure.StructureManager getStructureManager() { return null; }
+	@Override public void setMaxPlayers(int maxPlayers) {}
+	@Override public int getSimulationDistance() { return getViewDistance(); }
+	@Override public int getMaxWorldSize() { return 29999984; }
+	@Override public boolean isLoggingIPs() { return true; }
+	@Override public java.util.List<String> getInitialEnabledPacks() { return java.util.Collections.emptyList(); }
+	@Override public java.util.List<String> getInitialDisabledPacks() { return java.util.Collections.emptyList(); }
+	@Override public org.bukkit.packs.DataPackManager getDataPackManager() { return null; }
+	@Override public org.bukkit.ServerTickManager getServerTickManager() { return null; }
+	@Override public org.bukkit.packs.ResourcePack getServerResourcePack() { return null; }
+	@Override public String getResourcePack() { return null; }
+	@Override public String getResourcePackHash() { return null; }
+	@Override public String getResourcePackPrompt() { return null; }
+	@Override public boolean isResourcePackRequired() { return false; }
+	@Override public boolean isWhitelistEnforced() { return false; }
+	@Override public void setWhitelistEnforced(boolean enforced) {}
+	@Override public int getTicksPerWaterAmbientSpawns() { return 0; }
+	@Override public int getTicksPerWaterUndergroundCreatureSpawns() { return 0; }
+	@Override public int getTicksPerSpawns(org.bukkit.entity.SpawnCategory cat) { return 0; }
+	@Override public int getWaterAmbientSpawnLimit() { return 0; }
+	@Override public int getWaterUndergroundCreatureSpawnLimit() { return 0; }
+	@Override public int getSpawnLimit(org.bukkit.entity.SpawnCategory cat) { return 0; }
+	@Override public boolean shouldSendChatPreviews() { return false; }
+	@Override public boolean isEnforcingSecureProfiles() { return false; }
+	@Override public boolean isAcceptingTransfers() { return false; }
+	@Override public boolean getHideOnlinePlayers() { return false; }
+	@Override public org.bukkit.profile.PlayerProfile createPlayerProfile(java.util.UUID uuid, String name) { return null; }
+	@Override public org.bukkit.profile.PlayerProfile createPlayerProfile(java.util.UUID uuid) { return null; }
+	@Override public org.bukkit.profile.PlayerProfile createPlayerProfile(String name) { return null; }
+	@Override public void banIP(java.net.InetAddress addr) {}
+	@Override public void unbanIP(java.net.InetAddress addr) {}
+	@Override public org.bukkit.WorldBorder createWorldBorder() { return null; }
+	@Override public void setMotd(String motd) {}
+	@Override public org.bukkit.inventory.Recipe getRecipe(NamespacedKey key) { return null; }
+	@Override public org.bukkit.inventory.Recipe getCraftingRecipe(org.bukkit.inventory.ItemStack[] matrix, org.bukkit.World world) { return null; }
+	@Override public org.bukkit.inventory.ItemStack craftItem(org.bukkit.inventory.ItemStack[] matrix, org.bukkit.World world, org.bukkit.entity.Player player) { return null; }
+	@Override public org.bukkit.inventory.ItemStack craftItem(org.bukkit.inventory.ItemStack[] matrix, org.bukkit.World world) { return null; }
+	@Override public org.bukkit.scoreboard.Criteria getScoreboardCriteria(String name) { return null; }
+	@Override public int getMaxChainedNeighborUpdates() { return 0; }
+	@Override public org.bukkit.entity.EntityFactory getEntityFactory() { return null; }
+	@Override public org.bukkit.ServerLinks getServerLinks() { return null; }
+	@Override public org.bukkit.configuration.file.YamlConfiguration getConfig() { return null; }
+	@Override public void restart() {}
+	@Override public void broadcast(net.md_5.bungee.api.chat.BaseComponent component) {}
+	@Override public void broadcast(net.md_5.bungee.api.chat.BaseComponent... components) {}
+
+
+	@Override public org.bukkit.inventory.ItemCraftResult craftItemResult(org.bukkit.inventory.ItemStack[] matrix, org.bukkit.World world, org.bukkit.entity.Player player) { return null; }
+	@Override public org.bukkit.inventory.ItemCraftResult craftItemResult(org.bukkit.inventory.ItemStack[] matrix, org.bukkit.World world) { return null; }
+
 }

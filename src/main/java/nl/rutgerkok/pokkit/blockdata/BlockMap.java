@@ -7,7 +7,7 @@ import cn.nukkit.block.BlockID;
 @SuppressWarnings("deprecation")
 public final class BlockMap {
 
-	private static final Material[][] nukkitToBukkit = new Material[512][];
+	private static final Material[][] nukkitToBukkit = new Material[2048][];
 	private static final Block[] bukkitToNukkit = new Block[Material.values().length];
 
 	static {
@@ -422,7 +422,7 @@ public final class BlockMap {
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.JUNGLE_DOOR_BLOCK), Material.JUNGLE_DOOR);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ACACIA_DOOR_BLOCK), Material.ACACIA_DOOR);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DARK_OAK_DOOR_BLOCK), Material.DARK_OAK_DOOR);
-		registerTwoWay(cn.nukkit.block.Block.get(BlockID.GRASS_PATH), Material.GRASS_PATH);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.GRASS_PATH), Material.DIRT_PATH);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ITEM_FRAME_BLOCK), Material.ITEM_FRAME);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHORUS_FLOWER), Material.CHORUS_FLOWER);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PURPUR_BLOCK), Material.PURPUR_BLOCK);

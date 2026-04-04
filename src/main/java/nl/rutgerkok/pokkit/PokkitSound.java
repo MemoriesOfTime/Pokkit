@@ -751,7 +751,7 @@ public final class PokkitSound {
 			return cn.nukkit.level.Sound.MUSIC_GAME;
 		case MUSIC_MENU:
 			return cn.nukkit.level.Sound.MUSIC_MENU;
-		case MUSIC_NETHER:
+		case MUSIC_NETHER_NETHER_WASTES:
 			return cn.nukkit.level.Sound.MUSIC_GAME_NETHER;
 		case MUSIC_DISC_11:
 			return cn.nukkit.level.Sound.RECORD_11;
@@ -1296,13 +1296,13 @@ public final class PokkitSound {
 			break;
 		case ENTITY_ZOMBIE_INFECT:
 			break;
-		case ENTITY_ZOMBIE_PIGMAN_AMBIENT:
+		case ENTITY_ZOMBIFIED_PIGLIN_AMBIENT:
 			return cn.nukkit.level.Sound.MOB_ZOMBIEPIG_ZPIG;
-		case ENTITY_ZOMBIE_PIGMAN_ANGRY:
+		case ENTITY_ZOMBIFIED_PIGLIN_ANGRY:
 			return cn.nukkit.level.Sound.MOB_ZOMBIEPIG_ZPIGANGRY;
-		case ENTITY_ZOMBIE_PIGMAN_DEATH:
+		case ENTITY_ZOMBIFIED_PIGLIN_DEATH:
 			return cn.nukkit.level.Sound.MOB_ZOMBIEPIG_ZPIGDEATH;
-		case ENTITY_ZOMBIE_PIGMAN_HURT:
+		case ENTITY_ZOMBIFIED_PIGLIN_HURT:
 			return cn.nukkit.level.Sound.MOB_ZOMBIEPIG_ZPIGHURT;
 		case ENTITY_ZOMBIE_VILLAGER_CURE:
 			break;

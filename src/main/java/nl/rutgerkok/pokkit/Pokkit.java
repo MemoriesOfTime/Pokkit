@@ -3,6 +3,7 @@ package nl.rutgerkok.pokkit;
 import cn.nukkit.Server;
 import cn.nukkit.plugin.PluginBase;
 import com.google.common.collect.ImmutableList;
+import nl.rutgerkok.pokkit.persistence.ChunkPersistentDataStore;
 import nl.rutgerkok.pokkit.pluginservice.*;
 import nl.rutgerkok.pokkit.startup.NukkitHook;
 import org.bukkit.Bukkit;
@@ -28,7 +29,7 @@ public final class Pokkit {
 	/**
 	 * Bukkit version. Mutable, so exposed through {@link #getBukkitVersion()}.
 	 */
-	static String BUKKIT_VERSION = "1.13.2-R0.1-SNAPSHOT";
+	static String BUKKIT_VERSION = "1.21-R0.1-SNAPSHOT";
 
 	/**
 	 * Makes sure that the given expression is true. If not, an exception is
@@ -81,7 +82,11 @@ public final class Pokkit {
 
 	private final List<PokkitService> services = ImmutableList.of(new MainScoreboardService(), new PermissionsYml(),
 			new PluginService(), new PlayerBlockEvents(), new PlayerConnectEvents(), new PlayerChatEvents(),
-			new PlayerInteractEvents(), new EntityEvents(), new InventoryEvents(), new PlayerItemConsumeEvents());
+			new PlayerInteractEvents(), new EntityEvents(), new InventoryEvents(), new PlayerItemConsumeEvents(),
+			new PlayerToggleEvents(), new PlayerLifecycleEvents(), new WorldEvents(),
+			new PlayerBucketEvents(), new VehicleEvents(), new InventoryDragEvents(), new CraftItemEvents(),
+			new FloodgateService(), ChunkPersistentDataStore.getInstance()
+			);
 
 	public Pokkit() {
 		// Created using reflection
