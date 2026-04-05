@@ -8,6 +8,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public final class PokkitInventoryView implements InventoryView {
 
@@ -20,12 +21,12 @@ public final class PokkitInventoryView implements InventoryView {
 	}
 
 	@Override
-	public Inventory getTopInventory() {
+	public @NotNull Inventory getTopInventory() {
 		return topInventory;
 	}
 
 	@Override
-	public Inventory getBottomInventory() {
+	public @NotNull Inventory getBottomInventory() {
 		return player.getInventory();
 	}
 
@@ -45,6 +46,9 @@ public final class PokkitInventoryView implements InventoryView {
 
 	@Override
 	public String getTitle() {
+		if (topInventory instanceof PokkitLiveInventory) {
+			return ((PokkitLiveInventory) topInventory).nukkit.getTitle();
+		}
 		return topInventory.getClass().getSimpleName();
 	}
 
@@ -109,6 +113,8 @@ public final class PokkitInventoryView implements InventoryView {
 	public InventoryType.SlotType getSlotType(int slot) {
 		if (slot < 0) return InventoryType.SlotType.OUTSIDE;
 		if (slot < topInventory.getSize()) return InventoryType.SlotType.CONTAINER;
+		int bottomSlot = slot - topInventory.getSize();
+		if (bottomSlot < 9) return InventoryType.SlotType.QUICKBAR;
 		return InventoryType.SlotType.CONTAINER;
 	}
 

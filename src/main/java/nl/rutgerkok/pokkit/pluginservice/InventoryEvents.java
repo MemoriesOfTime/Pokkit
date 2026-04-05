@@ -148,7 +148,11 @@ public class InventoryEvents extends EventTranslator {
 		if (!sourceEmpty && heldEmpty) {
 			return InventoryAction.PICKUP_ALL;
 		}
-		if (sourceEmpty) {
+		if (sourceEmpty && !heldEmpty) {
+			return InventoryAction.PLACE_ALL;
+		}
+		// Both non-empty: check if items are similar (same type)
+		if (source.isSimilar(held)) {
 			return InventoryAction.PLACE_ALL;
 		}
 		return InventoryAction.SWAP_WITH_CURSOR;

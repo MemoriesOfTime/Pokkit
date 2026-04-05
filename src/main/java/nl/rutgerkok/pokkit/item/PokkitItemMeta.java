@@ -630,7 +630,7 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 
 	@Override
 	public PersistentDataContainer getPersistentDataContainer() {
-		return null;
+		return new nl.rutgerkok.pokkit.persistence.PokkitPersistentDataContainer(tag);
 	}
 
 	@Override

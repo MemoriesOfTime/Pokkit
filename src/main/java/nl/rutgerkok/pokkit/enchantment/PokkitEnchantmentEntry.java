@@ -4,6 +4,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public final class PokkitEnchantmentEntry extends Enchantment {
 
@@ -60,6 +61,7 @@ public final class PokkitEnchantmentEntry extends Enchantment {
 		return true;
 	}
 
+	@NotNull
 	@Override
 	public String getTranslationKey() {
 		return "enchantment." + key.getNamespace() + "." + key.getKey();

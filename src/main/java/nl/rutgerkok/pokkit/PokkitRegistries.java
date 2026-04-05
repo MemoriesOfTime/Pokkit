@@ -4,14 +4,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.BlockType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemType;
 
 import nl.rutgerkok.pokkit.block.PokkitBlockType;
-import nl.rutgerkok.pokkit.enchantment.PokkitEnchantmentEntry;
 import nl.rutgerkok.pokkit.inventory.PokkitItemType;
 
 public final class PokkitRegistries {
@@ -47,13 +45,8 @@ public final class PokkitRegistries {
 		return registry;
 	}
 
-	public static PokkitRegistry<Enchantment> createEnchantmentRegistry() {
-		PokkitRegistry<Enchantment> registry = new PokkitRegistry<>();
-		for (String key : ENCHANTMENT_KEYS) {
-			NamespacedKey namespacedKey = NamespacedKey.minecraft(key);
-			registry.register(new PokkitEnchantmentEntry(namespacedKey));
-		}
-		return registry;
+	public static Registry<Enchantment> createEnchantmentRegistry() {
+		return new LazyEnchantmentRegistry(ENCHANTMENT_KEYS);
 	}
 
 	public static PokkitRegistry<ItemType> createItemTypeRegistry() {
