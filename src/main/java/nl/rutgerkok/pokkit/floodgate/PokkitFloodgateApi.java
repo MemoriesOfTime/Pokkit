@@ -131,7 +131,10 @@ public final class PokkitFloodgateApi implements FloodgateApi {
 
 	@Override
 	public boolean transferPlayer(UUID uuid, String address, int port) {
-		return false;
+		cn.nukkit.Player player = getNukkitPlayer(uuid);
+		if (player == null) return false;
+		player.transfer(address, port);
+		return true;
 	}
 
 	@Override
@@ -148,8 +151,10 @@ public final class PokkitFloodgateApi implements FloodgateApi {
 		return future;
 	}
 
+	private final PokkitUnsafe unsafe = new PokkitUnsafe();
+
 	@Override
 	public Unsafe unsafe() {
-		return null;
+		return unsafe;
 	}
 }

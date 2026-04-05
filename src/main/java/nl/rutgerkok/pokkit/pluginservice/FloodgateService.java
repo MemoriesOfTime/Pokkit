@@ -5,6 +5,10 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import nl.rutgerkok.pokkit.floodgate.PokkitFloodgateApi;
+import nl.rutgerkok.pokkit.floodgate.PokkitFloodgateEventBus;
+import nl.rutgerkok.pokkit.floodgate.PokkitHandshakeHandlers;
+import nl.rutgerkok.pokkit.floodgate.PokkitPacketHandlers;
+import nl.rutgerkok.pokkit.floodgate.PokkitPlayerLink;
 import org.geysermc.floodgate.api.InstanceHolder;
 
 /**
@@ -25,8 +29,16 @@ public final class FloodgateService extends EventTranslator {
 			api.addPlayer(player);
 		}
 
-		// Register the API instance globally so FloodgateApi.getInstance() works
-		InstanceHolder.set(api, null, null, null, null, null, new java.util.UUID(0, 0));
+		// Register the API instance globally with all implementations
+		InstanceHolder.set(
+				api,
+				new PokkitPlayerLink(),
+				new PokkitFloodgateEventBus(),
+				null,  // PlatformInjector not applicable on Nukkit-MOT
+				new PokkitPacketHandlers(),
+				new PokkitHandshakeHandlers(),
+				new java.util.UUID(0, 0)
+		);
 	}
 
 	@EventHandler
