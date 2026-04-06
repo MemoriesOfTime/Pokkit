@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.rutgerkok</groupId>
 	<artifactId>Pokkit</artifactId>
-	<version>0.12.0.dev</version>
+	<version>1.21-R0.1-SNAPSHOT</version>
 	<name>Pokkit</name>
 	<description>Run Bukkit and Spigot plugins on Nukkit</description>
 	<properties>
