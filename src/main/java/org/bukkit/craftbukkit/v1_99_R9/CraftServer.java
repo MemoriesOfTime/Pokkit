@@ -88,6 +88,7 @@ import nl.rutgerkok.pokkit.world.PokkitWorld;
 import nl.rutgerkok.pokkit.world.PokkitWorldType;
 
 import cn.nukkit.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 public final class CraftServer extends Server.Spigot implements Server {
 
@@ -172,12 +173,12 @@ public final class CraftServer extends Server.Spigot implements Server {
 	}
 
 	@Override
-	public int broadcast(String message, String permission) {
+	public int broadcast(@NotNull String message, @NotNull String permission) {
 		return nukkit.broadcast(message, permission);
 	}
 
 	@Override
-	public int broadcastMessage(String message) {
+	public int broadcastMessage(@NotNull String message) {
 		return nukkit.broadcastMessage(message);
 	}
 
@@ -284,7 +285,7 @@ public final class CraftServer extends Server.Spigot implements Server {
 
 	@Override
 	public Inventory createInventory(InventoryHolder holder, InventoryType type, String title) {
-		return PokkitCustomInventory.create(holder, type, title, 27);
+		return PokkitCustomInventory.create(holder, type, title, type.getDefaultSize());
 	}
 
 	@Override

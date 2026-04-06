@@ -11,7 +11,6 @@ import nl.rutgerkok.pokkit.player.PokkitPlayer;
 
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.DragType;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -70,9 +69,6 @@ public final class InventoryDragEvents extends EventTranslator {
 		ItemStack newCursor = PokkitItemStack.toBukkitCopy(firstAction.getTargetItem());
 
 		Set<Integer> rawSlots = newItems.keySet();
-
-		boolean rightClick = slotActions.size() == 1;
-		DragType dragType = rightClick ? DragType.SINGLE : DragType.EVEN;
 
 		InventoryDragEvent bukkitEvent = new InventoryDragEvent(
 				view, oldCursor, newCursor, false, newItems);

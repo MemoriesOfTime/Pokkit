@@ -2,6 +2,7 @@ package nl.rutgerkok.pokkit.inventory.custom;
 
 import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
 import org.bukkit.inventory.InventoryHolder;
 
 import com.google.common.base.Preconditions;
@@ -19,12 +20,11 @@ public final class BukkitToNukkitInventoryHolder implements cn.nukkit.inventory.
 	private cn.nukkit.inventory.Inventory inventory = null;
 	public final InventoryHolder bukkitHolderOrNull;
 
-	public BukkitToNukkitInventoryHolder(InventoryHolder bukkitHolder) {
-		this.bukkitHolderOrNull = bukkitHolder;
+	public BukkitToNukkitInventoryHolder(InventoryHolder bukkitHolder) {		this.bukkitHolderOrNull = bukkitHolder;
 	}
 
 	@Override
-	public cn.nukkit.inventory.Inventory getInventory() {
+	public @NotNull cn.nukkit.inventory.Inventory getInventory() {
 		Preconditions.checkState(inventory != null, "setInventory not yet called");
 		return inventory;
 	}
@@ -33,7 +33,7 @@ public final class BukkitToNukkitInventoryHolder implements cn.nukkit.inventory.
 	 * Sets the inventory. Calls this method as soon as possible after construction, so that {@link #getInventory()} doesn't throw.
 	 * @param inventory The inventory, may not be null.
 	 */
-	public void setInventory(Inventory inventory) {
+	public void setInventory(@NotNull Inventory inventory) {
 		Preconditions.checkState(this.inventory == null, "setInventory was called earlier");
 		this.inventory = Objects.requireNonNull(inventory, "inventory");
 	}

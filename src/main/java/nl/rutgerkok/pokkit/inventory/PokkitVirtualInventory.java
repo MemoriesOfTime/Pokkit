@@ -65,9 +65,10 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 				continue;
 			}
 
-			int transferAmount = Math.min(atPosition.getAmount() - maxStackSize, remaining);
+			int spaceAvailable = maxStackSize - atPosition.getAmount();
+			int transferAmount = Math.min(spaceAvailable, remaining);
 			remaining -= transferAmount;
-			atPosition.setAmount(transferAmount);
+			atPosition.setAmount(atPosition.getAmount() + transferAmount);
 
 			if (remaining == 0) {
 				return 0;
@@ -101,7 +102,7 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 		if (item == null) return result;
 		for (int i = 0; i < contents.size(); i++) {
 			ItemStack atPosition = contents.get(i);
-			if (item.equals(atPosition)) {
+			if (atPosition != null && item.isSimilar(atPosition)) {
 				result.put(i, atPosition);
 			}
 		}
@@ -128,7 +129,7 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 
 	@Override
 	public void clear(int index) {
-		contents.get(index).setType(Material.AIR);
+		contents.set(index, null);
 	}
 
 	@Override
@@ -138,7 +139,7 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 		}
 
 		for (ItemStack stack : contents) {
-			if (item.equals(stack)) {
+			if (stack != null && item.isSimilar(stack)) {
 				return true;
 			}
 		}
@@ -155,7 +156,7 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 		}
 		int remaining = amount;
 		for (ItemStack stack : contents) {
-			if (item.equals(stack)) {
+			if (stack != null && item.isSimilar(stack)) {
 				remaining--;
 				if (remaining <= 0) {
 					return true;
@@ -213,7 +214,7 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 
 		for (int i = 0; i < contents.size(); i++) {
 			ItemStack stack = contents.get(i);
-			if (item.equals(stack)) {
+			if (stack != null && item.isSimilar(stack)) {
 				return i;
 			}
 		}
@@ -286,7 +287,7 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 	public void remove(ItemStack item) {
 		for (int i = 0; i < contents.size(); i++) {
 			ItemStack stack = contents.get(i);
-			if (item.equals(stack)) {
+			if (stack != null && item.isSimilar(stack)) {
 				contents.set(i, null);
 			}
 		}

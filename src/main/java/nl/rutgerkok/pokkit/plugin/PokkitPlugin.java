@@ -187,6 +187,8 @@ public class PokkitPlugin implements cn.nukkit.plugin.Plugin {
 		return CraftServer.toNukkit(Bukkit.getServer()).getPluginManager().getPlugin(plugin.getName());
 	}
 
+	private static PokkitPlugin instance;
+
 	private final JavaPlugin bukkit;
 	private final PluginDescription pluginDescription;
 	private final PluginLoader loader;
@@ -194,11 +196,17 @@ public class PokkitPlugin implements cn.nukkit.plugin.Plugin {
 	private final PluginLogger logger;
 
 	PokkitPlugin(JavaPlugin bukkit, PluginDescription pluginDescription, PluginLoader pluginLoader) throws IOException {
+		instance = this;
+
 		this.bukkit = Objects.requireNonNull(bukkit);
 		this.pluginDescription = Objects.requireNonNull(pluginDescription);
 		this.loader = Objects.requireNonNull(pluginLoader);
 
 		this.logger = new PluginLogger(this);
+	}
+
+	public static PokkitPlugin getInstance() {
+		return instance;
 	}
 
 	private PluginCommand getBukkitCommand(Command command) {

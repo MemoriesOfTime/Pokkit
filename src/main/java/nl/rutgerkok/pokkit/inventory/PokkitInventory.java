@@ -47,6 +47,10 @@ public final class PokkitInventory {
 		if (inventory instanceof PokkitLiveInventory) {
 			return ((PokkitLiveInventory) inventory).nukkit;
 		}
+		if (inventory instanceof PokkitVirtualInventory) {
+			throw new IllegalArgumentException(
+					"Cannot convert a snapshot (PokkitVirtualInventory) to a Nukkit inventory");
+		}
 		throw new IllegalArgumentException(
 				"Cannot convert inventory " + inventory.getClass() + " to a Nukkit inventory");
 	}

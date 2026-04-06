@@ -1,6 +1,7 @@
 package nl.rutgerkok.pokkit.floodgate;
 
 import cn.nukkit.Server;
+import nl.rutgerkok.pokkit.UniqueIdConversion;
 import org.geysermc.cumulus.form.impl.FormDefinitions;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.geysermc.floodgate.api.event.FloodgateEventBus;
@@ -27,9 +28,13 @@ public final class PokkitFloodgateApi implements FloodgateApi {
 
 	/**
 	 * Adds a player to the tracked players map.
+	 * Uses the Pokkit UUID (derived from player name) as the key,
+	 * so that Bukkit plugins calling getPlayer(PokkitPlayer.getUniqueId())
+	 * can find the player.
 	 */
 	public void addPlayer(cn.nukkit.Player nukkitPlayer) {
-		players.put(nukkitPlayer.getUniqueId(), new PokkitFloodgatePlayer(nukkitPlayer));
+		UUID pokkitUuid = UniqueIdConversion.playerNameToId(nukkitPlayer.getName());
+		players.put(pokkitUuid, new PokkitFloodgatePlayer(nukkitPlayer));
 	}
 
 	/**
@@ -75,7 +80,11 @@ public final class PokkitFloodgateApi implements FloodgateApi {
 	}
 
 	private cn.nukkit.Player getNukkitPlayer(UUID uuid) {
-		return Server.getInstance().getOnlinePlayers().get(uuid);
+		FloodgatePlayer fp = players.get(uuid);
+		if (fp instanceof PokkitFloodgatePlayer p) {
+			return p.getNukkitPlayer();
+		}
+		return null;
 	}
 
 	@Override
@@ -131,7 +140,10 @@ public final class PokkitFloodgateApi implements FloodgateApi {
 
 	@Override
 	public boolean transferPlayer(UUID uuid, String address, int port) {
-		return false;
+		cn.nukkit.Player player = getNukkitPlayer(uuid);
+		if (player == null) return false;
+		player.transfer(address, port);
+		return true;
 	}
 
 	@Override
@@ -148,8 +160,10 @@ public final class PokkitFloodgateApi implements FloodgateApi {
 		return future;
 	}
 
+	private final PokkitUnsafe unsafe = new PokkitUnsafe();
+
 	@Override
 	public Unsafe unsafe() {
-		return null;
+		return unsafe;
 	}
 }

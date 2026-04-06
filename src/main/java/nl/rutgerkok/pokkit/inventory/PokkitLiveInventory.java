@@ -35,6 +35,18 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof PokkitLiveInventory)) return false;
+		return this.nukkit.equals(((PokkitLiveInventory) obj).nukkit);
+	}
+
+	@Override
+	public int hashCode() {
+		return nukkit.hashCode();
+	}
+
+	@Override
 	protected int addSingleStack(ItemStack item) {
 		Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
 		int remaining = nukkitItem.count;
@@ -54,7 +66,8 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 				continue;
 			}
 
-			int transferAmount = Math.min(atPosition.count - maxStackSize, remaining);
+			int spaceAvailable = maxStackSize - atPosition.count;
+			int transferAmount = Math.min(spaceAvailable, remaining);
 			remaining -= transferAmount;
 			atPosition.count += transferAmount;
 
@@ -92,7 +105,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
 			Item atPosition = nukkit.getItem(i);
-			if (atPosition != null && atPosition.equals(nukkitItem)) {
+			if (atPosition != null && atPosition.equals(nukkitItem, false)) {
 				result.put(i, PokkitItemStack.toBukkitCopy(atPosition));
 			}
 		}
@@ -135,7 +148,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
 			Item atPosition = nukkit.getItem(i);
-			if (exactMatch(nukkitItem, atPosition)) {
+			if (atPosition != null && atPosition.equals(nukkitItem, false)) {
 				return true;
 			}
 		}
@@ -157,7 +170,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
 			Item atPosition = nukkit.getItem(i);
-			if (exactMatch(nukkitItem, atPosition)) {
+			if (atPosition != null && atPosition.equals(nukkitItem, false)) {
 				remaining--;
 				if (remaining <= 0) {
 					return true;
@@ -195,12 +208,18 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 			return false;
 		}
 		Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
-		nukkitItem.count = amount;
-		return nukkit.contains(nukkitItem);
-	}
-
-	private boolean exactMatch(Item first, Item second) {
-		return first.count == second.count && first.equals(second);
+		int remaining = amount;
+		int size = getSize();
+		for (int i = 0; i < size; i++) {
+			Item atPosition = nukkit.getItem(i);
+			if (atPosition != null && atPosition.equals(nukkitItem, false)) {
+				remaining -= atPosition.getCount();
+				if (remaining <= 0) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -235,7 +254,11 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 	@Override
 	public ItemStack[] getContents() {
 		ItemStack[] contents = new ItemStack[getSize()];
-		nukkit.getContents().forEach((slot, item) -> contents[slot] = PokkitItemStack.toBukkitCopy(item));
+		nukkit.getContents().forEach((slot, item) -> {
+			if (slot >= 0 && slot < contents.length) {
+				contents[slot] = PokkitItemStack.toBukkitCopy(item);
+			}
+		});
 		return contents;
 	}
 

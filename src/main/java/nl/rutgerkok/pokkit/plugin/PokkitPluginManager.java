@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import nl.rutgerkok.pokkit.Pokkit;
@@ -39,6 +40,7 @@ public final class PokkitPluginManager implements PluginManager {
 	private final cn.nukkit.plugin.PluginManager nukkit;
 	private final PokkitPluginLoader pluginLoader;
 	private final BukkitEventManager eventManager;
+	private final Map<String, Plugin> virtualPlugins = new ConcurrentHashMap<>();
 
 	/**
 	 * WorldEdit expects this field to be here. It is accessed by them using
@@ -141,17 +143,23 @@ public final class PokkitPluginManager implements PluginManager {
 
 	@Override
 	public Plugin getPlugin(String name) {
+		Plugin virtual = virtualPlugins.get(name.toLowerCase());
+		if (virtual != null) return virtual;
 		return PokkitPlugin.toBukkit(nukkit.getPlugin(name));
 	}
 
 	@Override
 	public Plugin[] getPlugins() {
-		return nukkit.getPlugins().values().stream().map(nukkitPlugin -> PokkitPlugin.toBukkit(nukkitPlugin))
-				.toArray(Plugin[]::new);
+		List<Plugin> allPlugins = nukkit.getPlugins().values().stream()
+				.map(nukkitPlugin -> PokkitPlugin.toBukkit(nukkitPlugin))
+				.collect(Collectors.toCollection(ArrayList::new));
+		allPlugins.addAll(virtualPlugins.values());
+		return allPlugins.toArray(new Plugin[0]);
 	}
 
 	@Override
 	public boolean isPluginEnabled(Plugin plugin) {
+		if (virtualPlugins.containsValue(plugin)) return true;
 		cn.nukkit.plugin.Plugin nukkitPlugin = toNukkitPlugin(plugin);
 		if (nukkitPlugin == null) {
 			return false;
@@ -282,6 +290,14 @@ public final class PokkitPluginManager implements PluginManager {
 	@Override
 	public boolean useTimings() {
 		return false;
+	}
+
+	/**
+	 * Registers a virtual plugin. Used for plugins like Floodgate that Pokkit
+	 * provides API-level support for without an actual Bukkit plugin JAR.
+	 */
+	public void registerVirtualPlugin(Plugin plugin) {
+		virtualPlugins.put(plugin.getName().toLowerCase(), plugin);
 	}
 
 }
