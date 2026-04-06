@@ -302,7 +302,7 @@ public final class BlockMap {
 		registerNukkitToBukkit(cn.nukkit.block.Block.get(BlockID.POWERED_COMPARATOR), Material.COMPARATOR);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DAYLIGHT_DETECTOR), Material.DAYLIGHT_DETECTOR);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.REDSTONE_BLOCK), Material.REDSTONE_BLOCK);
-		registerTwoWay(cn.nukkit.block.Block.get(BlockID.QUARTZ_ORE), Material.QUARTZ);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.QUARTZ_ORE), Material.NETHER_QUARTZ_ORE);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.HOPPER_BLOCK), Material.HOPPER);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.QUARTZ_BLOCK), Material.QUARTZ_BLOCK);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.QUARTZ_STAIRS), Material.QUARTZ_STAIRS);
@@ -540,6 +540,501 @@ public final class BlockMap {
 		registerNukkitToBukkit(cn.nukkit.block.Block.get(BlockID.NETHER_REACTOR), Material.RED_NETHER_BRICKS);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PISTON_EXTENSION), Material.MOVING_PISTON);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OBSERVER), Material.OBSERVER);
+
+		// Command Blocks
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COMMAND_BLOCK), Material.COMMAND_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.REPEATING_COMMAND_BLOCK), Material.REPEATING_COMMAND_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHAIN_COMMAND_BLOCK), Material.CHAIN_COMMAND_BLOCK);
+
+		// Structure
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRUCTURE_BLOCK), Material.STRUCTURE_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRUCTURE_VOID), Material.STRUCTURE_VOID);
+
+		// Stripped Logs (ID 260-265)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_SPRUCE_LOG), Material.STRIPPED_SPRUCE_LOG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_BIRCH_LOG), Material.STRIPPED_BIRCH_LOG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_JUNGLE_LOG), Material.STRIPPED_JUNGLE_LOG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_ACACIA_LOG), Material.STRIPPED_ACACIA_LOG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_DARK_OAK_LOG), Material.STRIPPED_DARK_OAK_LOG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_OAK_LOG), Material.STRIPPED_OAK_LOG);
+
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLUE_ICE), Material.BLUE_ICE);
+
+		// Prismarine Stairs
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PRISMARINE_STAIRS), Material.PRISMARINE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DARK_PRISMARINE_STAIRS), Material.DARK_PRISMARINE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PRISMARINE_BRICKS_STAIRS), Material.PRISMARINE_BRICK_STAIRS);
+
+		// Seagrass & Coral (ID 385-392)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SEAGRASS), Material.SEAGRASS);
+		nukkitToBukkit[BlockID.CORAL] = new Material[16];
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 0), Material.TUBE_CORAL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 1), Material.BRAIN_CORAL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 2), Material.BUBBLE_CORAL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 3), Material.FIRE_CORAL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 4), Material.HORN_CORAL);
+		nukkitToBukkit[BlockID.CORAL][5] = Material.TUBE_CORAL;
+		nukkitToBukkit[BlockID.CORAL][6] = Material.BRAIN_CORAL;
+		nukkitToBukkit[BlockID.CORAL][7] = Material.BUBBLE_CORAL;
+		nukkitToBukkit[BlockID.CORAL][8] = Material.FIRE_CORAL;
+		nukkitToBukkit[BlockID.CORAL][9] = Material.HORN_CORAL;
+
+		nukkitToBukkit[BlockID.CORAL_BLOCK] = new Material[10];
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 0), Material.TUBE_CORAL_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 1), Material.BRAIN_CORAL_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 2), Material.BUBBLE_CORAL_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 3), Material.FIRE_CORAL_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 4), Material.HORN_CORAL_BLOCK);
+		nukkitToBukkit[BlockID.CORAL_BLOCK][5] = Material.TUBE_CORAL_BLOCK;
+		nukkitToBukkit[BlockID.CORAL_BLOCK][6] = Material.BRAIN_CORAL_BLOCK;
+		nukkitToBukkit[BlockID.CORAL_BLOCK][7] = Material.BUBBLE_CORAL_BLOCK;
+		nukkitToBukkit[BlockID.CORAL_BLOCK][8] = Material.FIRE_CORAL_BLOCK;
+		nukkitToBukkit[BlockID.CORAL_BLOCK][9] = Material.HORN_CORAL_BLOCK;
+
+		// Kelp
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLOCK_KELP), Material.KELP);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DRIED_KELP_BLOCK), Material.DRIED_KELP_BLOCK);
+
+		// Wood-type buttons (ID 395-399)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ACACIA_BUTTON), Material.ACACIA_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BIRCH_BUTTON), Material.BIRCH_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DARK_OAK_BUTTON), Material.DARK_OAK_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.JUNGLE_BUTTON), Material.JUNGLE_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SPRUCE_BUTTON), Material.SPRUCE_BUTTON);
+
+		// Wood-type trapdoors (ID 400-404)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ACACIA_TRAPDOOR), Material.ACACIA_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BIRCH_TRAPDOOR), Material.BIRCH_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DARK_OAK_TRAPDOOR), Material.DARK_OAK_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.JUNGLE_TRAPDOOR), Material.JUNGLE_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SPRUCE_TRAPDOOR), Material.SPRUCE_TRAPDOOR);
+
+		// Wood-type pressure plates (ID 405-409)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ACACIA_PRESSURE_PLATE), Material.ACACIA_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BIRCH_PRESSURE_PLATE), Material.BIRCH_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DARK_OAK_PRESSURE_PLATE), Material.DARK_OAK_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.JUNGLE_PRESSURE_PLATE), Material.JUNGLE_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SPRUCE_PRESSURE_PLATE), Material.SPRUCE_PRESSURE_PLATE);
+
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CARVED_PUMPKIN), Material.CARVED_PUMPKIN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SEA_PICKLE), Material.SEA_PICKLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CONDUIT), Material.CONDUIT);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TURTLE_EGG), Material.TURTLE_EGG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BARRIER), Material.BARRIER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO), Material.BAMBOO);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SCAFFOLDING), Material.SCAFFOLDING);
+
+		// Stairs (ID 424-440)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.GRANITE_STAIRS), Material.GRANITE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DIORITE_STAIRS), Material.DIORITE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ANDESITE_STAIRS), Material.ANDESITE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_GRANITE_STAIRS), Material.POLISHED_GRANITE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_DIORITE_STAIRS), Material.POLISHED_DIORITE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_ANDESITE_STAIRS), Material.POLISHED_ANDESITE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MOSSY_STONE_BRICK_STAIRS), Material.MOSSY_STONE_BRICK_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SMOOTH_RED_SANDSTONE_STAIRS), Material.SMOOTH_RED_SANDSTONE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SMOOTH_SANDSTONE_STAIRS), Material.SMOOTH_SANDSTONE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.END_BRICK_STAIRS), Material.END_STONE_BRICK_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MOSSY_COBBLESTONE_STAIRS), Material.MOSSY_COBBLESTONE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NORMAL_STONE_STAIRS), Material.STONE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.RED_NETHER_BRICK_STAIRS), Material.RED_NETHER_BRICK_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SMOOTH_QUARTZ_STAIRS), Material.SMOOTH_QUARTZ_STAIRS);
+
+		// Signs (ID 436-448)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SPRUCE_STANDING_SIGN), Material.SPRUCE_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SPRUCE_WALL_SIGN), Material.SPRUCE_WALL_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SMOOTH_STONE), Material.SMOOTH_STONE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BIRCH_STANDING_SIGN), Material.BIRCH_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BIRCH_WALL_SIGN), Material.BIRCH_WALL_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.JUNGLE_STANDING_SIGN), Material.JUNGLE_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.JUNGLE_WALL_SIGN), Material.JUNGLE_WALL_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ACACIA_STANDING_SIGN), Material.ACACIA_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ACACIA_WALL_SIGN), Material.ACACIA_WALL_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DARKOAK_STANDING_SIGN), Material.DARK_OAK_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DARKOAK_WALL_SIGN), Material.DARK_OAK_WALL_SIGN);
+
+		// Village & workstation blocks (ID 449-469)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LECTERN), Material.LECTERN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.GRINDSTONE), Material.GRINDSTONE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLAST_FURNACE), Material.BLAST_FURNACE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STONECUTTER_BLOCK), Material.STONECUTTER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SMOKER), Material.SMOKER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CARTOGRAPHY_TABLE), Material.CARTOGRAPHY_TABLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.FLETCHING_TABLE), Material.FLETCHING_TABLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SMITHING_TABLE), Material.SMITHING_TABLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BARREL), Material.BARREL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LOOM), Material.LOOM);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BELL), Material.BELL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LANTERN), Material.LANTERN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CAMPFIRE_BLOCK), Material.CAMPFIRE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COMPOSTER), Material.COMPOSTER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WITHER_ROSE), Material.WITHER_ROSE);
+
+		// Sticky piston head
+		registerNukkitToBukkit(cn.nukkit.block.Block.get(BlockID.PISTON_HEAD_STICKY), Material.STICKY_PISTON);
+
+		// Bees (ID 473-476)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BEE_NEST), Material.BEE_NEST);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BEEHIVE), Material.BEEHIVE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.HONEY_BLOCK), Material.HONEY_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.HONEYCOMB_BLOCK), Material.HONEYCOMB_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LODESTONE), Material.LODESTONE);
+
+		// Nether blocks (ID 478-498)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_ROOTS), Material.CRIMSON_ROOTS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_ROOTS), Material.WARPED_ROOTS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_STEM), Material.CRIMSON_STEM);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_STEM), Material.WARPED_STEM);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_WART_BLOCK), Material.WARPED_WART_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_FUNGUS), Material.CRIMSON_FUNGUS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_FUNGUS), Material.WARPED_FUNGUS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SHROOMLIGHT), Material.SHROOMLIGHT);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WEEPING_VINES), Material.WEEPING_VINES);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_NYLIUM), Material.CRIMSON_NYLIUM);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_NYLIUM), Material.WARPED_NYLIUM);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BASALT), Material.BASALT);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BASALT), Material.POLISHED_BASALT);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SOUL_SOIL), Material.SOUL_SOIL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SOUL_FIRE), Material.SOUL_FIRE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NETHER_SPROUTS_BLOCK), Material.NETHER_SPROUTS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TARGET), Material.TARGET);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_CRIMSON_STEM), Material.STRIPPED_CRIMSON_STEM);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_WARPED_STEM), Material.STRIPPED_WARPED_STEM);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_PLANKS), Material.CRIMSON_PLANKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_PLANKS), Material.WARPED_PLANKS);
+
+		// Crimson & Warped doors/trapdoors (ID 499-502)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_DOOR_BLOCK), Material.CRIMSON_DOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_DOOR_BLOCK), Material.WARPED_DOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_TRAPDOOR), Material.CRIMSON_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_TRAPDOOR), Material.WARPED_TRAPDOOR);
+
+		// Crimson & Warped signs (ID 505-508)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_STANDING_SIGN), Material.CRIMSON_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_STANDING_SIGN), Material.WARPED_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_WALL_SIGN), Material.CRIMSON_WALL_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_WALL_SIGN), Material.WARPED_WALL_SIGN);
+
+		// Crimson & Warped stairs (ID 509-510)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_STAIRS), Material.CRIMSON_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_STAIRS), Material.WARPED_STAIRS);
+
+		// Crimson & Warped fences, gates, buttons, pressure plates, slabs (ID 511-522)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_FENCE), Material.CRIMSON_FENCE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_FENCE), Material.WARPED_FENCE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_FENCE_GATE), Material.CRIMSON_FENCE_GATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_FENCE_GATE), Material.WARPED_FENCE_GATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_BUTTON), Material.CRIMSON_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_BUTTON), Material.WARPED_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_PRESSURE_PLATE), Material.CRIMSON_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_PRESSURE_PLATE), Material.WARPED_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_SLAB), Material.CRIMSON_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_SLAB), Material.WARPED_SLAB);
+
+		// Soul torch & lantern (ID 523-524)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SOUL_TORCH), Material.SOUL_TORCH);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SOUL_LANTERN), Material.SOUL_LANTERN);
+
+		// Netherite, Ancient Debris, Respawn Anchor (ID 525-527)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NETHERITE_BLOCK), Material.NETHERITE_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ANCIENT_DEBRIS), Material.ANCIENT_DEBRIS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.RESPAWN_ANCHOR), Material.RESPAWN_ANCHOR);
+
+		// Blackstone blocks (ID 528-552)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLACKSTONE), Material.BLACKSTONE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE_BRICKS), Material.POLISHED_BLACKSTONE_BRICKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE_BRICK_STAIRS), Material.POLISHED_BLACKSTONE_BRICK_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLACKSTONE_STAIRS), Material.BLACKSTONE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLACKSTONE_WALL), Material.BLACKSTONE_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE_BRICK_WALL), Material.POLISHED_BLACKSTONE_BRICK_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHISELED_POLISHED_BLACKSTONE), Material.CHISELED_POLISHED_BLACKSTONE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRACKED_POLISHED_BLACKSTONE_BRICKS), Material.CRACKED_POLISHED_BLACKSTONE_BRICKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.GILDED_BLACKSTONE), Material.GILDED_BLACKSTONE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLACKSTONE_SLAB), Material.BLACKSTONE_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE_BRICK_SLAB), Material.POLISHED_BLACKSTONE_BRICK_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE), Material.POLISHED_BLACKSTONE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE_STAIRS), Material.POLISHED_BLACKSTONE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE_SLAB), Material.POLISHED_BLACKSTONE_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE_PRESSURE_PLATE), Material.POLISHED_BLACKSTONE_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE_BUTTON), Material.POLISHED_BLACKSTONE_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_BLACKSTONE_WALL), Material.POLISHED_BLACKSTONE_WALL);
+
+		// Warped/Crimson Hyphae (ID 553-556)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_HYPHAE), Material.WARPED_HYPHAE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_HYPHAE), Material.CRIMSON_HYPHAE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_CRIMSON_HYPHAE), Material.STRIPPED_CRIMSON_HYPHAE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_WARPED_HYPHAE), Material.STRIPPED_WARPED_HYPHAE);
+
+		// More nether blocks (ID 557-559)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHISELED_NETHER_BRICKS), Material.CHISELED_NETHER_BRICKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRACKED_NETHER_BRICKS), Material.CRACKED_NETHER_BRICKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.QUARTZ_BRICKS), Material.QUARTZ_BRICKS);
+
+		// Chain, Twisting/Weeping Vines, Nether Gold, Crying Obsidian, Soul Campfire (ID 541-545)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHAIN_BLOCK), Material.CHAIN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TWISTING_VINES), Material.TWISTING_VINES);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NETHER_GOLD_ORE), Material.NETHER_GOLD_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRYING_OBSIDIAN), Material.CRYING_OBSIDIAN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SOUL_CAMPFIRE_BLOCK), Material.SOUL_CAMPFIRE);
+
+		// Powder Snow, Sculk Sensor, Pointed Dripstone (ID 561-563)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POWDER_SNOW), Material.POWDER_SNOW);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SCULK_SENSOR), Material.SCULK_SENSOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POINTED_DRIPSTONE), Material.POINTED_DRIPSTONE);
+
+		// Copper Ore, Lightning Rod (ID 566-567)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COPPER_ORE), Material.COPPER_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LIGHTNING_ROD), Material.LIGHTNING_ROD);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRAFTER), Material.CRAFTER);
+
+		// Dripstone, Rooted Dirt, Hanging Roots, Moss, etc. (ID 572-593)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DRIPSTONE_BLOCK), Material.DRIPSTONE_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ROOTED_DIRT), Material.ROOTED_DIRT);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.HANGING_ROOTS), Material.HANGING_ROOTS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MOSS_BLOCK), Material.MOSS_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SPORE_BLOSSOM), Material.SPORE_BLOSSOM);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CAVE_VINES), Material.CAVE_VINES);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BIG_DRIPLEAF), Material.BIG_DRIPLEAF);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.AZALEA_LEAVES), Material.AZALEA_LEAVES);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.AZALEA_LEAVES_FLOWERED), Material.FLOWERING_AZALEA_LEAVES);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CALCITE), Material.CALCITE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.AMETHYST_BLOCK), Material.AMETHYST_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BUDDING_AMETHYST), Material.BUDDING_AMETHYST);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.AMETHYST_CLUSTER), Material.AMETHYST_CLUSTER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TUFF), Material.TUFF);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TINTED_GLASS), Material.TINTED_GLASS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MOSS_CARPET), Material.MOSS_CARPET);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SMALL_DRIPLEAF), Material.SMALL_DRIPLEAF);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.AZALEA), Material.AZALEA);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.FLOWERING_AZALEA), Material.FLOWERING_AZALEA);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.GLOW_FRAME), Material.GLOW_ITEM_FRAME);
+
+		// Copper blocks (ID 595-629)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COPPER_BLOCK), Material.COPPER_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.EXPOSED_COPPER), Material.EXPOSED_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WEATHERED_COPPER), Material.WEATHERED_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OXIDIZED_COPPER), Material.OXIDIZED_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_COPPER), Material.WAXED_COPPER_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_EXPOSED_COPPER), Material.WAXED_EXPOSED_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_WEATHERED_COPPER), Material.WAXED_WEATHERED_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CUT_COPPER), Material.CUT_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.EXPOSED_CUT_COPPER), Material.EXPOSED_CUT_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WEATHERED_CUT_COPPER), Material.WEATHERED_CUT_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OXIDIZED_CUT_COPPER), Material.OXIDIZED_CUT_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_CUT_COPPER), Material.WAXED_CUT_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_EXPOSED_CUT_COPPER), Material.WAXED_EXPOSED_CUT_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_WEATHERED_CUT_COPPER), Material.WAXED_WEATHERED_CUT_COPPER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CUT_COPPER_STAIRS), Material.CUT_COPPER_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.EXPOSED_CUT_COPPER_STAIRS), Material.EXPOSED_CUT_COPPER_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WEATHERED_CUT_COPPER_STAIRS), Material.WEATHERED_CUT_COPPER_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OXIDIZED_CUT_COPPER_STAIRS), Material.OXIDIZED_CUT_COPPER_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_CUT_COPPER_STAIRS), Material.WAXED_CUT_COPPER_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_EXPOSED_CUT_COPPER_STAIRS), Material.WAXED_EXPOSED_CUT_COPPER_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_WEATHERED_CUT_COPPER_STAIRS), Material.WAXED_WEATHERED_CUT_COPPER_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CUT_COPPER_SLAB), Material.CUT_COPPER_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.EXPOSED_CUT_COPPER_SLAB), Material.EXPOSED_CUT_COPPER_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WEATHERED_CUT_COPPER_SLAB), Material.WEATHERED_CUT_COPPER_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OXIDIZED_CUT_COPPER_SLAB), Material.OXIDIZED_CUT_COPPER_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_CUT_COPPER_SLAB), Material.WAXED_CUT_COPPER_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_EXPOSED_CUT_COPPER_SLAB), Material.WAXED_EXPOSED_CUT_COPPER_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WAXED_WEATHERED_CUT_COPPER_SLAB), Material.WAXED_WEATHERED_CUT_COPPER_SLAB);
+
+		// Cave Vines with berries
+		registerNukkitToBukkit(cn.nukkit.block.Block.get(BlockID.CAVE_VINES_BODY_WITH_BERRIES), Material.CAVE_VINES);
+		registerNukkitToBukkit(cn.nukkit.block.Block.get(BlockID.CAVE_VINES_HEAD_WITH_BERRIES), Material.CAVE_VINES);
+
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SMOOTH_BASALT), Material.SMOOTH_BASALT);
+
+		// Deepslate (ID 633-665)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE), Material.DEEPSLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COBBLED_DEEPSLATE), Material.COBBLED_DEEPSLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COBBLED_DEEPSLATE_SLAB), Material.COBBLED_DEEPSLATE_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COBBLED_DEEPSLATE_STAIRS), Material.COBBLED_DEEPSLATE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COBBLED_DEEPSLATE_WALL), Material.COBBLED_DEEPSLATE_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_DEEPSLATE), Material.POLISHED_DEEPSLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_DEEPSLATE_SLAB), Material.POLISHED_DEEPSLATE_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_DEEPSLATE_STAIRS), Material.POLISHED_DEEPSLATE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_DEEPSLATE_WALL), Material.POLISHED_DEEPSLATE_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_TILES), Material.DEEPSLATE_TILES);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_TILE_SLAB), Material.DEEPSLATE_TILE_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_TILE_STAIRS), Material.DEEPSLATE_TILE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_TILE_WALL), Material.DEEPSLATE_TILE_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_BRICKS), Material.DEEPSLATE_BRICKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_BRICK_SLAB), Material.DEEPSLATE_BRICK_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_BRICK_STAIRS), Material.DEEPSLATE_BRICK_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_BRICK_WALL), Material.DEEPSLATE_BRICK_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHISELED_DEEPSLATE), Material.CHISELED_DEEPSLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_LAPIS_ORE), Material.DEEPSLATE_LAPIS_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_IRON_ORE), Material.DEEPSLATE_IRON_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_GOLD_ORE), Material.DEEPSLATE_GOLD_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_REDSTONE_ORE), Material.DEEPSLATE_REDSTONE_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_DIAMOND_ORE), Material.DEEPSLATE_DIAMOND_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_COAL_ORE), Material.DEEPSLATE_COAL_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_EMERALD_ORE), Material.DEEPSLATE_EMERALD_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEEPSLATE_COPPER_ORE), Material.DEEPSLATE_COPPER_ORE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRACKED_DEEPSLATE_TILES), Material.CRACKED_DEEPSLATE_TILES);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRACKED_DEEPSLATE_BRICKS), Material.CRACKED_DEEPSLATE_BRICKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.GLOW_LICHEN), Material.GLOW_LICHEN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.INFESTED_DEEPSLATE), Material.INFESTED_DEEPSLATE);
+
+		// Candles (ID 667-700)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CANDLE), Material.CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WHITE_CANDLE), Material.WHITE_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ORANGE_CANDLE), Material.ORANGE_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MAGENTA_CANDLE), Material.MAGENTA_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LIGHT_BLUE_CANDLE), Material.LIGHT_BLUE_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.YELLOW_CANDLE), Material.YELLOW_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LIME_CANDLE), Material.LIME_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PINK_CANDLE), Material.PINK_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.GRAY_CANDLE), Material.GRAY_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.LIGHT_GRAY_CANDLE), Material.LIGHT_GRAY_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CYAN_CANDLE), Material.CYAN_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PURPLE_CANDLE), Material.PURPLE_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLUE_CANDLE), Material.BLUE_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BROWN_CANDLE), Material.BROWN_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.GREEN_CANDLE), Material.GREEN_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.RED_CANDLE), Material.RED_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLACK_CANDLE), Material.BLACK_CANDLE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CANDLE_CAKE), Material.CANDLE_CAKE);
+
+		// Raw ore blocks (ID 706-708)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.RAW_IRON_BLOCK), Material.RAW_IRON_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.RAW_COPPER_BLOCK), Material.RAW_COPPER_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.RAW_GOLD_BLOCK), Material.RAW_GOLD_BLOCK);
+
+		// Sculk (ID 713-716)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SCULK), Material.SCULK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SCULK_VEIN), Material.SCULK_VEIN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SCULK_CATALYST), Material.SCULK_CATALYST);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SCULK_SHRIEKER), Material.SCULK_SHRIEKER);
+
+		// Froglight (ID 724-726)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PEARLESCENT_FROGLIGHT), Material.PEARLESCENT_FROGLIGHT);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.VERDANT_FROGLIGHT), Material.VERDANT_FROGLIGHT);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OCHRE_FROGLIGHT), Material.OCHRE_FROGLIGHT);
+
+		// Mangrove (ID 727-754)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_LEAVES), Material.MANGROVE_LEAVES);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MUD), Material.MUD);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_PROPAGULE), Material.MANGROVE_PROPAGULE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MUD_BRICKS), Material.MUD_BRICKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PACKED_MUD), Material.PACKED_MUD);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MUD_BRICK_SLAB), Material.MUD_BRICK_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MUD_BRICK_STAIRS), Material.MUD_BRICK_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MUD_BRICK_WALL), Material.MUD_BRICK_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_ROOTS), Material.MANGROVE_ROOTS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MUDDY_MANGROVE_ROOTS), Material.MUDDY_MANGROVE_ROOTS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_LOG), Material.MANGROVE_LOG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_MANGROVE_LOG), Material.STRIPPED_MANGROVE_LOG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_PLANKS), Material.MANGROVE_PLANKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_BUTTON), Material.MANGROVE_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_STAIRS), Material.MANGROVE_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_SLAB), Material.MANGROVE_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_PRESSURE_PLATE), Material.MANGROVE_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_FENCE), Material.MANGROVE_FENCE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_FENCE_GATE), Material.MANGROVE_FENCE_GATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_DOOR_BLOCK), Material.MANGROVE_DOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_STANDING_SIGN), Material.MANGROVE_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_WALL_SIGN), Material.MANGROVE_WALL_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_TRAPDOOR), Material.MANGROVE_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_WOOD), Material.MANGROVE_WOOD);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_MANGROVE_WOOD), Material.STRIPPED_MANGROVE_WOOD);
+
+		// Hanging Signs (ID 755-763)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OAK_HANGING_SIGN), Material.OAK_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SPRUCE_HANGING_SIGN), Material.SPRUCE_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BIRCH_HANGING_SIGN), Material.BIRCH_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.JUNGLE_HANGING_SIGN), Material.JUNGLE_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ACACIA_HANGING_SIGN), Material.ACACIA_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DARK_OAK_HANGING_SIGN), Material.DARK_OAK_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRIMSON_HANGING_SIGN), Material.CRIMSON_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WARPED_HANGING_SIGN), Material.WARPED_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.MANGROVE_HANGING_SIGN), Material.MANGROVE_HANGING_SIGN);
+
+		// Bamboo (ID 764-783)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_MOSAIC), Material.BAMBOO_MOSAIC);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_PLANKS), Material.BAMBOO_PLANKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_BUTTON), Material.BAMBOO_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_STAIRS), Material.BAMBOO_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_SLAB), Material.BAMBOO_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_PRESSURE_PLATE), Material.BAMBOO_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_FENCE), Material.BAMBOO_FENCE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_FENCE_GATE), Material.BAMBOO_FENCE_GATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_DOOR), Material.BAMBOO_DOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_STANDING_SIGN), Material.BAMBOO_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_WALL_SIGN), Material.BAMBOO_WALL_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_TRAPDOOR), Material.BAMBOO_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_HANGING_SIGN), Material.BAMBOO_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_MOSAIC_STAIRS), Material.BAMBOO_MOSAIC_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_MOSAIC_SLAB), Material.BAMBOO_MOSAIC_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHISELED_BOOKSHELF), Material.CHISELED_BOOKSHELF);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BAMBOO_BLOCK), Material.BAMBOO_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_BAMBOO_BLOCK), Material.STRIPPED_BAMBOO_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SUSPICIOUS_SAND), Material.SUSPICIOUS_SAND);
+
+		// Cherry (ID 785-804)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_BUTTON), Material.CHERRY_BUTTON);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_DOOR_BLOCK), Material.CHERRY_DOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_FENCE), Material.CHERRY_FENCE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_FENCE_GATE), Material.CHERRY_FENCE_GATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_HANGING_SIGN), Material.CHERRY_HANGING_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_CHERRY_LOG), Material.STRIPPED_CHERRY_LOG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_LOG), Material.CHERRY_LOG);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_PLANKS), Material.CHERRY_PLANKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_PRESSURE_PLATE), Material.CHERRY_PRESSURE_PLATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_SLAB), Material.CHERRY_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_STAIRS), Material.CHERRY_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_STANDING_SIGN), Material.CHERRY_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_TRAPDOOR), Material.CHERRY_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_WALL_SIGN), Material.CHERRY_WALL_SIGN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STRIPPED_CHERRY_WOOD), Material.STRIPPED_CHERRY_WOOD);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_WOOD), Material.CHERRY_WOOD);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_SAPLING), Material.CHERRY_SAPLING);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHERRY_LEAVES), Material.CHERRY_LEAVES);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PINK_PETALS), Material.PINK_PETALS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DECORATED_POT), Material.DECORATED_POT);
+
+		// Torchflower, Pitcher
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TORCHFLOWER), Material.TORCHFLOWER);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SUSPICIOUS_GRAVEL), Material.SUSPICIOUS_GRAVEL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PITCHER_PLANT), Material.PITCHER_PLANT);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SNIFFER_EGG), Material.SNIFFER_EGG);
+
+		// Tuff variants (ID 999-1014)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TUFF_SLAB), Material.TUFF_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TUFF_STAIRS), Material.TUFF_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TUFF_WALL), Material.TUFF_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_TUFF), Material.POLISHED_TUFF);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_TUFF_SLAB), Material.POLISHED_TUFF_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_TUFF_STAIRS), Material.POLISHED_TUFF_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.POLISHED_TUFF_WALL), Material.POLISHED_TUFF_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHISELED_TUFF), Material.CHISELED_TUFF);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TUFF_BRICKS), Material.TUFF_BRICKS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TUFF_BRICK_SLAB), Material.TUFF_BRICK_SLAB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TUFF_BRICK_STAIRS), Material.TUFF_BRICK_STAIRS);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TUFF_BRICK_WALL), Material.TUFF_BRICK_WALL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHISELED_TUFF_BRICKS), Material.CHISELED_TUFF_BRICKS);
+
+		// Copper Grate, Bulb, Door, Trapdoor (ID 1015-1054)
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COPPER_GRATE), Material.COPPER_GRATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.EXPOSED_COPPER_GRATE), Material.EXPOSED_COPPER_GRATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WEATHERED_COPPER_GRATE), Material.WEATHERED_COPPER_GRATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OXIDIZED_COPPER_GRATE), Material.OXIDIZED_COPPER_GRATE);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COPPER_BULB), Material.COPPER_BULB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.EXPOSED_COPPER_BULB), Material.EXPOSED_COPPER_BULB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WEATHERED_COPPER_BULB), Material.WEATHERED_COPPER_BULB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OXIDIZED_COPPER_BULB), Material.OXIDIZED_COPPER_BULB);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COPPER_DOOR), Material.COPPER_DOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.EXPOSED_COPPER_DOOR), Material.EXPOSED_COPPER_DOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WEATHERED_COPPER_DOOR), Material.WEATHERED_COPPER_DOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OXIDIZED_COPPER_DOOR), Material.OXIDIZED_COPPER_DOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COPPER_TRAPDOOR), Material.COPPER_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.EXPOSED_COPPER_TRAPDOOR), Material.EXPOSED_COPPER_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.WEATHERED_COPPER_TRAPDOOR), Material.WEATHERED_COPPER_TRAPDOOR);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.OXIDIZED_COPPER_TRAPDOOR), Material.OXIDIZED_COPPER_TRAPDOOR);
+
+		// Piglin head
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PIGLIN_HEAD), Material.PIGLIN_HEAD);
 
 		// Legacy materials
 		registerBukkitToNukkit(cn.nukkit.block.Block.get(BlockID.AIR), Material.LEGACY_AIR);
