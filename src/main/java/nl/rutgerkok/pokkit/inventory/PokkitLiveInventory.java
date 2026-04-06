@@ -35,6 +35,18 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof PokkitLiveInventory)) return false;
+		return this.nukkit.equals(((PokkitLiveInventory) obj).nukkit);
+	}
+
+	@Override
+	public int hashCode() {
+		return nukkit.hashCode();
+	}
+
+	@Override
 	protected int addSingleStack(ItemStack item) {
 		Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
 		int remaining = nukkitItem.count;

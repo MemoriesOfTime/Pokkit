@@ -25,6 +25,10 @@ public final class PokkitFloodgatePlayer implements FloodgatePlayer {
 		this.nukkitPlayer = nukkitPlayer;
 	}
 
+	Player getNukkitPlayer() {
+		return nukkitPlayer;
+	}
+
 	@Override
 	public String getJavaUsername() {
 		return nukkitPlayer.getName();

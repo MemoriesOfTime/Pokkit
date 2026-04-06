@@ -5,7 +5,10 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import nl.rutgerkok.pokkit.plugin.PokkitPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -77,6 +80,11 @@ public class NukkitCustomInventory extends BaseInventory {
 
 	// Tracks fake block positions per player (1 for single block, 2 for double chest)
 	private final HashMap<String, Vector3[]> spawnedFakeBlocks = new HashMap<>();
+	// Tracks last close time per player to skip delay on inventory-to-inventory transitions
+	// Entries auto-expire after 3 seconds, no memory leak
+	private static final Cache<String, Long> lastCloseTimes = CacheBuilder.newBuilder()
+			.expireAfterWrite(3, TimeUnit.SECONDS)
+			.build();
 	private final FakeBlockInfo blockInfo;
 
 	public final String customName;
@@ -127,14 +135,22 @@ public class NukkitCustomInventory extends BaseInventory {
 		// 1. Client to finish processing the UpdateBlockPacket (fake block placement)
 		// 2. Client to close any active UI (e.g. chat/command input after running a command)
 		// Without this delay, the client may reject the container open.
-		int delayTicks = 20;
+		// Skip delay if an inventory was recently closed (inventory-to-inventory transition)
+		Long lastClose = lastCloseTimes.getIfPresent(who.getName().toLowerCase());
+		boolean recentlyClosed = lastClose != null;
+		int delayTicks = recentlyClosed ? 0 : 20;
+		Vector3 finalV1 = v1;
 		Server.getInstance().getScheduler().scheduleDelayedTask(PokkitPlugin.getInstance(), () -> {
+			if (!this.getViewers().contains(who)) {
+				return;
+			}
+
 			ContainerOpenPacket containerOpenPacket = new ContainerOpenPacket();
 			containerOpenPacket.windowId = who.getWindowId(this);
 			containerOpenPacket.type = this.getType().getNetworkType();
-			containerOpenPacket.x = (int) v1.x;
-			containerOpenPacket.y = (int) v1.y;
-			containerOpenPacket.z = (int) v1.z;
+			containerOpenPacket.x = (int) finalV1.x;
+			containerOpenPacket.y = (int) finalV1.y;
+			containerOpenPacket.z = (int) finalV1.z;
 
 			who.dataPacket(containerOpenPacket);
 
@@ -144,6 +160,8 @@ public class NukkitCustomInventory extends BaseInventory {
 
 	@Override
 	public void onClose(@NotNull Player who) {
+		lastCloseTimes.put(who.getName().toLowerCase(), System.currentTimeMillis());
+
 		// Remove the fake block(s)
 		if (who.getClosingWindowId() != Integer.MAX_VALUE) {
 			ContainerClosePacket closePacket = new ContainerClosePacket();

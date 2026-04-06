@@ -117,6 +117,7 @@ public final class PokkitItemFactory implements ItemFactory {
 		case CREEPER_HEAD:
 		case PLAYER_HEAD:
 		case LEGACY_SKULL_ITEM:
+			return new PokkitSkullMeta(tag, material, damage);
 		case COMMAND_BLOCK:
 		case LEGACY_COMMAND:
 		case REPEATING_COMMAND_BLOCK:

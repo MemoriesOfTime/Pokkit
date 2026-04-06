@@ -10,7 +10,7 @@ import nl.rutgerkok.pokkit.blockstate.PokkitBlockState;
 
 import cn.nukkit.nbt.tag.CompoundTag;
 
-final class PokkitBlockStateMeta extends PokkitItemMeta implements BlockStateMeta {
+class PokkitBlockStateMeta extends PokkitItemMeta implements BlockStateMeta {
 
 	private final Material material;
 
