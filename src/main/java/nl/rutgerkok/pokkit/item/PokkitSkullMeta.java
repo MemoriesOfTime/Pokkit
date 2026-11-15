@@ -1,6 +1,5 @@
 package nl.rutgerkok.pokkit.item;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;

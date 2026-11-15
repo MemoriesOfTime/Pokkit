@@ -55,11 +55,11 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 		short nukkitEnchantmentId = (short) PokkitEnchantment.toNukkit(enchantment);
 
 		ListTag<CompoundTag> enchTag;
-		if (!hasEnchants()) {
+		if (tag.contains("ench")) {
+			enchTag = tag.getList("ench", CompoundTag.class);
+		} else {
 			enchTag = new ListTag<>("ench");
 			tag.putList(enchTag);
-		} else {
-			enchTag = tag.getList("ench", CompoundTag.class);
 		}
 
 		// Try to modify an existing enchantment first
