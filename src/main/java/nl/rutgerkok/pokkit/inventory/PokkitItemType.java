@@ -67,7 +67,9 @@ public final class PokkitItemType implements ItemType.Typed<ItemMeta> {
 	public ItemStack createItemStack(java.util.function.Consumer<? super ItemMeta> consumer) {
 		ItemStack stack = createItemStack();
 		if (stack != null) {
-			consumer.accept(stack.getItemMeta());
+			ItemMeta meta = stack.getItemMeta();
+			consumer.accept(meta);
+			stack.setItemMeta(meta);
 		}
 		return stack;
 	}
@@ -76,19 +78,30 @@ public final class PokkitItemType implements ItemType.Typed<ItemMeta> {
 	public ItemStack createItemStack(int amount, java.util.function.Consumer<? super ItemMeta> consumer) {
 		ItemStack stack = createItemStack(amount);
 		if (stack != null) {
-			consumer.accept(stack.getItemMeta());
+			ItemMeta meta = stack.getItemMeta();
+			consumer.accept(meta);
+			stack.setItemMeta(meta);
 		}
 		return stack;
 	}
 
 	@Override
 	public boolean hasBlockType() {
-		return false;
+		Material material = asMaterial();
+		// Material.isBlock() asks Registry.BLOCK, which is built from the
+		// vanilla block list, so this is the same answer Bukkit gives.
+		return material != null && material.isBlock();
 	}
 
 	@Override
 	public BlockType getBlockType() {
-		return null;
+		if (!hasBlockType()) {
+			return null;
+		}
+		// Prefer the registry instance, so that identity comparisons with
+		// Material#asBlockType() keep working.
+		BlockType registered = org.bukkit.Registry.BLOCK.get(key);
+		return registered != null ? registered : nl.rutgerkok.pokkit.block.PokkitBlockType.of(key.getKey());
 	}
 
 	@Override
@@ -98,31 +111,42 @@ public final class PokkitItemType implements ItemType.Typed<ItemMeta> {
 
 	@Override
 	public int getMaxStackSize() {
-		return 64;
+		Material material = asMaterial();
+		return material == null ? 64 : material.getMaxStackSize();
 	}
 
 	@Override
 	public short getMaxDurability() {
-		return 0;
+		Material material = asMaterial();
+		return material == null ? 0 : material.getMaxDurability();
 	}
+
+	/*
+	 * The remaining methods must not delegate to Material: those methods look
+	 * the material up in Registry.ITEM, which returns this very class, so
+	 * delegating would recurse until the stack overflows. The properties are
+	 * taken from the Nukkit item instead.
+	 */
 
 	@Override
 	public boolean isEdible() {
-		return false;
+		return nukkitItem() instanceof cn.nukkit.item.ItemEdible;
 	}
 
 	@Override
 	public boolean isRecord() {
-		return false;
+		return nukkitItem() instanceof cn.nukkit.item.ItemRecord;
 	}
 
 	@Override
 	public boolean isFuel() {
-		return false;
+		Short fuelTime = nukkitItem().getFuelTime();
+		return fuelTime != null && fuelTime > 0;
 	}
 
 	@Override
 	public boolean isCompostable() {
+		// Nukkit does not expose compost data.
 		return false;
 	}
 
@@ -133,6 +157,7 @@ public final class PokkitItemType implements ItemType.Typed<ItemMeta> {
 
 	@Override
 	public ItemType getCraftingRemainingItem() {
+		// Nukkit does not expose crafting remaining items.
 		return null;
 	}
 
@@ -144,6 +169,18 @@ public final class PokkitItemType implements ItemType.Typed<ItemMeta> {
 	@Override
 	public CreativeCategory getCreativeCategory() {
 		return null;
+	}
+
+	/**
+	 * Gets the Nukkit item for this type, or an air item if the material is
+	 * unknown.
+	 *
+	 * @return The Nukkit item, never null.
+	 */
+	private cn.nukkit.item.Item nukkitItem() {
+		Material material = asMaterial();
+		return material == null ? cn.nukkit.item.Item.get(cn.nukkit.item.Item.AIR)
+				: nl.rutgerkok.pokkit.item.ItemMap.fromBukkit(material);
 	}
 
 	@Override

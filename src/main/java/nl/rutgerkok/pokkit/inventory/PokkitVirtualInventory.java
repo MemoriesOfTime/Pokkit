@@ -34,7 +34,7 @@ public class PokkitVirtualInventory extends PokkitAbstractInventory {
 	public PokkitVirtualInventory(BaseInventory nukkit) {
 		// Unlike ArrayList, Arrays.asList cannot be resized, which is exactly
 		// what we want
-		this.contents = Arrays.asList(new ItemStack[getSize()]);
+		this.contents = Arrays.asList(new ItemStack[nukkit.getSize()]);
 
 		nukkit.getContents().forEach((slot, item) -> contents.set(slot, PokkitItemStack.toBukkitCopy(item)));
 

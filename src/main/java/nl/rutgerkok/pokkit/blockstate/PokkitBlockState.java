@@ -44,7 +44,7 @@ public abstract class PokkitBlockState implements BlockState {
 		if (blockEntityOrNull instanceof BlockEntitySign) {
 			String hiddenData = blockEntityOrNull.namedTag.getString(Pokkit.NAME);
 			return new SignBlockState(location, blockData, ((BlockEntitySign) blockEntityOrNull).getText(),
-					hiddenData, ((BlockEntitySign) blockEntityOrNull).getColor());
+					hiddenData, ((BlockEntitySign) blockEntityOrNull).getColor(), blockEntityOrNull.namedTag);
 		}
 
 		return new PlainBlockState(location, blockData);
@@ -70,7 +70,7 @@ public abstract class PokkitBlockState implements BlockState {
 			String[] lines = new String[] { tag.getString("Text1"), tag.getString("Text2"), tag.getString("Text3"),
 					tag.getString("Text4") };
 			String hiddenData = tag.getString(Pokkit.NAME);
-			return new SignBlockState(null, materialData, lines, hiddenData, null);
+			return new SignBlockState(null, materialData, lines, hiddenData, null, tag);
 		}
 
 		return new PlainBlockState(null, materialData);
@@ -258,10 +258,19 @@ public abstract class PokkitBlockState implements BlockState {
 			block.setBlockData(blockData, applyPhysics);
 		}
 
-		// Update NBT data
+		// Most blocks have no block entity; there is nothing left to update
+		// for those.
 		BlockEntity blockEntity = getBlockEntity();
+		if (blockEntity == null) {
+			return true;
+		}
+
+		// Update NBT data
 		saveToTag(blockEntity.namedTag);
 		if (!(blockEntity instanceof BlockEntitySpawnable)) {
+			if (blockEntity.chunk != null) {
+				blockEntity.chunk.setChanged();
+			}
 			return false;
 		}
 

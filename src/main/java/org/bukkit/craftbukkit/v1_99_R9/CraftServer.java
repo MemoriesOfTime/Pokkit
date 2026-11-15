@@ -203,6 +203,8 @@ public final class CraftServer extends Server.Spigot implements Server {
 			registry = PokkitRegistries.createItemTypeRegistry();
 		} else if (type == MusicInstrument.class) {
 			registry = PokkitRegistries.createMusicInstrumentRegistry();
+		} else if (type == org.bukkit.damage.DamageType.class) {
+			registry = PokkitRegistries.createDamageTypeRegistry();
 		} else {
 			registry = new PokkitRegistry<>();
 		}
@@ -224,12 +226,7 @@ public final class CraftServer extends Server.Spigot implements Server {
 
 	@Override
 	public BlockData createBlockData(Material material, String data) throws IllegalArgumentException {
-		try {
-			int blockData = Integer.parseUnsignedInt(data);
-			return PokkitBlockData.createBlockData(material, blockData);
-		} catch(NumberFormatException e) {
-			throw new IllegalArgumentException("Data \""+data+"\"is not valid block data. " + Pokkit.NAME + " expects a number as the block data, as block states do not exist yet in MCPE.");
-		}
+		return PokkitBlockData.createBlockData(material, data);
 	}
 
 	@Override

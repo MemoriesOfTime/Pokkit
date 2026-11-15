@@ -9,6 +9,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 
+import nl.rutgerkok.pokkit.enchantment.PokkitEnchantment;
 import nl.rutgerkok.pokkit.enchantment.PokkitEnchantmentEntry;
 
 /**
@@ -35,9 +36,14 @@ public final class LazyEnchantmentRegistry implements Registry<Enchantment> {
 		}
 		for (String k : keys) {
 			if (NamespacedKey.minecraft(k).equals(key)) {
-				Enchantment enchantment = new PokkitEnchantmentEntry(key);
-				map.put(key, enchantment);
-				return enchantment;
+				// Constructing the entry may initialize the Enchantment
+				// class, whose static initializer registers all enchantments
+				// here. Use putIfAbsent so that the instance created by that
+				// initializer is kept, instead of replacing it with ours.
+				Enchantment created = new PokkitEnchantmentEntry(key,
+						PokkitEnchantment.getNukkitEnchantment(key));
+				Enchantment registered = map.putIfAbsent(key, created);
+				return registered != null ? registered : created;
 			}
 		}
 		return null;
@@ -58,7 +64,16 @@ public final class LazyEnchantmentRegistry implements Registry<Enchantment> {
 	private void ensureAllLoaded() {
 		for (String key : keys) {
 			NamespacedKey namespacedKey = NamespacedKey.minecraft(key);
-			map.computeIfAbsent(namespacedKey, PokkitEnchantmentEntry::new);
+			if (map.containsKey(namespacedKey)) {
+				continue;
+			}
+			// Do not use computeIfAbsent here: creating the entry may
+			// initialize Enchantment, whose static initializer calls back
+			// into this map, which computeIfAbsent rejects with a
+			// ConcurrentModificationException.
+			Enchantment created = new PokkitEnchantmentEntry(namespacedKey,
+					PokkitEnchantment.getNukkitEnchantment(namespacedKey));
+			map.putIfAbsent(namespacedKey, created);
 		}
 	}
 }

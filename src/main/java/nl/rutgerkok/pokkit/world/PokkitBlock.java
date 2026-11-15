@@ -49,38 +49,56 @@ public final class PokkitBlock implements Block {
 		if (block == null) {
 			return null;
 		}
-		return ((PokkitBlock) block).nukkit;
+		return ((PokkitBlock) block).nukkit();
 	}
 
-	private cn.nukkit.block.Block nukkit;
+	private cn.nukkit.block.Block handle;
 
 	/**
-	 * Allows for changed drops.
+	 * Gets the Nukkit block this handle points at.
+	 *
+	 * <p>
+	 * The block is re-read from the level, because the level replaces the block
+	 * object when a block changes. Keeping the old object would make this
+	 * handle report the previous type after the block was changed through
+	 * another handle, which does not happen in Bukkit.
+	 *
+	 * @return The Nukkit block.
 	 */
-	private List<ItemStack> drops;
+	private cn.nukkit.block.Block nukkit() {
+		if (handle.level != null) {
+			cn.nukkit.block.Block current = handle.level.getBlock(handle);
+			if (current != null) {
+				handle = current;
+			}
+		}
+		return handle;
+	}
 
 	private PokkitBlock(cn.nukkit.block.Block nukkit) {
-		this.nukkit = Objects.requireNonNull(nukkit, "nukkit");
+		this.handle = Objects.requireNonNull(nukkit, "nukkit");
 	}
 
 	@Override
 	public boolean breakNaturally() {
-		return nukkit.level.useBreakOn(nukkit) != null;
+		return nukkit().level.useBreakOn(nukkit()) != null;
 	}
 
 	@Override
 	public boolean breakNaturally(ItemStack tool) {
-		return nukkit.level.useBreakOn(nukkit, PokkitItemStack.toNukkitCopy(tool)) != null;
+		return nukkit().level.useBreakOn(nukkit(), PokkitItemStack.toNukkitCopy(tool)) != null;
 	}
 
 	@Override
 	public Biome getBiome() {
-		return PokkitBiome.toBukkit(nukkit.getLevel().getBiomeId(getX(), getZ()));
+		return PokkitBiome.toBukkit(nukkit().getLevel().getBiomeId(getX(), getZ()));
 	}
 
 	@Override
 	public BlockData getBlockData() {
-		return PokkitBlockData.toBukkit(nukkit);
+		// Return a copy: changing the returned block data must not change the
+		// block in the world, just like in Bukkit.
+		return PokkitBlockData.toBukkit(nukkit()).clone();
 	}
 
 	private BlockMetadataStore getBlockMetadata() {
@@ -98,7 +116,7 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public int getBlockPower(BlockFace face) {
-		return nukkit.getStrongPower(PokkitBlockFace.toNukkit(face));
+		return nukkit().getStrongPower(PokkitBlockFace.toNukkit(face));
 	}
 
 	@Override
@@ -108,7 +126,7 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public byte getData() {
-		PokkitBlockData materialData = PokkitBlockData.toBukkit(nukkit);
+		PokkitBlockData materialData = PokkitBlockData.toBukkit(nukkit());
 		return materialData.getNukkitData();
 	}
 
@@ -119,7 +137,8 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public Collection<ItemStack> getDrops(ItemStack tool) {
-		return getDrops0(PokkitItemStack.toNukkitCopy(tool));
+		// The tool is nullable: null means "without a specific tool".
+		return getDrops0(tool == null ? null : PokkitItemStack.toNukkitCopy(tool));
 	}
 
 	@Override
@@ -128,21 +147,18 @@ public final class PokkitBlock implements Block {
 	}
 
 	private Collection<ItemStack> getDrops0(cn.nukkit.item.Item item) {
-		if (this.drops != null) {
-			return this.drops;
-		}
-
 		if (item == null) {
 			item = new ItemBlock(new BlockAir(), 0, 0);
 		}
 
-		Item[] drops = nukkit.getDrops(item);
+		Item[] drops = nukkit().getDrops(item);
 		List<ItemStack> result = new ArrayList<>();
 		for (Item drop : drops) {
 			ItemStack stack = PokkitItemStack.toBukkitCopy(drop);
-			result.add(stack);
+			if (stack != null) {
+				result.add(stack);
+			}
 		}
-		this.drops = result;
 		return result;
 	}
 
@@ -159,7 +175,7 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public double getHumidity() {
-		int biomeId = nukkit.getLevel().getBiomeId(getX(), getZ());
+		int biomeId = nukkit().getLevel().getBiomeId(getX(), getZ());
 		cn.nukkit.level.biome.Biome biome = EnumBiome.getBiome(biomeId);
 		if (biome != null) {
 			if (biome.isFreezing()) return 0.3;
@@ -171,30 +187,34 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public byte getLightFromBlocks() {
-		return (byte) nukkit.getLevel().getBlockLightAt(getX(), getY(), getZ());
+		return (byte) nukkit().getLevel().getBlockLightAt(getX(), getY(), getZ());
 	}
 
 	@Override
 	public byte getLightFromSky() {
-		return (byte) nukkit.getLevel().getBlockSkyLightAt(getX(), getY(), getZ());
+		return (byte) nukkit().getLevel().getBlockSkyLightAt(getX(), getY(), getZ());
 	}
 
 	@Override
 	public byte getLightLevel() {
-		return (byte) nukkit.getLightLevel();
+		// The light level at the block, not the light this block emits. Nukkit
+		// combines the sky light (corrected for the time of day) and the block
+		// light in Level#getFullLight, which is what Bukkit returns here.
+		cn.nukkit.level.Level level = nukkit().getLevel();
+		return level == null ? 0 : (byte) level.getFullLight(nukkit());
 	}
 
 	@Override
 	public Location getLocation() {
-		return new Location(PokkitWorld.toBukkit(nukkit.level), nukkit.x, nukkit.y, nukkit.z);
+		return new Location(PokkitWorld.toBukkit(nukkit().level), nukkit().x, nukkit().y, nukkit().z);
 	}
 
 	@Override
 	public Location getLocation(Location loc) {
-		loc.setWorld(PokkitWorld.toBukkit(nukkit.level));
-		loc.setX(nukkit.x);
-		loc.setY(nukkit.y);
-		loc.setZ(nukkit.z);
+		loc.setWorld(PokkitWorld.toBukkit(nukkit().level));
+		loc.setX(nukkit().x);
+		loc.setY(nukkit().y);
+		loc.setZ(nukkit().z);
 		loc.setYaw(0f);
 		loc.setPitch(0f);
 		return loc;
@@ -207,7 +227,8 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public PistonMoveReaction getPistonMoveReaction() {
-		return PistonMoveReaction.MOVE;
+		// Obsidian is not pushed, torches break when moved, and so on.
+		return getBlockData().getPistonMoveReaction();
 	}
 
 	@Override
@@ -232,7 +253,7 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public double getTemperature() {
-		int biomeId = nukkit.getLevel().getBiomeId((int) nukkit.x, (int) nukkit.z);
+		int biomeId = nukkit().getLevel().getBiomeId((int) nukkit().x, (int) nukkit().z);
 		cn.nukkit.level.biome.Biome biome = EnumBiome.getBiome(biomeId);
 		if (biome != null && biome.isFreezing()) {
 			return 0.1;
@@ -242,27 +263,27 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public Material getType() {
-		return PokkitBlockData.toBukkit(nukkit).getMaterial();
+		return PokkitBlockData.toBukkit(nukkit()).getMaterial();
 	}
 
 	@Override
 	public PokkitWorld getWorld() {
-		return PokkitWorld.toBukkit(nukkit.level);
+		return PokkitWorld.toBukkit(nukkit().level);
 	}
 
 	@Override
 	public int getX() {
-		return (int) nukkit.x;
+		return (int) nukkit().x;
 	}
 
 	@Override
 	public int getY() {
-		return (int) nukkit.y;
+		return (int) nukkit().y;
 	}
 
 	@Override
 	public int getZ() {
-		return (int) nukkit.z;
+		return (int) nukkit().z;
 	}
 
 	@Override
@@ -282,27 +303,27 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public boolean isBlockIndirectlyPowered() {
-		return nukkit.level.isBlockIndirectlyGettingPowered(nukkit) > 0;
+		return nukkit().level.isBlockIndirectlyGettingPowered(nukkit()) > 0;
 	}
 
 	@Override
 	public boolean isBlockPowered() {
-		return nukkit.level.isBlockPowered(nukkit);
+		return nukkit().level.isBlockPowered(nukkit());
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return nukkit.getId() == cn.nukkit.block.Block.AIR;
+		return nukkit().getId() == cn.nukkit.block.Block.AIR;
 	}
 
 	@Override
 	public boolean isLiquid() {
-		return nukkit instanceof cn.nukkit.block.BlockLiquid;
+		return nukkit() instanceof cn.nukkit.block.BlockLiquid;
 	}
 
 	@Override
 	public boolean isPassable() {
-		return nukkit.canPassThrough();
+		return nukkit().canPassThrough();
 	}
 
 	@Override
@@ -313,12 +334,12 @@ public final class PokkitBlock implements Block {
 	@Override
 	public boolean canPlace(BlockData blockData) {
 		cn.nukkit.block.Block nukkitBlock = PokkitBlockData.toNukkit(blockData);
-		return nukkitBlock.canPlaceOn(nukkit, Position.fromObject(nukkit, nukkit.getLevel()));
+		return nukkitBlock.canPlaceOn(nukkit(), Position.fromObject(nukkit(), nukkit().getLevel()));
 	}
 
 	@Override
 	public BoundingBox getBoundingBox() {
-		return new BoundingBox(nukkit.getBoundingBox().getMinX(), nukkit.getBoundingBox().getMinY(), nukkit.getBoundingBox().getMinZ(), nukkit.getBoundingBox().getMaxX(), nukkit.getBoundingBox().getMaxY(), nukkit.getBoundingBox().getMaxZ());
+		return new BoundingBox(nukkit().getBoundingBox().getMinX(), nukkit().getBoundingBox().getMinY(), nukkit().getBoundingBox().getMinZ(), nukkit().getBoundingBox().getMaxX(), nukkit().getBoundingBox().getMaxY(), nukkit().getBoundingBox().getMaxZ());
 	}
 
 	@Override
@@ -339,7 +360,7 @@ public final class PokkitBlock implements Block {
 	public float getBreakSpeed(Player player) {
 		cn.nukkit.Player nukkitPlayer = nl.rutgerkok.pokkit.player.PokkitPlayer.toNukkit(player);
 		cn.nukkit.item.Item tool = nukkitPlayer.getInventory().getItemInHand();
-		double breakTime = nukkit.getBreakTime(tool, nukkitPlayer);
+		double breakTime = nukkit().getBreakTime(tool, nukkitPlayer);
 		if (breakTime <= 0) return Float.MAX_VALUE;
 		return (float) (1.0 / breakTime);
 	}
@@ -348,15 +369,15 @@ public final class PokkitBlock implements Block {
 	public boolean isPreferredTool(ItemStack itemStack) {
 		if (itemStack == null || itemStack.getType() == Material.AIR) return false;
 		cn.nukkit.item.Item nukkitItem = nl.rutgerkok.pokkit.item.PokkitItemStack.toNukkitCopy(itemStack);
-		double withTool = nukkit.calculateBreakTime(nukkitItem);
-		double bareHand = nukkit.calculateBreakTime(cn.nukkit.item.Item.get(cn.nukkit.item.Item.AIR));
+		double withTool = nukkit().calculateBreakTime(nukkitItem);
+		double bareHand = nukkit().calculateBreakTime(cn.nukkit.item.Item.get(cn.nukkit.item.Item.AIR));
 		return withTool < bareHand;
 	}
 
 	@Override
 	public boolean applyBoneMeal(BlockFace face) {
 		cn.nukkit.item.Item bonemeal = cn.nukkit.item.Item.get(cn.nukkit.item.Item.DYE, cn.nukkit.item.ItemDye.BONE_MEAL);
-		return nukkit.onActivate(bonemeal, null);
+		return nukkit().onActivate(bonemeal, null);
 	}
 
 	@Override
@@ -371,7 +392,7 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public void setBiome(Biome biome) {
-		nukkit.getLevel().setBiomeId(getX(), getZ(), (byte) PokkitBiome.toNukkit(biome));
+		nukkit().getLevel().setBiomeId(getX(), getZ(), (byte) PokkitBiome.toNukkit(biome));
 	}
 
 	@Override
@@ -403,17 +424,20 @@ public final class PokkitBlock implements Block {
 			type = Material.AIR;
 		}
 
-		PokkitBlockData materialData = PokkitBlockData.createBlockData(type, getData());
+		// Use the default state of the new material: carrying over the data
+		// value of the old block would turn granite into diorite when the old
+		// block was diorite.
+		PokkitBlockData materialData = PokkitBlockData.createBlockData(type, 0);
 		setType0(materialData, applyPhysics);
 	}
 
 	private void setType0(PokkitBlockData materialData, boolean applyPhysics) {
 		int nukkitId = materialData.getNukkitId();
 		int nukkitData = materialData.getNukkitData();
-		nukkit.level.setBlock(nukkit, cn.nukkit.block.Block.get(nukkitId, nukkitData), false, applyPhysics);
+		nukkit().level.setBlock(nukkit(), cn.nukkit.block.Block.get(nukkitId, nukkitData), false, applyPhysics);
 
 		// Update block reference
-		nukkit = nukkit.level.getBlock(nukkit);
+		handle = nukkit().level.getBlock(nukkit());
 	}
 
 

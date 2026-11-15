@@ -104,8 +104,9 @@ public abstract class PokkitAbstractInventory implements Inventory {
 	@Override
 	public void setContents(ItemStack[] items) throws IllegalArgumentException {
 		Preconditions.checkArgument(items.length <= getSize());
-		for (int i = 0; i < items.length; i++) {
-			setItem(i, items[i]);
+		// Bukkit removes all existing contents that are not in the array.
+		for (int i = 0; i < getSize(); i++) {
+			setItem(i, i < items.length ? items[i] : null);
 		}
 	}
 

@@ -15,6 +15,16 @@ public class BlockMapTest {
 	public static void init() {
 		Block.init();
 	}
+
+	/**
+	 * Asserts the id and data value of a Nukkit block. {@code Block.equals}
+	 * only compares coordinates, so comparing blocks directly would accept any
+	 * block at the same position.
+	 */
+	private static void assertBlock(int expectedId, int expectedData, Block actual) {
+		assertEquals("block id", expectedId, actual.getId());
+		assertEquals("block data", expectedData, actual.getDamage());
+	}
 	
 	@Test
 	public void TestWoolNukkitToBukkit() {
@@ -42,39 +52,40 @@ public class BlockMapTest {
 	@Test
 	public void TestWoolBukkitToNukkit() {
 		Block white = BlockMap.getNukkitBlock(Material.WHITE_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 0), white);
-		Block white_OrangeMetadata = BlockMap.getNukkitBlock(Material.WHITE_WOOL, 1);
-		assertEquals(Block.get(BlockID.WOOL, 0), white_OrangeMetadata);
+		assertBlock(BlockID.WOOL, 0, white);
+		// A non-zero data value overrides the data value of the material.
+		Block whiteWithData = BlockMap.getNukkitBlock(Material.WHITE_WOOL, 1);
+		assertBlock(BlockID.WOOL, 1, whiteWithData);
 		Block orange = BlockMap.getNukkitBlock(Material.ORANGE_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 1), orange);
+		assertBlock(BlockID.WOOL, 1, orange);
 		Block magenta = BlockMap.getNukkitBlock(Material.MAGENTA_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 2), magenta);
+		assertBlock(BlockID.WOOL, 2, magenta);
 		Block lightblue = BlockMap.getNukkitBlock(Material.LIGHT_BLUE_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 3), lightblue);
+		assertBlock(BlockID.WOOL, 3, lightblue);
 		Block yellow = BlockMap.getNukkitBlock(Material.YELLOW_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 4), yellow);
+		assertBlock(BlockID.WOOL, 4, yellow);
 		Block lime = BlockMap.getNukkitBlock(Material.LIME_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 5), lime);
+		assertBlock(BlockID.WOOL, 5, lime);
 		Block pink = BlockMap.getNukkitBlock(Material.PINK_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 6), pink);
+		assertBlock(BlockID.WOOL, 6, pink);
 		Block gray = BlockMap.getNukkitBlock(Material.GRAY_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 7), gray);
+		assertBlock(BlockID.WOOL, 7, gray);
 		Block lightgray = BlockMap.getNukkitBlock(Material.LIGHT_GRAY_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 8), lightgray);
+		assertBlock(BlockID.WOOL, 8, lightgray);
 		Block cyan = BlockMap.getNukkitBlock(Material.CYAN_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 9), cyan);
+		assertBlock(BlockID.WOOL, 9, cyan);
 		Block purple = BlockMap.getNukkitBlock(Material.PURPLE_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 10), purple);
+		assertBlock(BlockID.WOOL, 10, purple);
 		Block blue = BlockMap.getNukkitBlock(Material.BLUE_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 11), blue);
+		assertBlock(BlockID.WOOL, 11, blue);
 		Block brown = BlockMap.getNukkitBlock(Material.BROWN_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 12), brown);
+		assertBlock(BlockID.WOOL, 12, brown);
 		Block green = BlockMap.getNukkitBlock(Material.GREEN_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 13), green);
+		assertBlock(BlockID.WOOL, 13, green);
 		Block red = BlockMap.getNukkitBlock(Material.RED_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 14), red);
+		assertBlock(BlockID.WOOL, 14, red);
 		Block black = BlockMap.getNukkitBlock(Material.BLACK_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 15), black);
+		assertBlock(BlockID.WOOL, 15, black);
 	}
 	
 	@Test
@@ -156,78 +167,81 @@ public class BlockMapTest {
 	public void BukkitToNukkitMetadata()
 	{
 		Block white = BlockMap.getNukkitBlock(Material.WHITE_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 0), white);
+		assertBlock(BlockID.WOOL, 0, white);
 		Block black = BlockMap.getNukkitBlock(Material.BLACK_WOOL, 0);
-		assertEquals(Block.get(BlockID.WOOL, 15), black);
+		assertBlock(BlockID.WOOL, 15, black);
 		Block granite = BlockMap.getNukkitBlock(Material.GRANITE, 0);
-		assertEquals(Block.get(BlockID.STONE, 1), granite);
+		assertBlock(BlockID.STONE, 1, granite);
 		Block polishedAndesite = BlockMap.getNukkitBlock(Material.POLISHED_ANDESITE, 0);
-		assertEquals(Block.get(BlockID.STONE, 6), polishedAndesite);
+		assertBlock(BlockID.STONE, 6, polishedAndesite);
 		Block coarseDirt = BlockMap.getNukkitBlock(Material.COARSE_DIRT, 0);
-		assertEquals(Block.get(BlockID.DIRT, 1), coarseDirt);
+		assertBlock(BlockID.DIRT, 1, coarseDirt);
 		Block birchPlanks = BlockMap.getNukkitBlock(Material.BIRCH_PLANKS, 0);
-		assertEquals(Block.get(BlockID.WOODEN_PLANKS, 2), birchPlanks);
+		assertBlock(BlockID.WOODEN_PLANKS, 2, birchPlanks);
 		Block acaciaSaplings = BlockMap.getNukkitBlock(Material.ACACIA_SAPLING, 0);
-		assertEquals(Block.get(BlockID.SAPLING, 2), acaciaSaplings);
+		// Sapling data values: oak 0, spruce 1, birch 2, jungle 3, acacia 4,
+		// dark oak 5.
+		assertBlock(BlockID.SAPLING, 4, acaciaSaplings);
 		Block birchLog = BlockMap.getNukkitBlock(Material.BIRCH_LOG, 0);
-		assertEquals(Block.get(BlockID.LOG, 2), birchLog);
+		assertBlock(BlockID.LOG, 2, birchLog);
 		Block darkOakLog = BlockMap.getNukkitBlock(Material.DARK_OAK_LOG, 0);
-		assertEquals(Block.get(BlockID.LOG2, 1), darkOakLog);
+		assertBlock(BlockID.LOG2, 1, darkOakLog);
 		Block jungleLeaves = BlockMap.getNukkitBlock(Material.JUNGLE_LEAVES, 3);
-		assertEquals(Block.get(BlockID.LEAVES, 3), jungleLeaves);
+		assertBlock(BlockID.LEAVES, 3, jungleLeaves);
 		Block darkOakLeaves = BlockMap.getNukkitBlock(Material.DARK_OAK_LEAVES, 0);
-		assertEquals(Block.get(BlockID.LEAVES2, 1), darkOakLeaves);
+		assertBlock(BlockID.LEAVES2, 1, darkOakLeaves);
 		Block wetSponge = BlockMap.getNukkitBlock(Material.WET_SPONGE, 0);
-		assertEquals(Block.get(BlockID.SPONGE, 1), wetSponge);
+		assertBlock(BlockID.SPONGE, 1, wetSponge);
 		Block chiseledSandstone = BlockMap.getNukkitBlock(Material.CHISELED_SANDSTONE, 0);
-		assertEquals(Block.get(BlockID.SANDSTONE, 1), chiseledSandstone);
+		assertBlock(BlockID.SANDSTONE, 1, chiseledSandstone);
 		Block fern = BlockMap.getNukkitBlock(Material.FERN, 0);
-		assertEquals(Block.get(BlockID.TALL_GRASS, 1), fern);
+		assertBlock(BlockID.TALL_GRASS, 2, fern);
 		Block allium = BlockMap.getNukkitBlock(Material.ALLIUM, 0);
-		assertEquals(Block.get(BlockID.POPPY, 1), allium);
+		// Poppy data values: poppy 0, blue orchid 1, allium 2, ...
+		assertBlock(BlockID.POPPY, 2, allium);
 		Block oxeye = BlockMap.getNukkitBlock(Material.OXEYE_DAISY, 0);
-		assertEquals(Block.get(BlockID.POPPY, 8), oxeye);
+		assertBlock(BlockID.POPPY, 8, oxeye);
 		Block quartzSlab = BlockMap.getNukkitBlock(Material.QUARTZ_SLAB, 0);
-		assertEquals(Block.get(BlockID.SLAB, 7), quartzSlab);
+		assertBlock(BlockID.SLAB, 7, quartzSlab);
 		Block chiseledStoneBricks = BlockMap.getNukkitBlock(Material.CHISELED_STONE_BRICKS, 0);
-		assertEquals(Block.get(BlockID.STONE_BRICKS, 3), chiseledStoneBricks);
+		assertBlock(BlockID.STONE_BRICKS, 3, chiseledStoneBricks);
 		Block blackGlassPane = BlockMap.getNukkitBlock(Material.BLACK_STAINED_GLASS_PANE, 0);
-		assertEquals(Block.get(BlockID.STAINED_GLASS_PANE, 15), blackGlassPane);
+		assertBlock(BlockID.STAINED_GLASS_PANE, 15, blackGlassPane);
 		Block mossyWall = BlockMap.getNukkitBlock(Material.MOSSY_COBBLESTONE_WALL, 0);
-		assertEquals(Block.get(BlockID.COBBLESTONE_WALL, 1), mossyWall);
+		assertBlock(BlockID.COBBLESTONE_WALL, 1, mossyWall);
 		Block skeletonSkull = BlockMap.getNukkitBlock(Material.SKELETON_SKULL, 0);
-		assertEquals(Block.get(BlockID.SKULL_BLOCK, 0), skeletonSkull);
+		assertBlock(BlockID.SKULL_BLOCK, 0, skeletonSkull);
 		Block witherSkull = BlockMap.getNukkitBlock(Material.WITHER_SKELETON_SKULL, 0);
-		assertEquals(Block.get(BlockID.SKULL_BLOCK, 1), witherSkull);
+		assertBlock(BlockID.SKULL_BLOCK, 1, witherSkull);
 		Block zombieHead = BlockMap.getNukkitBlock(Material.ZOMBIE_HEAD, 0);
-		assertEquals(Block.get(BlockID.SKULL_BLOCK, 2), zombieHead);
+		assertBlock(BlockID.SKULL_BLOCK, 2, zombieHead);
 		Block playerHead = BlockMap.getNukkitBlock(Material.PLAYER_HEAD, 0);
-		assertEquals(Block.get(BlockID.SKULL_BLOCK, 3), playerHead);
+		assertBlock(BlockID.SKULL_BLOCK, 3, playerHead);
 		Block creeperHead = BlockMap.getNukkitBlock(Material.CREEPER_HEAD, 0);
-		assertEquals(Block.get(BlockID.SKULL_BLOCK, 4), creeperHead);
+		assertBlock(BlockID.SKULL_BLOCK, 4, creeperHead);
 		Block dragonHead = BlockMap.getNukkitBlock(Material.DRAGON_HEAD, 0);
-		assertEquals(Block.get(BlockID.SKULL_BLOCK, 5), dragonHead);
+		assertBlock(BlockID.SKULL_BLOCK, 5, dragonHead);
 		Block birchSlab = BlockMap.getNukkitBlock(Material.BIRCH_SLAB, 0);
-		assertEquals(Block.get(BlockID.WOODEN_SLABS, 2), birchSlab);
+		assertBlock(BlockID.WOODEN_SLABS, 2, birchSlab);
 		Block blackTerracotta = BlockMap.getNukkitBlock(Material.BLACK_TERRACOTTA, 0);
-		assertEquals(Block.get(BlockID.STAINED_HARDENED_CLAY, 15), blackTerracotta);
+		assertBlock(BlockID.STAINED_HARDENED_CLAY, 15, blackTerracotta);
 		Block darkPrismarine = BlockMap.getNukkitBlock(Material.DARK_PRISMARINE, 0);
-		assertEquals(Block.get(BlockID.PRISMARINE, 2), darkPrismarine);
+		assertBlock(BlockID.PRISMARINE, 2, darkPrismarine);
 		Block redCarpet = BlockMap.getNukkitBlock(Material.RED_CARPET, 0);
-		assertEquals(Block.get(BlockID.CARPET, 14), redCarpet);
+		assertBlock(BlockID.CARPET, 14, redCarpet);
 		Block peony = BlockMap.getNukkitBlock(Material.PEONY, 0);
-		assertEquals(Block.get(BlockID.DOUBLE_PLANT, 5), peony);
+		assertBlock(BlockID.DOUBLE_PLANT, 5, peony);
 		Block smoothRedSandstone = BlockMap.getNukkitBlock(Material.SMOOTH_RED_SANDSTONE, 0);
-		assertEquals(Block.get(BlockID.RED_SANDSTONE, 2), smoothRedSandstone);
+		assertBlock(BlockID.RED_SANDSTONE, 2, smoothRedSandstone);
 		Block cyanConcrete = BlockMap.getNukkitBlock(Material.CYAN_CONCRETE, 0);
-		assertEquals(Block.get(BlockID.CONCRETE, 9), cyanConcrete);
+		assertBlock(BlockID.CONCRETE, 9, cyanConcrete);
 		Block greenConcretePowder = BlockMap.getNukkitBlock(Material.GREEN_CONCRETE_POWDER, 0);
-		assertEquals(Block.get(BlockID.CONCRETE_POWDER, 13), greenConcretePowder);
+		assertBlock(BlockID.CONCRETE_POWDER, 13, greenConcretePowder);
 		Block purpleGlass = BlockMap.getNukkitBlock(Material.PURPLE_STAINED_GLASS, 0);
-		assertEquals(Block.get(BlockID.STAINED_GLASS, 10), purpleGlass);
+		assertBlock(BlockID.STAINED_GLASS, 10, purpleGlass);
 		Block whiteShulkerBox = BlockMap.getNukkitBlock(Material.WHITE_SHULKER_BOX, 0);
-		assertEquals(Block.get(BlockID.SHULKER_BOX, 0), whiteShulkerBox);
+		assertBlock(BlockID.SHULKER_BOX, 0, whiteShulkerBox);
 		Block blackShulkerBox = BlockMap.getNukkitBlock(Material.BLACK_SHULKER_BOX, 0);
-		assertEquals(Block.get(BlockID.SHULKER_BOX, 15), blackShulkerBox);
+		assertBlock(BlockID.SHULKER_BOX, 15, blackShulkerBox);
 	}
 }

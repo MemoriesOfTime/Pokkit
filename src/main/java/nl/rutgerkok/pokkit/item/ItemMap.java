@@ -1,16 +1,42 @@
 package nl.rutgerkok.pokkit.item;
 
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 import org.bukkit.Material;
 
+import cn.nukkit.block.Block;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.item.StringItem;
+import cn.nukkit.utils.Identifier;
+import nl.rutgerkok.pokkit.blockdata.BlockMap;
 
 @SuppressWarnings("deprecation")
 public class ItemMap {
 
-	private static Material[] nukkitToBukkit = new Material[1100];
+	private static final int MAX_NUKKIT_ID = 1100;
+
+	private static Material[] nukkitToBukkit = new Material[MAX_NUKKIT_ID];
 	private static char[] bukkitToNukkit = new char[Material.values().length];
+
+	/**
+	 * Materials that share a single Nukkit item id and are distinguished by
+	 * the damage value, for example all sixteen dye colors.
+	 */
+	private static final Map<Integer, Map<Integer, Material>> nukkitVariants = new HashMap<>();
+	private static final Map<Material, int[]> bukkitVariants = new EnumMap<>(Material.class);
+
+	/**
+	 * Cache for the (damage value, material) pairs of spawn eggs. Filled
+	 * lazily, because the entity registry of Nukkit is only available once the
+	 * server has started.
+	 */
+	private static volatile Map<Integer, Material> spawnEggMaterials;
+	private static volatile Map<Material, Integer> spawnEggDamages;
 
 	static {
 		registerTwoWay(ItemID.IRON_SHOVEL, Material.IRON_SHOVEL);
@@ -20,6 +46,9 @@ public class ItemMap {
 		registerTwoWay(ItemID.APPLE, Material.APPLE);
 		registerTwoWay(ItemID.BOW, Material.BOW);
 		registerTwoWay(ItemID.ARROW, Material.ARROW);
+		// Tipped arrows share the arrow id: damage 0 is a normal arrow and
+		// damage N + 1 is an arrow tipped with potion N.
+		registerVariant(ItemID.ARROW, 1, Material.TIPPED_ARROW);
 		registerTwoWay(ItemID.COAL, Material.COAL);
 		registerTwoWay(ItemID.DIAMOND, Material.DIAMOND);
 		registerTwoWay(ItemID.IRON_INGOT, Material.IRON_INGOT);
@@ -105,16 +134,17 @@ public class ItemMap {
 		registerTwoWay(ItemID.GLOWSTONE_DUST, Material.GLOWSTONE_DUST);
 		registerTwoWay(ItemID.RAW_FISH, Material.COD);
 		registerTwoWay(ItemID.COOKED_FISH, Material.COOKED_COD);
-		registerTwoWay(ItemID.DYE, Material.ORANGE_DYE);
+		registerBukkitToNukkit(ItemID.DYE, Material.ORANGE_DYE);
 		registerTwoWay(ItemID.BONE, Material.BONE);
 		registerTwoWay(ItemID.SUGAR, Material.SUGAR);
 		registerTwoWay(ItemID.CAKE, Material.CAKE);
 		registerTwoWay(ItemID.BED, Material.RED_BED);
 		registerTwoWay(ItemID.REPEATER, Material.REPEATER);
 		registerTwoWay(ItemID.COOKIE, Material.COOKIE);
-		registerTwoWay(ItemID.MAP, Material.MAP);
+		registerTwoWay(ItemID.MAP, Material.FILLED_MAP);
 		registerTwoWay(ItemID.SHEARS, Material.SHEARS);
-		registerTwoWay(ItemID.MELON, Material.MELON);
+		// Material.MELON is the melon block; Nukkit uses the same id for the
+		// melon slice item, so the block is resolved through BlockMap.
 		registerTwoWay(ItemID.MELON_SLICE, Material.MELON_SLICE);
 		registerTwoWay(ItemID.PUMPKIN_SEEDS, Material.PUMPKIN_SEEDS);
 		registerTwoWay(ItemID.MELON_SEEDS, Material.MELON_SEEDS);
@@ -138,7 +168,9 @@ public class ItemMap {
 		registerTwoWay(ItemID.CAULDRON, Material.CAULDRON);
 		registerTwoWay(ItemID.ENDER_EYE, Material.ENDER_EYE);
 		registerTwoWay(ItemID.GLISTERING_MELON, Material.GLISTERING_MELON_SLICE);
-		registerTwoWay(ItemID.SPAWN_EGG, Material.PIG_SPAWN_EGG);
+		// Spawn eggs are resolved through the Nukkit entity registry, see
+		// spawnEggMaterial(int). This entry is only a fallback.
+		registerBukkitToNukkit(ItemID.SPAWN_EGG, Material.PIG_SPAWN_EGG);
 		registerTwoWay(ItemID.EXPERIENCE_BOTTLE, Material.EXPERIENCE_BOTTLE);
 		registerTwoWay(ItemID.FIRE_CHARGE, Material.FIRE_CHARGE);
 		registerTwoWay(ItemID.BOOK_AND_QUILL, Material.WRITABLE_BOOK);
@@ -147,9 +179,9 @@ public class ItemMap {
 		registerTwoWay(ItemID.ITEM_FRAME, Material.ITEM_FRAME);
 		registerTwoWay(ItemID.FLOWER_POT, Material.FLOWER_POT);
 		registerTwoWay(ItemID.CARROT, Material.CARROT);
-		registerTwoWay(ItemID.CARROTS, Material.CARROTS);
+		// CARROTS/POTATOES are blocks; the ids collide with the carrot and
+		// potato items, so the blocks are resolved through BlockMap.
 		registerTwoWay(ItemID.POTATO, Material.POTATO);
-		registerTwoWay(ItemID.POTATOES, Material.POTATOES);
 		registerTwoWay(ItemID.BAKED_POTATO, Material.BAKED_POTATO);
 		registerTwoWay(ItemID.POISONOUS_POTATO, Material.POISONOUS_POTATO);
 		registerTwoWay(ItemID.EMPTY_MAP, Material.MAP);
@@ -228,7 +260,7 @@ public class ItemMap {
 		registerTwoWay(ItemID.SHIELD, Material.SHIELD);
 
 		// Unsupported items
-		registerNukkitToBukkit(ItemID.LEATHER_HORSE_ARMOR, Material.LEATHER);
+		registerTwoWay(ItemID.LEATHER_HORSE_ARMOR, Material.LEATHER_HORSE_ARMOR);
 		registerTwoWay(ItemID.CROSSBOW, Material.CROSSBOW);
 		registerTwoWay(ItemID.SUSPICIOUS_STEW, Material.SUSPICIOUS_STEW);
 		registerTwoWay(ItemID.HONEYCOMB, Material.HONEYCOMB);
@@ -495,6 +527,90 @@ public class ItemMap {
 		registerBukkitToNukkit(ItemID.COMMAND_BLOCK_MINECART, Material.LEGACY_COMMAND_MINECART);
 		registerBukkitToNukkit(ItemID.TOTEM, Material.LEGACY_TOTEM);
 		registerBukkitToNukkit(ItemID.IRON_NUGGET, Material.LEGACY_IRON_NUGGET);
+
+		// Items that share one Nukkit id and use the damage value as a variant
+		// selector. Without these, all variants would collapse into a single
+		// material (or turn into air).
+		Material[] dyes = {
+				Material.INK_SAC, Material.RED_DYE, Material.GREEN_DYE, Material.COCOA_BEANS,
+				Material.LAPIS_LAZULI, Material.PURPLE_DYE, Material.CYAN_DYE, Material.LIGHT_GRAY_DYE,
+				Material.GRAY_DYE, Material.PINK_DYE, Material.LIME_DYE, Material.YELLOW_DYE,
+				Material.LIGHT_BLUE_DYE, Material.MAGENTA_DYE, Material.ORANGE_DYE, Material.BONE_MEAL
+		};
+		for (int damage = 0; damage < dyes.length; damage++) {
+			registerVariant(ItemID.DYE, damage, dyes[damage]);
+		}
+
+		Material[] banners = {
+				Material.WHITE_BANNER, Material.ORANGE_BANNER, Material.MAGENTA_BANNER,
+				Material.LIGHT_BLUE_BANNER, Material.YELLOW_BANNER, Material.LIME_BANNER,
+				Material.PINK_BANNER, Material.GRAY_BANNER, Material.LIGHT_GRAY_BANNER,
+				Material.CYAN_BANNER, Material.PURPLE_BANNER, Material.BLUE_BANNER,
+				Material.BROWN_BANNER, Material.GREEN_BANNER, Material.RED_BANNER,
+				Material.BLACK_BANNER
+		};
+		for (int damage = 0; damage < banners.length; damage++) {
+			registerVariant(ItemID.BANNER, damage, banners[damage]);
+		}
+
+		registerVariant(ItemID.SKULL, 0, Material.SKELETON_SKULL);
+		registerVariant(ItemID.SKULL, 1, Material.WITHER_SKELETON_SKULL);
+		registerVariant(ItemID.SKULL, 2, Material.ZOMBIE_HEAD);
+		registerVariant(ItemID.SKULL, 3, Material.PLAYER_HEAD);
+		registerVariant(ItemID.SKULL, 4, Material.CREEPER_HEAD);
+		registerVariant(ItemID.SKULL, 5, Material.DRAGON_HEAD);
+
+		registerVariant(ItemID.COAL, 0, Material.COAL);
+		registerVariant(ItemID.COAL, 1, Material.CHARCOAL);
+
+		// Bedrock stores every bucket in one item, with the content in the
+		// damage value. Without this table water, lava and milk buckets all
+		// turned into air.
+		registerVariant(ItemID.BUCKET, 1, Material.MILK_BUCKET);
+		registerVariant(ItemID.BUCKET, 2, Material.COD_BUCKET);
+		registerVariant(ItemID.BUCKET, 3, Material.SALMON_BUCKET);
+		registerVariant(ItemID.BUCKET, 4, Material.TROPICAL_FISH_BUCKET);
+		registerVariant(ItemID.BUCKET, 5, Material.PUFFERFISH_BUCKET);
+		registerVariant(ItemID.BUCKET, 8, Material.WATER_BUCKET);
+		registerVariant(ItemID.BUCKET, 10, Material.LAVA_BUCKET);
+		registerVariant(ItemID.BUCKET, 11, Material.POWDER_SNOW_BUCKET);
+		registerVariant(ItemID.BUCKET, 12, Material.AXOLOTL_BUCKET);
+		registerVariant(ItemID.BUCKET, 13, Material.TADPOLE_BUCKET);
+
+		// The wood type of a boat is stored in the damage value as well.
+		registerVariant(ItemID.BOAT, 1, Material.SPRUCE_BOAT);
+		registerVariant(ItemID.BOAT, 2, Material.BIRCH_BOAT);
+		registerVariant(ItemID.BOAT, 3, Material.JUNGLE_BOAT);
+		registerVariant(ItemID.BOAT, 4, Material.ACACIA_BOAT);
+		registerVariant(ItemID.BOAT, 5, Material.DARK_OAK_BOAT);
+		registerVariant(ItemID.BOAT, 6, Material.MANGROVE_BOAT);
+		registerVariant(ItemID.BOAT, 7, Material.BAMBOO_RAFT);
+		registerVariant(ItemID.BOAT, 8, Material.CHERRY_BOAT);
+
+		Material[] beds = {
+				Material.WHITE_BED, Material.ORANGE_BED, Material.MAGENTA_BED,
+				Material.LIGHT_BLUE_BED, Material.YELLOW_BED, Material.LIME_BED,
+				Material.PINK_BED, Material.GRAY_BED, Material.LIGHT_GRAY_BED,
+				Material.CYAN_BED, Material.PURPLE_BED, Material.BLUE_BED,
+				Material.BROWN_BED, Material.GREEN_BED, Material.RED_BED,
+				Material.BLACK_BED
+		};
+		for (int damage = 0; damage < beds.length; damage++) {
+			registerVariant(ItemID.BED, damage, beds[damage]);
+		}
+
+		// Dyes that got their own item after 1.20 use the next damage values,
+		// the older ink sac, cocoa beans, lapis lazuli and bone meal keep the
+		// values they always had.
+		registerVariant(ItemID.DYE, 16, Material.BLACK_DYE);
+		registerVariant(ItemID.DYE, 17, Material.BROWN_DYE);
+		registerVariant(ItemID.DYE, 18, Material.BLUE_DYE);
+		registerVariant(ItemID.DYE, 19, Material.WHITE_DYE);
+		registerVariant(ItemID.DYE, 20, Material.GLOW_INK_SAC);
+
+		// Items that have their own Nukkit id but were missing from the
+		// two-way table.
+		registerTwoWay(ItemID.BAMBOO_CHEST_RAFT, Material.BAMBOO_CHEST_RAFT);
 	}
 
 	/**
@@ -503,7 +619,46 @@ public class ItemMap {
 	 * @return The Nukkit item.
 	 */
 	public static Item fromBukkit(Material type) {
-		return Item.get(bukkitToNukkit[type.ordinal()]);
+		if (type == null) {
+			return Item.get(Item.AIR);
+		}
+
+		int[] variant = bukkitVariants.get(type);
+		if (variant != null) {
+			return Item.get(variant[0], variant[1]);
+		}
+
+		if (type.name().endsWith("_SPAWN_EGG")) {
+			Integer damage = spawnEggDamages().get(type);
+			if (damage != null) {
+				return Item.get(ItemID.SPAWN_EGG, damage);
+			}
+		}
+
+		char nukkitId = bukkitToNukkit[type.ordinal()];
+		if (nukkitId != 0 || type == Material.AIR) {
+			return Item.get(nukkitId);
+		}
+
+		// Not an item that is explicitly listed, but it may still be a block.
+		// Those are maintained by BlockMap, so reuse that table instead of
+		// duplicating hundreds of mappings here. Note that Material.isItem()
+		// cannot be used here: it looks the material up in the ItemType
+		// registry, which does not contain every block (yet).
+		Item blockItem = fromBlockOrNull(type);
+		if (blockItem != null) {
+			return blockItem;
+		}
+
+		return Item.get(Item.AIR);
+	}
+
+	private static Item fromBlockOrNull(Material material) {
+		Block block = BlockMap.getNukkitBlockOrNull(material);
+		if (block == null || block.getId() == 0) {
+			return null;
+		}
+		return Item.getBlockItem(block.getId(), block.getDamage());
 	}
 
 	/**
@@ -515,11 +670,52 @@ public class ItemMap {
 		if (nukkit == null) {
 			return null;
 		}
-		int nukkitId = nukkit.getId();
-		if (nukkitId < 0 || nukkitId >= nukkitToBukkit.length) {
-			return null;
+		if (nukkit instanceof StringItem) {
+			// All string-identified items share id 255, which must not be
+			// resolved through the numeric tables.
+			return fromNukkitStringOrNull(nukkit);
 		}
-		return nukkitToBukkit[nukkitId];
+		int nukkitId = nukkit.getId();
+		if (nukkitId < 0) {
+			// Blocks with an id above 255 are stored as negative item ids.
+			return BlockMap.getMaterialOrNull(255 - nukkitId, nukkit.getDamage());
+		}
+
+		if (nukkitId == ItemID.SPAWN_EGG) {
+			Material spawnEgg = spawnEggMaterial(nukkit.getDamage());
+			if (spawnEgg != null) {
+				return spawnEgg;
+			}
+		}
+
+		if (nukkitId == ItemID.ARROW && nukkit.getDamage() > 0) {
+			// Any damage above 0 is a tipped arrow, see ItemArrow.
+			return Material.TIPPED_ARROW;
+		}
+
+		Map<Integer, Material> variants = nukkitVariants.get(nukkitId);
+		if (variants != null) {
+			Material variant = variants.get(nukkit.getDamage());
+			if (variant != null) {
+				return variant;
+			}
+		}
+
+		if (nukkitId < nukkitToBukkit.length) {
+			Material material = nukkitToBukkit[nukkitId];
+			if (material != null) {
+				return material;
+			}
+		}
+
+		// Not listed as an item, but it may be a block item. Only ids below
+		// 256 can be block ids; the item form of higher blocks uses a
+		// negative id, and ids above 255 belong to other items. Looking those
+		// up in the block table would silently return an unrelated block.
+		if (nukkitId < 256) {
+			return BlockMap.getMaterialOrNull(nukkitId, nukkit.getDamage());
+		}
+		return null;
 	}
 
 	/**
@@ -536,11 +732,84 @@ public class ItemMap {
 		if (nukkit instanceof StringItem stringItem) {
 			String namespaceId = stringItem.getNamespaceId();
 			if (namespaceId != null && namespaceId.startsWith("minecraft:")) {
-				String key = namespaceId.substring("minecraft:".length()).toUpperCase();
+				String key = namespaceId.substring("minecraft:".length()).toUpperCase(Locale.ROOT);
 				return Material.matchMaterial(key);
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Maps a spawn egg damage value (a Nukkit entity network id) to the
+	 * corresponding Bukkit material.
+	 *
+	 * @param damage
+	 *            The damage value of the spawn egg.
+	 * @return The material, or null if the damage value is unknown.
+	 */
+	private static Material spawnEggMaterial(int damage) {
+		return spawnEggMaterialMap().get(damage);
+	}
+
+	private static Map<Integer, Material> spawnEggMaterialMap() {
+		Map<Integer, Material> cache = spawnEggMaterials;
+		if (cache != null) {
+			return cache;
+		}
+		Map<Integer, Material> result = new HashMap<>();
+		// The vanilla entity network ids are small; 512 leaves plenty of room
+		// for newer entities without having to hardcode a table.
+		for (int damage = 0; damage < 512; damage++) {
+			Material material = resolveSpawnEggMaterial(damage);
+			if (material != null) {
+				result.put(damage, material);
+			}
+		}
+		if (result.isEmpty()) {
+			// Entity registry not initialized; don't cache the empty result.
+			return result;
+		}
+		spawnEggMaterials = result;
+		return result;
+	}
+
+	private static Material resolveSpawnEggMaterial(int damage) {
+		try {
+			Identifier identifier = Entity.getIdentifier(damage);
+			if (identifier == null) {
+				return null;
+			}
+			// A few Bedrock identifiers differ from the Bukkit material names.
+			String path = switch (identifier.getPath()) {
+			case "zombie_pigman" -> "zombified_piglin";
+			case "evocation_illager" -> "evoker";
+			case "tropicalfish" -> "tropical_fish";
+			case "villager_v2" -> "villager";
+			case "zombie_villager_v2" -> "zombie_villager";
+			default -> identifier.getPath();
+			};
+			return Material.matchMaterial(path.toUpperCase(Locale.ROOT) + "_SPAWN_EGG");
+		} catch (RuntimeException e) {
+			// The Nukkit entity registry is not available (yet).
+			return null;
+		}
+	}
+
+	private static Map<Material, Integer> spawnEggDamages() {
+		Map<Material, Integer> cache = spawnEggDamages;
+		if (cache != null) {
+			return cache;
+		}
+		Map<Material, Integer> result = new EnumMap<>(Material.class);
+		for (Map.Entry<Integer, Material> entry : spawnEggMaterialMap().entrySet()) {
+			result.putIfAbsent(entry.getValue(), entry.getKey());
+		}
+		if (result.isEmpty()) {
+			// Entity registry not initialized; don't cache the empty result.
+			return result;
+		}
+		spawnEggDamages = result;
+		return result;
 	}
 
 	private static void registerBukkitToNukkit(int nukkitId, Material bukkit) {
@@ -554,5 +823,10 @@ public class ItemMap {
 	private static void registerTwoWay(int nukkitId, Material bukkit) {
 		registerBukkitToNukkit(nukkitId, bukkit);
 		registerNukkitToBukkit(nukkitId, bukkit);
+	}
+
+	private static void registerVariant(int nukkitId, int damage, Material bukkit) {
+		nukkitVariants.computeIfAbsent(nukkitId, key -> new HashMap<>()).put(damage, bukkit);
+		bukkitVariants.put(bukkit, new int[] { nukkitId, damage });
 	}
 }

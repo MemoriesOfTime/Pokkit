@@ -16,7 +16,10 @@ import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.blockdata.PokkitBlockData;
 
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.nbt.tag.Tag;
 import org.bukkit.persistence.PersistentDataContainer;
+
+import nl.rutgerkok.pokkit.persistence.PokkitPersistentDataContainer;
 
 public final class SignBlockState extends PokkitBlockState implements Sign {
 
@@ -24,11 +27,24 @@ public final class SignBlockState extends PokkitBlockState implements Sign {
 	private String hiddenData;
 	private BlockColor color;
 
+	/**
+	 * Tag the persistent data container of this sign writes to. For a placed
+	 * sign this is the tag of the block entity, for a sign in an item this is
+	 * the block entity tag of the item.
+	 */
+	private final CompoundTag persistentData;
+
 	protected SignBlockState(Location locationOrNull, PokkitBlockData materialData, String[] lines, String hiddenData, BlockColor colorOrNull) {
+		this(locationOrNull, materialData, lines, hiddenData, colorOrNull, new CompoundTag());
+	}
+
+	protected SignBlockState(Location locationOrNull, PokkitBlockData materialData, String[] lines, String hiddenData,
+			BlockColor colorOrNull, CompoundTag persistentData) {
 		super(locationOrNull, materialData);
 		this.lines = Objects.requireNonNull(lines, "lines");
 		this.hiddenData = Objects.requireNonNull(hiddenData, "hiddenData");
 		this.color = colorOrNull;
+		this.persistentData = Objects.requireNonNull(persistentData, "persistentData");
 		Preconditions.checkArgument(lines.length == 4, "there must be four lines on a sign");
 	}
 
@@ -71,6 +87,12 @@ public final class SignBlockState extends PokkitBlockState implements Sign {
 		} else {
 			tag.putInt("SignTextColor", color.getARGB());
 		}
+		if (persistentData != tag) {
+			// Unplaced signs keep their persistent data in a tag of their own.
+			for (Tag entry : persistentData.getAllTags()) {
+				tag.put(entry.getName(), entry);
+			}
+		}
 	}
 
 	/**
@@ -103,7 +125,7 @@ public final class SignBlockState extends PokkitBlockState implements Sign {
 
 	@Override
 	public PersistentDataContainer getPersistentDataContainer() {
-		return null;
+		return new PokkitPersistentDataContainer(persistentData);
 	}
 
 	@Override
@@ -116,17 +138,32 @@ public final class SignBlockState extends PokkitBlockState implements Sign {
 
 	@Override
 	public void setColor(DyeColor dyeColor) {
-		color = new BlockColor(dyeColor.getColor().asRGB());
+		if (dyeColor == null) {
+			color = null;
+		} else {
+			color = new BlockColor(dyeColor.getColor().asRGB());
+		}
 	}
 
 	@Override
 	public BlockState copy(Location location) {
-		return this;
+		// A copy must be independent of the original: changing the copy must
+		// not change the lines of this sign.
+		return new SignBlockState(location, (PokkitBlockData) getBlockData().clone(), lines.clone(), hiddenData,
+				color, copyPersistentData());
 	}
 
 	@Override
 	public BlockState copy() {
-		return this;
+		return copy(null);
+	}
+
+	private CompoundTag copyPersistentData() {
+		CompoundTag copy = new CompoundTag();
+		for (Tag entry : persistentData.getAllTags()) {
+			copy.put(entry.getName(), entry);
+		}
+		return copy;
 	}
 
 	@Override

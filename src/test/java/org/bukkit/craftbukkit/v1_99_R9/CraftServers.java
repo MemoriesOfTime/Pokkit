@@ -68,7 +68,9 @@ import nl.rutgerkok.pokkit.tag.PokkitItemTag;
 public final class CraftServers extends Server.Spigot implements Server {
 
 	public static CraftServers instance;
-	
+
+	private ItemFactory itemFactory;
+
 	public CraftServers() {
         if (Bukkit.getServer() == null) {
             Bukkit.setServer(this);
@@ -622,8 +624,10 @@ public final class CraftServers extends Server.Spigot implements Server {
 
 	@Override
 	public ItemFactory getItemFactory() {
-		// TODO Auto-generated method stub
-		return null;
+		if (itemFactory == null) {
+			itemFactory = new nl.rutgerkok.pokkit.item.PokkitItemFactory();
+		}
+		return itemFactory;
 	}
 
 	@Override
@@ -719,26 +723,26 @@ public final class CraftServers extends Server.Spigot implements Server {
 
 	@Override
 	public BlockData createBlockData(Material material) {
-		// TODO Auto-generated method stub
-		return null;
+		// Delegate to the production implementation, so that the tests cannot
+		// pass while the real server returns something else.
+		return nl.rutgerkok.pokkit.blockdata.PokkitBlockData.createBlockData(material, 0);
 	}
 
 	@Override
 	public BlockData createBlockData(Material material, Consumer<? super BlockData> consumer) {
-		// TODO Auto-generated method stub
-		return null;
+		BlockData blockData = createBlockData(material);
+		consumer.accept(blockData);
+		return blockData;
 	}
 
 	@Override
 	public BlockData createBlockData(String data) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+		return nl.rutgerkok.pokkit.blockdata.PokkitBlockData.createBlockData(data);
 	}
 
 	@Override
 	public BlockData createBlockData(Material material, String data) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+		return nl.rutgerkok.pokkit.blockdata.PokkitBlockData.createBlockData(material, data);
 	}
 
 	@Override
@@ -778,8 +782,9 @@ public final class CraftServers extends Server.Spigot implements Server {
 
 	@Override
 	public UnsafeValues getUnsafe() {
-		// TODO Auto-generated method stub
-		return null;
+		// Use the production implementation, so that the tests cannot pass
+		// while the real server fails.
+		return new nl.rutgerkok.pokkit.PokkitUnsafe();
 	}
 
 	@Override
@@ -799,6 +804,8 @@ public final class CraftServers extends Server.Spigot implements Server {
 			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createItemTypeRegistry();
 		} else if (aClass == org.bukkit.MusicInstrument.class) {
 			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createMusicInstrumentRegistry();
+		} else if (aClass == org.bukkit.damage.DamageType.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createDamageTypeRegistry();
 		}
 		return (org.bukkit.Registry<T>) new nl.rutgerkok.pokkit.PokkitRegistry<>();
 	}

@@ -23,7 +23,7 @@ import org.bukkit.util.BoundingBox;
  */
 public class PokkitItemEntity extends PokkitFakeEntity implements Item {
 
-	public final cn.nukkit.item.Item item;
+	public cn.nukkit.item.Item item;
 	public final cn.nukkit.level.Location location;
 
 	public PokkitItemEntity(cn.nukkit.item.Item item, Location location) {
@@ -33,7 +33,10 @@ public class PokkitItemEntity extends PokkitFakeEntity implements Item {
 
 	@Override
 	public ItemStack getItemStack() {
-		return PokkitItemStack.toBukkitCopy(item);
+		ItemStack stack = PokkitItemStack.toBukkitCopy(item);
+		// Bukkit never returns null here, even for an item that this server
+		// cannot map.
+		return stack != null ? stack : new ItemStack(org.bukkit.Material.AIR);
 	}
 
 	@Override
@@ -48,12 +51,12 @@ public class PokkitItemEntity extends PokkitFakeEntity implements Item {
 
 	@Override
 	public BoundingBox getBoundingBox() {
-		return new BoundingBox(this.getBoundingBox().getMinX(), this.getBoundingBox().getMinY(), this.getBoundingBox().getMinZ(), this.getBoundingBox().getMaxX(), this.getBoundingBox().getMaxY(), this.getBoundingBox().getMaxZ());
+		return super.getBoundingBox();
 	}
 
 	@Override
 	public void setRotation(float v, float v1) {
-		this.setRotation(v, v1);
+		super.setRotation(v, v1);
 	}
 
 	@Override
@@ -63,6 +66,7 @@ public class PokkitItemEntity extends PokkitFakeEntity implements Item {
 
 	@Override
 	public void setItemStack(ItemStack stack) {
+		this.item = PokkitItemStack.toNukkitCopy(stack);
 	}
 
 	@Override

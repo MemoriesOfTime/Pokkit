@@ -114,13 +114,19 @@ public final class BlockMap {
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.STICKY_PISTON), Material.STICKY_PISTON);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.COBWEB), Material.COBWEB);
 
-		// Tall grass
-		nukkitToBukkit[BlockID.TALL_GRASS] = new Material[3];
-		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TALL_GRASS, 0), Material.TALL_GRASS);
-		nukkitToBukkit[BlockID.TALL_GRASS][1] = Material.TALL_GRASS;
-		nukkitToBukkit[BlockID.TALL_GRASS][2] = Material.FERN;
-		
-		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BUSH), Material.FERN);
+		// Short grass and ferns. Bedrock calls the single block plant
+		// "tallgrass" (id 31) and uses the data value for the variant: 0 and 1
+		// are grass, 2 and 3 are ferns. Bukkit has separate materials for
+		// those, and reserves TALL_GRASS for the two block high plant.
+		nukkitToBukkit[BlockID.TALL_GRASS] = new Material[4];
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TALL_GRASS, 0), Material.SHORT_GRASS);
+		nukkitToBukkit[BlockID.TALL_GRASS][1] = Material.SHORT_GRASS;
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TALL_GRASS, 2), Material.FERN);
+		nukkitToBukkit[BlockID.TALL_GRASS][3] = Material.FERN;
+
+		// BUSH (id 1278) is the bush block from 1.21.5; there is no Bukkit
+		// material for it in this API version, so it is not mapped. Mapping it
+		// to FERN would make every bush look like a fern.
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DEAD_BUSH), Material.DEAD_BUSH);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PISTON), Material.PISTON);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.PISTON_HEAD), Material.PISTON_HEAD);
@@ -398,6 +404,7 @@ public final class BlockMap {
 		nukkitToBukkit[BlockID.DOUBLE_PLANT] = new Material[6];
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DOUBLE_PLANT, 0), Material.SUNFLOWER);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DOUBLE_PLANT, 1), Material.LILAC);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DOUBLE_PLANT, 2), Material.TALL_GRASS);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DOUBLE_PLANT, 3), Material.LARGE_FERN);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DOUBLE_PLANT, 4), Material.ROSE_BUSH);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.DOUBLE_PLANT, 5), Material.PEONY);
@@ -1293,8 +1300,10 @@ public final class BlockMap {
 	 *
 	 * @param nukkitId
 	 *            The Nukkit block id.
+	 * @param blockData
+	 *            The Nukkit block data value.
 	 * @return The material, or AIR for negative Nukkit block ids, or STONE if
-	 *         unknown.
+	 *         the block or data value is unknown.
 	 */
 	public static Material getMaterial(int nukkitId, int blockData) {
 		if (nukkitId < 0) {
@@ -1303,39 +1312,87 @@ public final class BlockMap {
 		if (nukkitId >= nukkitToBukkit.length) {
 			return Material.STONE;
 		}
-		Material material = nukkitToBukkit[nukkitId][blockData];
-		if (material == null) {
-			return Material.STONE;
+		Material[] variants = nukkitToBukkit[nukkitId];
+		if (blockData >= 0 && blockData < variants.length && variants[blockData] != null) {
+			return variants[blockData];
 		}
-		return material;
+		// Unknown data value: fall back to the default variant of the block
+		// instead of throwing, because block data read from a world can
+		// contain values that are no longer registered.
+		return variants.length > 0 && variants[0] != null ? variants[0] : Material.STONE;
 	}
 
 	public static Material getMaterialOrNull(int nukkitId, int blockData) {
-		if (nukkitId < 0) {
+		if (nukkitId < 0 || nukkitId >= nukkitToBukkit.length) {
+			// Unknown block, don't pretend it is air.
 			return null;
 		}
-		if (nukkitId >= nukkitToBukkit.length) {
-			return Material.AIR;
-		}
-		if (blockData >= nukkitToBukkit[nukkitId].length) {
+		Material[] variants = nukkitToBukkit[nukkitId];
+		if (blockData < 0 || blockData >= variants.length) {
+			// Out of range data value: the block exists, but this variant does
+			// not. Callers that need the base material use getMaterial.
 			return null;
 		}
-		return nukkitToBukkit[nukkitId][blockData];
+		return variants[blockData];
 	}
 
 	/**
 	 * Gets the Nukkit block for the Bukkit material. The Bukkit material may be
 	 * a legacy material.
 	 *
+	 * <p>
+	 * A data value of {@code 0} means "the default state of this material", so
+	 * granite returns stone with damage 1 and red wool returns wool with damage
+	 * 14. A non-zero data value is used as a raw override, for callers of the
+	 * old {@code MaterialData} API.
+	 *
 	 * @param material
 	 *            The material.
 	 * @param blockData
 	 *            The block data, 0 by default.
 	 * @return The block.
+	 * @throws IllegalArgumentException
+	 *             If the material is not a block.
+	 * @throws UnsupportedOperationException
+	 *             If the material is a block, but Nukkit has no equivalent.
 	 */
 	public static Block getNukkitBlock(Material material, int blockData) {
+		java.util.Objects.requireNonNull(material, "material");
 		Block nukkit = bukkitToNukkit[material.ordinal()];
+		if (nukkit == null) {
+			if (material.isBlock()) {
+				// A block in Bukkit, but Nukkit does not know it. Pretending it
+				// is stone would silently replace the block.
+				throw nl.rutgerkok.pokkit.Pokkit.unsupported();
+			}
+			throw new IllegalArgumentException("Material " + material + " is not a block");
+		}
+		if (blockData == 0) {
+			// Use the data value that belongs to the material, otherwise
+			// granite would turn into plain stone.
+			return cn.nukkit.block.Block.get(nukkit.getId(), nukkit.getDamage());
+		}
 		return cn.nukkit.block.Block.get(nukkit.getId(), blockData);
+	}
+
+	/**
+	 * Gets the Nukkit block for the Bukkit material, including the block data
+	 * that belongs to that material. For example granite returns the stone
+	 * block with damage 1, and red wool returns the wool block with damage 14.
+	 *
+	 * @param material
+	 *            The material.
+	 * @return The block, or null if the material is not a known block.
+	 */
+	public static Block getNukkitBlockOrNull(Material material) {
+		if (material == null) {
+			return null;
+		}
+		Block nukkit = bukkitToNukkit[material.ordinal()];
+		if (nukkit == null) {
+			return null;
+		}
+		return cn.nukkit.block.Block.get(nukkit.getId(), nukkit.getDamage());
 	}
 
 	private static void registerNukkitToBukkit(Block nukkit, Material bukkit) {

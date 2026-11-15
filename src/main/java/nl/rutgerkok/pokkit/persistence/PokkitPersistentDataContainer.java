@@ -61,13 +61,67 @@ public class PokkitPersistentDataContainer implements PersistentDataContainer {
             tag.putBoolean(nbtKey, (Boolean) primitive);
         } else if (type == PersistentDataType.TAG_CONTAINER) {
             cn.nukkit.nbt.tag.CompoundTag childTag = new cn.nukkit.nbt.tag.CompoundTag();
+            if (value instanceof PokkitPersistentDataContainer childContainer) {
+                for (cn.nukkit.nbt.tag.Tag t : childContainer.tag.getAllTags()) {
+                    childTag.put(t.getName(), t.copy());
+                }
+            }
             tag.putCompound(nbtKey, childTag);
         }
     }
 
+    /**
+     * Tests whether the stored NBT tag has the type that belongs to the given
+     * persistent data type. Without this check a stored integer would for
+     * example be returned as an empty string.
+     *
+     * @param stored
+     *            The stored tag, may be null.
+     * @param type
+     *            The requested type.
+     * @return True if the tag matches the type.
+     */
+    private static boolean isType(cn.nukkit.nbt.tag.Tag stored, PersistentDataType<?, ?> type) {
+        if (stored == null) {
+            return false;
+        }
+        // Booleans are stored as bytes, so they cannot be told apart.
+        if (type == PersistentDataType.BYTE || type == PersistentDataType.BOOLEAN) {
+            return stored instanceof cn.nukkit.nbt.tag.ByteTag;
+        }
+        if (type == PersistentDataType.SHORT) {
+            return stored instanceof cn.nukkit.nbt.tag.ShortTag;
+        }
+        if (type == PersistentDataType.INTEGER) {
+            return stored instanceof cn.nukkit.nbt.tag.IntTag;
+        }
+        if (type == PersistentDataType.LONG) {
+            return stored instanceof cn.nukkit.nbt.tag.LongTag;
+        }
+        if (type == PersistentDataType.FLOAT) {
+            return stored instanceof cn.nukkit.nbt.tag.FloatTag;
+        }
+        if (type == PersistentDataType.DOUBLE) {
+            return stored instanceof cn.nukkit.nbt.tag.DoubleTag;
+        }
+        if (type == PersistentDataType.STRING) {
+            return stored instanceof cn.nukkit.nbt.tag.StringTag;
+        }
+        if (type == PersistentDataType.BYTE_ARRAY) {
+            return stored instanceof cn.nukkit.nbt.tag.ByteArrayTag;
+        }
+        if (type == PersistentDataType.INTEGER_ARRAY) {
+            return stored instanceof cn.nukkit.nbt.tag.IntArrayTag;
+        }
+        if (type == PersistentDataType.TAG_CONTAINER) {
+            return stored instanceof cn.nukkit.nbt.tag.CompoundTag;
+        }
+        return false;
+    }
+
     @Override
     public <P, C> boolean has(NamespacedKey key, PersistentDataType<P, C> type) {
-        return tag.contains(nbtKey(key));
+        return isType(tag.get(nbtKey(key)), type);
     }
 
     @Override
@@ -79,7 +133,7 @@ public class PokkitPersistentDataContainer implements PersistentDataContainer {
     @SuppressWarnings("unchecked")
     public <P, C> C get(NamespacedKey key, PersistentDataType<P, C> type) {
         String nbtKey = nbtKey(key);
-        if (!tag.contains(nbtKey)) return null;
+        if (!isType(tag.get(nbtKey), type)) return null;
 
         Object primitive;
         if (type == PersistentDataType.BYTE) {
@@ -98,6 +152,12 @@ public class PokkitPersistentDataContainer implements PersistentDataContainer {
             primitive = tag.getString(nbtKey);
         } else if (type == PersistentDataType.BOOLEAN) {
             primitive = tag.getBoolean(nbtKey);
+        } else if (type == PersistentDataType.BYTE_ARRAY) {
+            primitive = tag.getByteArray(nbtKey);
+        } else if (type == PersistentDataType.INTEGER_ARRAY) {
+            primitive = tag.getIntArray(nbtKey);
+        } else if (type == PersistentDataType.TAG_CONTAINER) {
+            return (C) new PokkitPersistentDataContainer(tag.getCompound(nbtKey), prefix);
         } else {
             return null;
         }

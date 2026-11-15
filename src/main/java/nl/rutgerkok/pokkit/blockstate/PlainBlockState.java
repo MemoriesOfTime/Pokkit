@@ -3,7 +3,6 @@ package nl.rutgerkok.pokkit.blockstate;
 import org.bukkit.Location;
 import org.bukkit.block.BlockState;
 
-import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.blockdata.PokkitBlockData;
 
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -21,12 +20,14 @@ final class PlainBlockState extends PokkitBlockState {
 
 	@Override
 	public BlockState copy(Location location) {
-		return this;
+		// A copy must be independent of the original: changing the copy must
+		// not change this block state.
+		return new PlainBlockState(location, (PokkitBlockData) getBlockData().clone());
 	}
 
 	@Override
 	public BlockState copy() {
-		return this;
+		return copy(null);
 	}
 
 }

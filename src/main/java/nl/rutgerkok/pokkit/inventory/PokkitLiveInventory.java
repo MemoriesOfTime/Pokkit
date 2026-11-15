@@ -34,6 +34,30 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 		this.nukkit = Objects.requireNonNull(inventory, "inventory");
 	}
 
+	/**
+	 * Gets the number of slots that are used for normal item storage. For most
+	 * inventories this is the entire inventory, but a player inventory also
+	 * has armour and off-hand slots, which must not be used by
+	 * {@link #addSingleStack(ItemStack)}.
+	 *
+	 * @return The number of storage slots.
+	 */
+	protected int getStorageSize() {
+		return getSize();
+	}
+
+	/**
+	 * Gets the Nukkit item at the given Bukkit slot index. Subclasses can
+	 * override this to translate Bukkit slot numbers to Nukkit slot numbers.
+	 *
+	 * @param index
+	 *            The Bukkit slot index.
+	 * @return The Nukkit item, never null.
+	 */
+	protected Item getNukkitItem(int index) {
+		return nukkit.getItem(index);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) return true;
@@ -51,16 +75,20 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 		Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
 		int remaining = nukkitItem.count;
 
+		// Nukkit thinks that signs, cake and armour stands stack to 64, but
+		// the Bukkit API says 16 or even 1. Merging must respect the Bukkit
+		// limit, otherwise those items end up in oversized stacks.
+		int maxStackSize = Math.max(1, Math.min(item.getMaxStackSize(), this.getMaxStackSize()));
+
 		// Try to disperse over the existing stacks first
-		int size = getSize();
+		int size = getStorageSize();
 		for (int i = 0; i < size; i++) {
-			Item atPosition = nukkit.getItem(i);
+			Item atPosition = getNukkitItem(i);
 			if (!atPosition.equals(nukkitItem)) {
 				// Another stack type
 				continue;
 			}
 
-			int maxStackSize = Math.min(atPosition.getMaxStackSize(), this.getMaxStackSize());
 			if (atPosition.count >= maxStackSize) {
 				// Already full
 				continue;
@@ -70,6 +98,9 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 			int transferAmount = Math.min(spaceAvailable, remaining);
 			remaining -= transferAmount;
 			atPosition.count += transferAmount;
+			// getItem returns a copy, so the changed stack must be written
+			// back explicitly.
+			nukkit.setItem(i, atPosition);
 
 			if (remaining == 0) {
 				return 0;
@@ -78,12 +109,12 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 		// Try to disperse over empty slots
 		for (int i = 0; i < size; i++) {
-			Item atPosition = nukkit.getItem(i);
+			Item atPosition = getNukkitItem(i);
 			if (atPosition.getId() != Item.AIR) {
 				continue;
 			}
 
-			int transferAmount = Math.min(getMaxStackSize(), remaining);
+			int transferAmount = Math.min(maxStackSize, remaining);
 			remaining -= transferAmount;
 			Item newItem = nukkitItem.clone();
 			newItem.count = transferAmount;
@@ -104,7 +135,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 		Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
-			Item atPosition = nukkit.getItem(i);
+			Item atPosition = getNukkitItem(i);
 			if (atPosition != null && atPosition.equals(nukkitItem, false)) {
 				result.put(i, PokkitItemStack.toBukkitCopy(atPosition));
 			}
@@ -119,7 +150,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 		int nukkitTypeId = PokkitBlockData.createBlockData(material, 0).getNukkitId();
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
-			Item atPosition = nukkit.getItem(i);
+			Item atPosition = getNukkitItem(i);
 			if (atPosition.getId() == nukkitTypeId) {
 				result.put(i, PokkitItemStack.toBukkitCopy(atPosition));
 			}
@@ -147,7 +178,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
-			Item atPosition = nukkit.getItem(i);
+			Item atPosition = getNukkitItem(i);
 			if (atPosition != null && atPosition.equals(nukkitItem, false)) {
 				return true;
 			}
@@ -169,7 +200,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
-			Item atPosition = nukkit.getItem(i);
+			Item atPosition = getNukkitItem(i);
 			if (atPosition != null && atPosition.equals(nukkitItem, false)) {
 				remaining--;
 				if (remaining <= 0) {
@@ -190,7 +221,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
-			Item atPosition = nukkit.getItem(i);
+			Item atPosition = getNukkitItem(i);
 			if (atPosition.getId() == nukkitTypeId) {
 				remaining -= atPosition.getCount();
 				if (remaining <= 0) {
@@ -211,7 +242,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 		int remaining = amount;
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
-			Item atPosition = nukkit.getItem(i);
+			Item atPosition = getNukkitItem(i);
 			if (atPosition != null && atPosition.equals(nukkitItem, false)) {
 				remaining -= atPosition.getCount();
 				if (remaining <= 0) {
@@ -227,7 +258,15 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 		if (item == null) {
 			return -1;
 		}
-		return nukkit.first(PokkitItemStack.toNukkitCopy(item));
+		Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
+		int size = getSize();
+		for (int i = 0; i < size; i++) {
+			Item atPosition = getNukkitItem(i);
+			if (atPosition != null && atPosition.equals(nukkitItem, false)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	@Override
@@ -237,7 +276,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
-			Item atPosition = nukkit.getItem(i);
+			Item atPosition = getNukkitItem(i);
 			if (atPosition.getId() == nukkitTypeId) {
 				return i;
 			}
@@ -269,7 +308,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 
 	@Override
 	public ItemStack getItem(int index) {
-		return PokkitItemStack.toBukkitCopy(nukkit.getItem(index));
+		return PokkitItemStack.toBukkitCopy(getNukkitItem(index));
 	}
 
 	@Override
@@ -337,15 +376,15 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 			Item nukkitItem = PokkitItemStack.toNukkitCopy(item);
 			int size = getSize();
 			for (int slot = 0; slot < size; slot++) {
-				Item atPosition = nukkit.getItem(slot);
+				Item atPosition = getNukkitItem(slot);
 				if (!atPosition.equals(nukkitItem)) continue;
 				int transfer = Math.min(remaining, atPosition.count);
 				remaining -= transfer;
 				atPosition.count -= transfer;
 				if (atPosition.count <= 0) {
-					nukkit.clear(slot);
+					setItem(slot, null);
 				} else {
-					nukkit.setItem(slot, atPosition);
+					setItem(slot, PokkitItemStack.toBukkitCopy(atPosition));
 				}
 				if (remaining <= 0) break;
 			}
@@ -362,7 +401,7 @@ public class PokkitLiveInventory extends PokkitAbstractInventory {
 	public boolean isEmpty() {
 		int size = getSize();
 		for (int i = 0; i < size; i++) {
-			if (nukkit.getItem(i).getId() != Item.AIR) return false;
+			if (getNukkitItem(i).getId() != Item.AIR) return false;
 		}
 		return true;
 	}

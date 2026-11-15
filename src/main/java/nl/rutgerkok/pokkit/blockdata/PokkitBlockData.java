@@ -2,29 +2,76 @@ package nl.rutgerkok.pokkit.blockdata;
 
 import java.util.Objects;
 
+import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockSupport;
+import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.structure.Mirror;
 import org.bukkit.block.structure.StructureRotation;
+import org.bukkit.inventory.ItemStack;
 
 import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.blockstate.PokkitBlockState;
 
 import cn.nukkit.block.Block;
+import cn.nukkit.utils.BlockColor;
 
 /**
- * Nukkit does not have block states yet, so implementing this class is a bit
- * difficult.
+ * Implementation of {@link BlockData} on top of a Nukkit block.
  *
+ * <p>
+ * Nukkit does not expose the block state system of the Bedrock edition, so a
+ * block is identified by its numeric id and data value. That means that the
+ * properties of a block state (facing, half, waterlogged, ...) cannot be
+ * represented: those are all encoded in the data value. The string form
+ * therefore uses the Bukkit material key, with the data value as an explicit
+ * property when it differs from the default state of the material.
  */
 public class PokkitBlockData implements BlockData {
 
+	/**
+	 * Creates block data for the given material and Nukkit data value.
+	 *
+	 * @param material
+	 *            The material.
+	 * @param blockData
+	 *            The Nukkit data value, 0 for the default state.
+	 * @return The block data.
+	 * @throws IllegalArgumentException
+	 *             If the material is not a block.
+	 */
 	public static PokkitBlockData createBlockData(Material material, int blockData) {
 		return new PokkitBlockData(BlockMap.getNukkitBlock(material, blockData));
 	}
 
 	/**
-	 * Uses a simple "blockId:blockData" format.
+	 * Creates block data for the given material, with the given state string,
+	 * for example {@code "[data=1]"}.
+	 *
+	 * @param material
+	 *            The material.
+	 * @param data
+	 *            The state string, may be empty or null.
+	 * @return The block data.
+	 * @throws IllegalArgumentException
+	 *             If the state string is invalid or unsupported.
+	 */
+	public static BlockData createBlockData(Material material, String data) {
+		Objects.requireNonNull(material, "material");
+		if (material.isLegacy()) {
+			throw new IllegalArgumentException("Material " + material + " is a legacy material");
+		}
+		int blockData = parseStates(material, data);
+		return createBlockData(material, blockData);
+	}
+
+	/**
+	 * Parses a block data string. Both the Bukkit format
+	 * ({@code minecraft:stone}, {@code minecraft:oak_stairs[data=2]}) and the
+	 * old Pokkit format ({@code 1:0}) are accepted.
 	 *
 	 * @param inputString
 	 *            The input string.
@@ -34,17 +81,87 @@ public class PokkitBlockData implements BlockData {
 	 *             format.
 	 */
 	public static BlockData createBlockData(String inputString) {
-		String[] parts = inputString.split(":", 2);
-		try {
-			int blockId = Integer.parseUnsignedInt(parts[0]);
-			int blockData = Integer.parseUnsignedInt(parts[1]);
-			if (blockData >= 16) {
-				throw new IllegalArgumentException("Invalid block data: " + blockData);
-			}
-			return new PokkitBlockData(Block.get(blockId, blockData));
-		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException(Pokkit.NAME + " expects \"blockId:blockData\", got \"" + inputString + "\".");
+		Objects.requireNonNull(inputString, "inputString");
+
+		int bracket = inputString.indexOf('[');
+		String materialPart = bracket < 0 ? inputString : inputString.substring(0, bracket);
+		String statePart = bracket < 0 ? "" : inputString.substring(bracket);
+
+		Material material = Material.matchMaterial(materialPart);
+		if (material != null) {
+			return createBlockData(material, statePart);
 		}
+
+		// Old Pokkit format: "blockId:blockData".
+		String[] parts = inputString.split(":", 2);
+		if (parts.length == 2) {
+			try {
+				int blockId = Integer.parseUnsignedInt(parts[0]);
+				int blockData = Integer.parseUnsignedInt(parts[1]);
+				if (blockData >= 16) {
+					throw new IllegalArgumentException("Invalid block data: " + blockData);
+				}
+				return new PokkitBlockData(Block.get(blockId, blockData));
+			} catch (NumberFormatException e) {
+				// Fall through to the error below.
+			}
+		}
+		throw new IllegalArgumentException(
+				"Unknown block data \"" + inputString + "\": expected a material name, optionally followed by"
+						+ " a state string, for example \"minecraft:oak_stairs[data=2]\".");
+	}
+
+	/**
+	 * Parses a Bukkit state string into a Nukkit data value.
+	 *
+	 * <p>
+	 * Bedrock does not expose block states, so only the {@code data} property is
+	 * supported. That property is a Pokkit extension that makes the string form
+	 * round-trip; all other properties are rejected instead of being silently
+	 * ignored.
+	 *
+	 * @param material
+	 *            The material the states belong to.
+	 * @param data
+	 *            The state string, may be empty or null.
+	 * @return The Nukkit data value.
+	 */
+	private static int parseStates(Material material, String data) {
+		if (data == null || data.isEmpty() || data.equals("[]")) {
+			return 0;
+		}
+		if (!data.startsWith("[") || !data.endsWith("]")) {
+			throw new IllegalArgumentException("Invalid block state string: " + data);
+		}
+
+		int blockData = 0;
+		String body = data.substring(1, data.length() - 1).trim();
+		if (body.isEmpty()) {
+			return 0;
+		}
+		for (String pair : body.split(",")) {
+			String[] parts = pair.split("=", 2);
+			if (parts.length != 2) {
+				throw new IllegalArgumentException("Invalid block state \"" + pair + "\" in " + data);
+			}
+			String key = parts[0].trim();
+			String value = parts[1].trim();
+			if (!key.equals("data")) {
+				// Bedrock has no block states, so we cannot apply this
+				// property. Silently ignoring it would change the block.
+				throw new IllegalArgumentException("Block state \"" + key + "\" is not supported by " + Pokkit.NAME
+						+ ": Bedrock has no block states, only a numeric data value.");
+			}
+			try {
+				blockData = Integer.parseInt(value);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Invalid data value \"" + value + "\" in " + data);
+			}
+		}
+		if (blockData < 0 || blockData > 15) {
+			throw new IllegalArgumentException("Invalid block data: " + blockData);
+		}
+		return blockData;
 	}
 
 	public static PokkitBlockData toBukkit(cn.nukkit.block.Block block) {
@@ -55,7 +172,7 @@ public class PokkitBlockData implements BlockData {
 		return ((PokkitBlockData) blockData).block;
 	}
 
-	private final cn.nukkit.block.Block block;
+	private cn.nukkit.block.Block block;
 
 	protected PokkitBlockData(Block block) {
 		this.block = Objects.requireNonNull(block);
@@ -71,27 +188,37 @@ public class PokkitBlockData implements BlockData {
 		if (this == obj) {
 			return true;
 		}
-		if (obj == null) {
+		if (!(obj instanceof PokkitBlockData other)) {
 			return false;
 		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		PokkitBlockData other = (PokkitBlockData) obj;
-		if (!block.equals(other.block)) {
-			return false;
-		}
-		return true;
+		return block.getId() == other.block.getId() && block.getDamage() == other.block.getDamage();
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * block.getId() + block.getDamage();
 	}
 
 	@Override
 	public String getAsString() {
-		return block.getId() + ":" + block.getDamage();
+		return getAsString(false);
 	}
 
 	@Override
-	public String getAsString(boolean b) {
-		return this.getAsString();
+	public String getAsString(boolean hideStates) {
+		NamespacedKey key = getMaterial().getKey();
+		String materialKey = key.getNamespace() + ":" + key.getKey();
+		if (hideStates) {
+			return materialKey;
+		}
+		// Omit the data value when this is the default state of the material,
+		// so that granite is written as "minecraft:granite" and not as
+		// "minecraft:granite[data=1]".
+		Block defaultState = BlockMap.getNukkitBlockOrNull(getMaterial());
+		if (defaultState != null && defaultState.getDamage() == block.getDamage()) {
+			return materialKey;
+		}
+		return materialKey + "[data=" + block.getDamage() + "]";
 	}
 
 	@Override
@@ -112,16 +239,11 @@ public class PokkitBlockData implements BlockData {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((block == null) ? 0 : block.hashCode());
-		return result;
-	}
-
-	@Override
 	public boolean matches(BlockData data) {
-		return block.getFullId() == ((PokkitBlockData) data).block.getFullId();
+		if (!(data instanceof PokkitBlockData other)) {
+			return false;
+		}
+		return block.getId() == other.block.getId() && block.getDamage() == other.block.getDamage();
 	}
 
 	@Override
@@ -130,16 +252,24 @@ public class PokkitBlockData implements BlockData {
 	}
 
 	@Override
-	public void copyTo(org.bukkit.block.data.BlockData other) {
-		// Cannot copy to different implementation
+	public void copyTo(BlockData other) {
+		if (!(other instanceof PokkitBlockData target)) {
+			throw new IllegalArgumentException("Cannot copy to " + other.getClass().getName());
+		}
+		if (target == this) {
+			return;
+		}
+		target.block = Block.get(block.getId(), block.getDamage());
 	}
 
 	@Override
 	public void mirror(Mirror mirror) {
+		// Bedrock does not expose block states, so there is nothing to mirror.
 	}
 
 	@Override
 	public void rotate(StructureRotation rotation) {
+		// Bedrock does not expose block states, so there is nothing to rotate.
 	}
 
 	@Override
@@ -149,57 +279,80 @@ public class PokkitBlockData implements BlockData {
 
 	@Override
 	public org.bukkit.SoundGroup getSoundGroup() {
-		return null;
+		// Nukkit does not expose the sound group of a block. Returning null
+		// would cause a NullPointerException in the caller.
+		throw Pokkit.unsupported();
 	}
 
 	@Override
 	public int getLightEmission() {
-		return 0;
+		return block.getLightLevel();
 	}
 
 	@Override
 	public boolean isOccluding() {
-		return false;
+		return !block.isTransparent();
 	}
 
 	@Override
 	public boolean requiresCorrectToolForDrops() {
-		return false;
+		return block.getToolType() != 0 && block.getToolTier() > 0;
 	}
 
 	@Override
-	public boolean isPreferredTool(org.bukkit.inventory.ItemStack itemStack) {
-		return false;
+	public boolean isPreferredTool(ItemStack itemStack) {
+		if (itemStack == null || itemStack.getType() == Material.AIR) {
+			return false;
+		}
+		cn.nukkit.item.Item nukkitItem = nl.rutgerkok.pokkit.item.PokkitItemStack.toNukkitCopy(itemStack);
+		double withTool = block.calculateBreakTime(nukkitItem);
+		double bareHand = block.calculateBreakTime(cn.nukkit.item.Item.get(cn.nukkit.item.Item.AIR));
+		return withTool < bareHand;
 	}
 
 	@Override
-	public org.bukkit.block.PistonMoveReaction getPistonMoveReaction() {
-		return org.bukkit.block.PistonMoveReaction.MOVE;
+	public PistonMoveReaction getPistonMoveReaction() {
+		if (block.breaksWhenMoved()) {
+			return PistonMoveReaction.BREAK;
+		}
+		return block.canBePushed() ? PistonMoveReaction.MOVE : PistonMoveReaction.BLOCK;
 	}
 
 	@Override
 	public boolean isSupported(org.bukkit.block.Block block) {
-		return true;
+		Objects.requireNonNull(block, "block");
+		return isSupported(block.getLocation());
 	}
 
 	@Override
 	public boolean isSupported(org.bukkit.Location location) {
-		return true;
+		// Nukkit has no generic "can this block be placed here" check, other
+		// than the placement rules of the block itself.
+		throw Pokkit.unsupported();
 	}
 
 	@Override
-	public boolean isFaceSturdy(org.bukkit.block.BlockFace face, org.bukkit.block.BlockSupport support) {
-		return false;
+	public boolean isFaceSturdy(BlockFace face, BlockSupport support) {
+		Objects.requireNonNull(face, "face");
+		Objects.requireNonNull(support, "support");
+		if (support != BlockSupport.FULL) {
+			throw Pokkit.unsupported();
+		}
+		return block.isSolid(cn.nukkit.math.BlockFace.valueOf(face.name()));
 	}
 
 	@Override
 	public org.bukkit.Color getMapColor() {
-		return org.bukkit.Color.BLACK;
+		BlockColor color = block.getColor();
+		return Color.fromRGB(color.getRGB());
 	}
 
 	@Override
 	public BlockData merge(BlockData data) {
-		// Merging not supported
+		Objects.requireNonNull(data, "data");
+		if (getMaterial() != data.getMaterial()) {
+			throw new IllegalArgumentException("Cannot merge " + data.getMaterial() + " into " + getMaterial());
+		}
 		return data.clone();
 	}
 

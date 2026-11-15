@@ -10,7 +10,7 @@ import nl.rutgerkok.pokkit.blockstate.PokkitBlockState;
 
 import cn.nukkit.nbt.tag.CompoundTag;
 
-class PokkitBlockStateMeta extends PokkitItemMeta implements BlockStateMeta {
+public class PokkitBlockStateMeta extends PokkitItemMeta implements BlockStateMeta {
 
 	private final Material material;
 
@@ -32,7 +32,9 @@ class PokkitBlockStateMeta extends PokkitItemMeta implements BlockStateMeta {
 
 	@Override
 	boolean isApplicable(Material material) {
-		return material == this.material;
+		// Block state meta can be moved between block items, just like in
+		// Bukkit (a chest meta can be applied to a trapped chest, for example).
+		return material == this.material || PokkitItemFactory.isBlockStateMaterial(material);
 	}
 
 	@Override
@@ -46,4 +48,17 @@ class PokkitBlockStateMeta extends PokkitItemMeta implements BlockStateMeta {
 		}
 	}
 
+
+	/**
+	 * Recreates the item meta from its serialized form. Required because
+	 * Bukkit's configuration serialization looks for a method declared on the
+	 * concrete class.
+	 *
+	 * @param args
+	 *            The serialized data.
+	 * @return The item meta.
+	 */
+	public static org.bukkit.inventory.meta.ItemMeta deserialize(java.util.Map<String, Object> args) {
+		return PokkitItemMeta.deserialize(args);
+	}
 }

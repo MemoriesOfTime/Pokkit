@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 import org.bukkit.Material;
@@ -26,6 +25,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import nl.rutgerkok.pokkit.enchantment.PokkitEnchantment;
 
+import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.nbt.tag.StringTag;
@@ -38,8 +38,14 @@ import nl.rutgerkok.pokkit.Pokkit;
 
 public class PokkitItemMeta implements ItemMeta, Damageable {
 
+	/**
+	 * Key under which the full NBT tag is stored during configuration
+	 * serialization.
+	 */
+	private static final String SERIALIZED_TAG = "pokkit-nbt";
+
 	protected CompoundTag tag;
-	private int damage;
+	protected int damage;
 
 	PokkitItemMeta(CompoundTag tag, int damage) {
 		this.tag = Objects.requireNonNull(tag, "tag");
@@ -52,7 +58,13 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 			return false;
 		}
 
-		short nukkitEnchantmentId = (short) PokkitEnchantment.toNukkit(enchantment);
+		int nukkitEnchantmentId = PokkitEnchantment.toNukkit(enchantment);
+		if (nukkitEnchantmentId < 0) {
+			// Custom enchantments cannot be represented in Bedrock item data.
+			return false;
+		}
+
+		short nukkitEnchantmentIdShort = (short) nukkitEnchantmentId;
 
 		ListTag<CompoundTag> enchTag;
 		if (tag.contains("ench")) {
@@ -66,10 +78,10 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 		boolean modifiedATag = false;
 		for (int i = 0; i < enchTag.size(); i++) {
 			CompoundTag entry = enchTag.get(i);
-			if (entry.getShort("id") == nukkitEnchantmentId) {
+			if (entry.getShort("id") == nukkitEnchantmentIdShort) {
 				// The add method actually replaces a tag
 				enchTag.add(i, new CompoundTag()
-						.putShort("id", nukkitEnchantmentId)
+						.putShort("id", nukkitEnchantmentIdShort)
 						.putShort("lvl", level));
 				modifiedATag = true;
 				break;
@@ -79,7 +91,7 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 		// Else, add this enchantment as a new enchantment
 		if (!modifiedATag) {
 			enchTag.add(new CompoundTag()
-					.putShort("id", nukkitEnchantmentId)
+					.putShort("id", nukkitEnchantmentIdShort)
 					.putShort("lvl", level));
 		}
 
@@ -132,10 +144,10 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 	@Override
 	public String getDisplayName() {
 		if (!tag.contains("display")) {
-			return "";
+			return null;
 		}
 		CompoundTag displayTag = tag.getCompound("display");
-		return displayTag.getString("Name");
+		return displayTag.contains("Name") ? displayTag.getString("Name") : null;
 	}
 
 	@Override
@@ -163,15 +175,20 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 			return Collections.emptyMap();
 		}
 
-		ImmutableMap.Builder<Enchantment, Integer> map = new ImmutableMap.Builder<>();
+		Map<Enchantment, Integer> map = new java.util.LinkedHashMap<>();
 
 		ListTag<CompoundTag> enchTag = tag.getList("ench", CompoundTag.class);
 		for (int i = 0; i < enchTag.size(); i++) {
 			CompoundTag entry = enchTag.get(i);
-			map.put(PokkitEnchantment.toBukkit(entry.getShort("id")), entry.getShort("lvl"));
+			Enchantment enchantment = PokkitEnchantment.toBukkit(entry.getShort("id"));
+			if (enchantment == null) {
+				// Unknown (custom) enchantment, not representable in Bukkit.
+				continue;
+			}
+			map.put(enchantment, (int) entry.getShort("lvl"));
 		}
 
-		return map.build();
+		return Collections.unmodifiableMap(map);
 	}
 
 	@Override
@@ -280,7 +297,7 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 
 	@Override
 	public int hashCode() {
-		return tag.hashCode();
+		return 31 * tag.hashCode() + damage;
 	}
 
 	@Override
@@ -313,7 +330,7 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 	}
 
 	boolean isApplicable(Material material) {
-		return true;
+		return material != null;
 	}
 
 	@Override
@@ -370,6 +387,7 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 			case HIDE_PLACED_ON: return 16;
 			case HIDE_DYE: return 32;
 			case HIDE_ARMOR_TRIM: return 64;
+			case HIDE_ADDITIONAL_TOOLTIP: return 128;
 			default: return 0;
 		}
 	}
@@ -378,9 +396,117 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 	public Map<String, Object> serialize() {
 		Map<String, Object> data = new java.util.LinkedHashMap<>();
 		if (hasDisplayName()) data.put("display-name", getDisplayName());
+		if (hasItemName()) data.put("item-name", getItemName());
 		if (hasLore()) data.put("lore", getLore());
 		if (damage > 0) data.put("damage", damage);
+		if (hasEnchants()) {
+			Map<String, Integer> enchants = new java.util.LinkedHashMap<>();
+			for (Map.Entry<Enchantment, Integer> entry : getEnchants().entrySet()) {
+				enchants.put(entry.getKey().getKey().toString(), entry.getValue());
+			}
+			data.put("enchants", enchants);
+		}
+		if (isUnbreakable()) data.put("unbreakable", true);
+		if (hasCustomModelData()) data.put("custom-model-data", getCustomModelData());
+		if (!getItemFlags().isEmpty()) {
+			Set<String> flags = new java.util.LinkedHashSet<>();
+			for (ItemFlag flag : getItemFlags()) {
+				flags.add(flag.name());
+			}
+			data.put("ItemFlags", flags);
+		}
+		// Also store the entire NBT tag. Data without a Bukkit API equivalent
+		// (persistent data, book pages, skull owners, attribute modifiers,
+		// banner patterns, ...) would otherwise be lost when a plugin saves an
+		// item to its configuration.
+		try {
+			data.put(SERIALIZED_TAG, java.util.Base64.getEncoder().encodeToString(NBTIO.write(tag)));
+		} catch (java.io.IOException e) {
+			throw new IllegalStateException("Could not serialize item meta", e);
+		}
 		return data;
+	}
+
+	/**
+	 * Recreates item meta that was serialized with {@link #serialize()}. This
+	 * method is called by Bukkit's configuration serialization system.
+	 *
+	 * @param args
+	 *            The serialized data.
+	 * @return The item meta.
+	 */
+	public static ItemMeta deserialize(Map<String, Object> args) {
+		CompoundTag tag;
+		Object encoded = args.get(SERIALIZED_TAG);
+		if (encoded instanceof String base64 && !base64.isEmpty()) {
+			try {
+				tag = NBTIO.read(java.util.Base64.getDecoder().decode(base64));
+			} catch (java.io.IOException | IllegalArgumentException e) {
+				throw new IllegalArgumentException("Could not deserialize item meta", e);
+			}
+		} else {
+			// Readable format, also used by maps written by older versions.
+			tag = new CompoundTag();
+
+			if (args.get("display-name") instanceof String displayName && !displayName.isEmpty()) {
+				CompoundTag display = new CompoundTag().putString("Name", displayName);
+				tag.putCompound("display", display);
+			}
+			if (args.get("item-name") instanceof String itemName && !itemName.isEmpty()) {
+				tag.putString("item_name", itemName);
+			}
+			if (args.get("lore") instanceof List<?> lines && !lines.isEmpty()) {
+				ListTag<StringTag> loreTag = new ListTag<>("Lore");
+				for (Object line : lines) {
+					loreTag.add(new StringTag("", String.valueOf(line)));
+				}
+				CompoundTag display = tag.contains("display") ? tag.getCompound("display")
+						: new CompoundTag();
+				display.putList(loreTag);
+				tag.putCompound("display", display);
+			}
+			if (args.get("enchants") instanceof Map<?, ?> enchants) {
+				ListTag<CompoundTag> enchTag = new ListTag<>("ench");
+				for (Map.Entry<?, ?> entry : enchants.entrySet()) {
+					if (!(entry.getValue() instanceof Number level)) {
+						continue;
+					}
+					Enchantment enchantment = Enchantment
+							.getByKey(org.bukkit.NamespacedKey.fromString(String.valueOf(entry.getKey())));
+					int id = enchantment == null ? -1 : PokkitEnchantment.toNukkit(enchantment);
+					if (id < 0) {
+						continue;
+					}
+					enchTag.add(new CompoundTag().putShort("id", (short) id)
+							.putShort("lvl", level.shortValue()));
+				}
+				if (!enchTag.isEmpty()) {
+					tag.putList(enchTag);
+				}
+			}
+			if (Boolean.TRUE.equals(args.get("unbreakable"))) {
+				tag.putBoolean("Unbreakable", true);
+			}
+			if (args.get("custom-model-data") instanceof Number customModelData) {
+				tag.putInt("CustomModelData", customModelData.intValue());
+			}
+			if (args.get("ItemFlags") instanceof Collection<?> flags) {
+				int bits = 0;
+				for (Object flag : flags) {
+					try {
+						bits |= getFlagBit(ItemFlag.valueOf(String.valueOf(flag)));
+					} catch (IllegalArgumentException ignored) {
+						// Unknown flag, skip it.
+					}
+				}
+				if (bits != 0) {
+					tag.putInt("HideFlags", bits);
+				}
+			}
+		}
+
+		int damage = args.get("damage") instanceof Number number ? number.intValue() : 0;
+		return new PokkitItemMeta(tag, damage);
 	}
 
 	@Override
@@ -488,13 +614,14 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 			Map.Entry<?, ?> e = (Map.Entry<?, ?>) entry;
 			Attribute attr = (Attribute) e.getKey();
 			AttributeModifier mod = (AttributeModifier) e.getValue();
+			UUID uuid = uuidOf(mod);
 			CompoundTag attrTag = new CompoundTag()
 					.putString("AttributeName", attr.getKey().toString())
-					.putString("Name", mod.getName() != null ? mod.getName() : mod.getUniqueId().toString())
+					.putString("Name", mod.getName() != null ? mod.getName() : uuid.toString())
 					.putDouble("Amount", mod.getAmount())
 					.putInt("Operation", mod.getOperation().ordinal())
-					.putLong("UUIDMost", mod.getUniqueId().getMostSignificantBits())
-					.putLong("UUIDLeast", mod.getUniqueId().getLeastSignificantBits());
+					.putLong("UUIDMost", uuid.getMostSignificantBits())
+					.putLong("UUIDLeast", uuid.getLeastSignificantBits());
 			if (mod.getSlot() != null) {
 				attrTag.putString("Slot", mod.getSlot().name().toLowerCase());
 			}
@@ -510,16 +637,23 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 
 	@Override
 	public boolean addAttributeModifier(Attribute a, AttributeModifier m) {
+		UUID uuid = uuidOf(m);
+		for (AttributeModifier existing : getAttributeModifiers(a)) {
+			if (uuidOf(existing).equals(uuid)) {
+				return false;
+			}
+		}
+
 		ListTag<CompoundTag> list = tag.contains("AttributeModifiers")
 				? tag.getList("AttributeModifiers", CompoundTag.class)
 				: new ListTag<>("AttributeModifiers");
 		CompoundTag attrTag = new CompoundTag()
 				.putString("AttributeName", a.getKey().toString())
-				.putString("Name", m.getName() != null ? m.getName() : m.getUniqueId().toString())
+				.putString("Name", m.getName() != null ? m.getName() : uuid.toString())
 				.putDouble("Amount", m.getAmount())
 				.putInt("Operation", m.getOperation().ordinal())
-				.putLong("UUIDMost", m.getUniqueId().getMostSignificantBits())
-				.putLong("UUIDLeast", m.getUniqueId().getLeastSignificantBits());
+				.putLong("UUIDMost", uuid.getMostSignificantBits())
+				.putLong("UUIDLeast", uuid.getLeastSignificantBits());
 		if (m.getSlot() != null) {
 			attrTag.putString("Slot", m.getSlot().name().toLowerCase());
 		}
@@ -554,9 +688,10 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 		boolean removed = false;
 		for (int i = list.size() - 1; i >= 0; i--) {
 			CompoundTag entry = list.get(i);
+			UUID uuid = uuidOf(m);
 			if (entry.getString("AttributeName").equals(attrName)
-					&& entry.getLong("UUIDMost") == m.getUniqueId().getMostSignificantBits()
-					&& entry.getLong("UUIDLeast") == m.getUniqueId().getLeastSignificantBits()) {
+					&& entry.getLong("UUIDMost") == uuid.getMostSignificantBits()
+					&& entry.getLong("UUIDLeast") == uuid.getLeastSignificantBits()) {
 				list.remove(i);
 				removed = true;
 			}
@@ -582,7 +717,10 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 		String slotName = slot.name().toLowerCase();
 		boolean removed = false;
 		for (int i = list.size() - 1; i >= 0; i--) {
-			if (list.get(i).getString("Slot").equals(slotName)) {
+			String entrySlot = list.get(i).getString("Slot");
+			// Modifiers without a slot apply to every slot, so they have to be
+			// removed too.
+			if (entrySlot.isEmpty() || entrySlot.equals(slotName)) {
 				list.remove(i);
 				removed = true;
 			}
@@ -619,7 +757,9 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 		String slotName = slot.name().toLowerCase();
 		for (int i = 0; i < list.size(); i++) {
 			CompoundTag entry = list.get(i);
-			if (!entry.getString("Slot").equals(slotName)) continue;
+			String entrySlot = entry.getString("Slot");
+			// Modifiers without a slot apply to every slot.
+			if (!entrySlot.isEmpty() && !entrySlot.equals(slotName)) continue;
 			Attribute attr = resolveAttribute(entry.getString("AttributeName"));
 			if (attr == null) continue;
 			AttributeModifier mod = nbtToModifier(entry);
@@ -635,35 +775,43 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 
 	@Override
 	public String getAsComponentString() {
-		return "{}";
+		// Component strings use the [key=value] syntax. Only the damage
+		// component can be expressed reliably; everything else has no
+		// Bedrock equivalent that maps one-to-one.
+		return damage == 0 ? "[]" : "[minecraft:damage=" + damage + "]";
 	}
 
 	@Override
 	public String getAsString() {
-		return "{}";
+		// An NBT string, as documented by Bukkit. The damage value is stored
+		// outside the tag, so it has to be merged in manually.
+		String snbt = tag.toSNBT();
+		if (damage == 0) {
+			return snbt;
+		}
+		return "{Damage:" + damage + (snbt.length() > 2 ? "," + snbt.substring(1) : "}");
 	}
 
 	@Override
 	public boolean hasItemName() {
-		if (!tag.contains("display")) return false;
-		CompoundTag displayTag = tag.getCompound("display");
-		return displayTag.contains("Name");
+		// The item name is a separate concept from the display name since
+		// Minecraft 1.20.5: it is not styled with italics and cannot be
+		// changed in an anvil. Bedrock has no equivalent, so the value is
+		// stored under its own key.
+		return tag.contains("item_name");
 	}
 
 	@Override
 	public String getItemName() {
-		if (!tag.contains("display")) return null;
-		CompoundTag displayTag = tag.getCompound("display");
-		if (!displayTag.contains("Name")) return null;
-		return displayTag.getString("Name");
+		return tag.contains("item_name") ? tag.getString("item_name") : null;
 	}
 
 	@Override
 	public void setItemName(String name) {
-		if (name != null) {
-			CompoundTag displayTag = tag.getCompound("display");
-			displayTag.putString("Name", name);
-			tag.putCompound("display", displayTag);
+		if (name == null || name.isEmpty()) {
+			tag.remove("item_name");
+		} else {
+			tag.putString("item_name", name);
 		}
 	}
 
@@ -694,7 +842,13 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 
 	@Override
 	public void setHideTooltip(boolean hideTooltip) {
-		tag.putBoolean("HideTooltip", hideTooltip);
+		// Only store the flag when it is set, so that an explicit "false" does
+		// not turn an otherwise empty meta into a non-empty one.
+		if (hideTooltip) {
+			tag.putBoolean("HideTooltip", true);
+		} else {
+			tag.remove("HideTooltip");
+		}
 	}
 
 	@Override
@@ -704,7 +858,11 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 
 	@Override
 	public void setFireResistant(boolean fireResistant) {
-		tag.putBoolean("FireResistant", fireResistant);
+		if (fireResistant) {
+			tag.putBoolean("FireResistant", true);
+		} else {
+			tag.remove("FireResistant");
+		}
 	}
 
 	@Override
@@ -832,6 +990,29 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 	@Override
 	public org.bukkit.inventory.meta.components.JukeboxPlayableComponent getJukeboxPlayable() {
 		return null;
+	}
+
+	/**
+	 * Gets the UUID of an attribute modifier. Modifiers created from a name
+	 * (the modern constructor) have no UUID; in that case a stable UUID is
+	 * derived from the name, because {@link AttributeModifier#getUniqueId()}
+	 * throws for such modifiers on newer API versions.
+	 *
+	 * @param modifier
+	 *            The modifier.
+	 * @return The UUID, never null.
+	 */
+	private static UUID uuidOf(AttributeModifier modifier) {
+		try {
+			UUID uuid = modifier.getUniqueId();
+			if (uuid != null) {
+				return uuid;
+			}
+		} catch (RuntimeException ignored) {
+			// Name-based modifier, fall through.
+		}
+		String name = modifier.getName();
+		return UUID.nameUUIDFromBytes((name == null ? "" : name).getBytes(java.nio.charset.StandardCharsets.UTF_8));
 	}
 
 	private static AttributeModifier nbtToModifier(CompoundTag entry) {

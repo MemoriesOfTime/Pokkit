@@ -3,6 +3,11 @@ package nl.rutgerkok.pokkit.plugin;
 import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -61,6 +66,21 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 	private JavaPluginLoader bukkit;
 	private boolean recognizeJars = false;
 
+	/**
+	 * Plugin manager used by {@link JavaPluginLoader} for dependency checks.
+	 */
+	private SimplePluginManager dependencyManager;
+
+	/**
+	 * Direct dependencies of the Bukkit plugins that have been seen so far.
+	 * Needed because the {@link SimplePluginManager} that
+	 * {@link JavaPluginLoader} talks to has an empty dependency graph. Like
+	 * Bukkit, soft dependencies count for class sharing. Nukkit's plugin
+	 * description does not expose the {@code provides} section, so plugins that
+	 * provide another plugin name are not part of the graph.
+	 */
+	private final Map<String, Set<String>> dependencies = new ConcurrentHashMap<>();
+
 	public PokkitPluginLoader(cn.nukkit.Server server) {
 		// Required for instantiation
 		temporaryInstance = this;
@@ -85,7 +105,14 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 			}
 
 			InputStream stream = jar.getInputStream(entry);
-			return new PokkitPluginDescription(stream);
+			PluginDescription description = new PokkitPluginDescription(stream);
+			// Remember the dependencies, so that plugins that depend on each
+			// other can share classes. Like Bukkit, soft dependencies count
+			// for class sharing.
+			Set<String> pluginDependencies = new HashSet<>(description.getDepend());
+			pluginDependencies.addAll(description.getSoftDepend());
+			dependencies.put(description.getName(), pluginDependencies);
+			return description;
 		} catch (Exception e) {
 			Bukkit.getServer().getLogger().log(Level.SEVERE, "Could not load plugin " + file.getName(), e);
 			return null;
@@ -123,7 +150,7 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 	 */
 	private Server createServerProxy() {
 		final Server realServer = Bukkit.getServer();
-		final SimplePluginManager spm = new SimplePluginManager(realServer, new SimpleCommandMap(realServer));
+		final SimplePluginManager spm = getDependencyManager();
 		return (Server) Proxy.newProxyInstance(
 				Server.class.getClassLoader(),
 				new Class<?>[] { Server.class },
@@ -138,9 +165,108 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 				});
 	}
 
+	/**
+	 * Gets the plugin manager that {@link JavaPluginLoader} uses for its
+	 * dependency checks. That manager has no plugins of its own, so the loaded
+	 * plugins and their dependency graph are copied into it through
+	 * reflection. Without this, every plugin with a hard dependency (for
+	 * example WorldGuard, which depends on WorldEdit) fails to load.
+	 *
+	 * @return The manager, never null.
+	 */
+	private SimplePluginManager getDependencyManager() {
+		if (dependencyManager == null) {
+			Server realServer = Bukkit.getServer();
+			dependencyManager = new SimplePluginManager(realServer, new SimpleCommandMap(realServer));
+			fillDependencyGraph(dependencyManager);
+		}
+		return dependencyManager;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void fillDependencyGraph(SimplePluginManager manager) {
+		if (DEPENDENCY_GRAPH_FIELD == null) {
+			return;
+		}
+		try {
+			Object graph = DEPENDENCY_GRAPH_FIELD.get(manager);
+			if (graph instanceof com.google.common.graph.MutableGraph<?> mutableGraph) {
+				com.google.common.graph.MutableGraph<String> typedGraph =
+						(com.google.common.graph.MutableGraph<String>) mutableGraph;
+				dependencies.forEach((plugin, pluginDependencies) -> {
+					typedGraph.addNode(plugin);
+					for (String dependency : pluginDependencies) {
+						typedGraph.putEdge(plugin, dependency);
+					}
+				});
+			}
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			// Not fatal: only class sharing between dependent plugins is
+			// affected.
+			logWarning("Could not build the plugin dependency graph", e);
+		}
+	}
+
+	/**
+	 * Makes a loaded plugin visible to the dependency checks of
+	 * {@link JavaPluginLoader}.
+	 *
+	 * @param plugin
+	 *            The plugin that was just loaded.
+	 */
+	@SuppressWarnings("unchecked")
+	private void registerForDependencyChecks(org.bukkit.plugin.Plugin plugin) {
+		if (LOOKUP_NAMES_FIELD == null || PLUGINS_FIELD == null) {
+			return;
+		}
+		try {
+			Map<String, org.bukkit.plugin.Plugin> lookupNames =
+					(Map<String, org.bukkit.plugin.Plugin>) LOOKUP_NAMES_FIELD.get(dependencyManager);
+			lookupNames.put(plugin.getName().replace(' ', '_'), plugin);
+			List<org.bukkit.plugin.Plugin> plugins =
+					(List<org.bukkit.plugin.Plugin>) PLUGINS_FIELD.get(dependencyManager);
+			plugins.add(plugin);
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			logWarning("Could not register " + plugin.getName() + " for dependency checks", e);
+		}
+	}
+
+	private static void logWarning(String message, Throwable cause) {
+		try {
+			java.util.logging.Logger logger = Bukkit.getLogger();
+			if (logger != null) {
+				logger.log(Level.WARNING, "[Pokkit] " + message, cause);
+			}
+		} catch (RuntimeException ignored) {
+			// The Bukkit server may not be available yet during class
+			// initialisation.
+		}
+	}
+
+	private static final java.lang.reflect.Field LOOKUP_NAMES_FIELD = field("lookupNames");
+	private static final java.lang.reflect.Field PLUGINS_FIELD = field("plugins");
+	private static final java.lang.reflect.Field DEPENDENCY_GRAPH_FIELD = field("dependencyGraph");
+
+	private static java.lang.reflect.Field field(String name) {
+		try {
+			java.lang.reflect.Field field = SimplePluginManager.class.getDeclaredField(name);
+			field.setAccessible(true);
+			return field;
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			// A different server implementation may not have this field. The
+			// dependency fix is then simply skipped instead of preventing the
+			// server from starting.
+			logWarning("Could not access SimplePluginManager#" + name, e);
+			return null;
+		}
+	}
+
 	@Override
 	public Plugin loadPlugin(File file) throws Exception {
 		JavaPlugin bukkitPlugin = (JavaPlugin) getPluginLoader().loadPlugin(file);
+		// Make the plugin visible to the dependency checks of the next
+		// plugin, so that hard dependencies resolve in any file order.
+		registerForDependencyChecks(bukkitPlugin);
 		return new PokkitPlugin(bukkitPlugin, getPluginDescription(file), this);
 	}
 

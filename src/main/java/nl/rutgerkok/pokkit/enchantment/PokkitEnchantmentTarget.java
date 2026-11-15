@@ -28,7 +28,10 @@ public class PokkitEnchantmentTarget {
 		twoWay(EnchantmentType.WEARABLE, EnchantmentTarget.WEARABLE);
 		twoWay(EnchantmentType.TRIDENT, EnchantmentTarget.TRIDENT);
 		twoWay(EnchantmentType.CROSSBOW, EnchantmentTarget.CROSSBOW);
-		twoWay(EnchantmentType.ALL, EnchantmentTarget.VANISHABLE);
+		// Vanishing is not an entity type in Nukkit; every enchantment can be
+		// vanishing, so it maps to ALL. This must not overwrite the ALL -> ALL
+		// mapping above.
+		bukkitToNukkit.put(EnchantmentTarget.VANISHABLE, EnchantmentType.ALL);
 		nukkitToBukkit.put(EnchantmentType.MACE, EnchantmentTarget.WEAPON);
 		nukkitToBukkit.put(EnchantmentType.SPEAR, EnchantmentTarget.WEAPON);
 	}
@@ -39,6 +42,9 @@ public class PokkitEnchantmentTarget {
 	 * @return The Bukkit enchantment type, or null if not found.
 	 */
 	public static EnchantmentTarget toBukkit(EnchantmentType nukkit) {
+		if (nukkit == null) {
+			return EnchantmentTarget.ALL;
+		}
 		return nukkitToBukkit.get(nukkit);
 	}
 

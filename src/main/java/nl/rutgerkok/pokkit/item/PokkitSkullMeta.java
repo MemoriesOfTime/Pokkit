@@ -10,10 +10,16 @@ import org.bukkit.profile.PlayerProfile;
 
 import cn.nukkit.nbt.tag.CompoundTag;
 
-final class PokkitSkullMeta extends PokkitBlockStateMeta implements SkullMeta {
+public final class PokkitSkullMeta extends PokkitItemMeta implements SkullMeta {
 
 	PokkitSkullMeta(CompoundTag tag, Material material, int damage) {
-		super(tag, material, damage);
+		super(tag, damage);
+	}
+
+	@Override
+	boolean isApplicable(Material material) {
+		// Skull meta can be moved between skull types, just like in Bukkit.
+		return PokkitItemFactory.isSkullMaterial(material);
 	}
 
 	@Override
@@ -133,5 +139,18 @@ final class PokkitSkullMeta extends PokkitBlockStateMeta implements SkullMeta {
 		if (!tag.contains("note_block_sound")) return null;
 		String sound = tag.getString("note_block_sound");
 		return org.bukkit.NamespacedKey.fromString(sound);
+	}
+
+	/**
+	 * Recreates the item meta from its serialized form. Required because
+	 * Bukkit's configuration serialization looks for a method declared on the
+	 * concrete class.
+	 *
+	 * @param args
+	 *            The serialized data.
+	 * @return The item meta.
+	 */
+	public static org.bukkit.inventory.meta.ItemMeta deserialize(java.util.Map<String, Object> args) {
+		return PokkitItemMeta.deserialize(args);
 	}
 }
