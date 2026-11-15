@@ -37,16 +37,20 @@ public final class PokkitInventoryType {
 		twoWay(cn.nukkit.inventory.InventoryType.BLAST_FURNACE, InventoryType.BLAST_FURNACE);
 		twoWay(cn.nukkit.inventory.InventoryType.SMOKER, InventoryType.SMOKER);
 		twoWay(cn.nukkit.inventory.InventoryType.LOOM, InventoryType.LOOM);
-		bukkitToNukkit.put(InventoryType.CARTOGRAPHY, cn.nukkit.inventory.InventoryType.CRAFTING); // No Nukkit equivalent
+		twoWay(cn.nukkit.inventory.InventoryType.CARTOGRAPHY, InventoryType.CARTOGRAPHY);
 		twoWay(cn.nukkit.inventory.InventoryType.GRINDSTONE, InventoryType.GRINDSTONE);
 		twoWay(cn.nukkit.inventory.InventoryType.STONECUTTER, InventoryType.STONECUTTER);
 		twoWay(cn.nukkit.inventory.InventoryType.SMITHING_TABLE, InventoryType.SMITHING);
+		twoWay(cn.nukkit.inventory.InventoryType.CRAFTER, InventoryType.CRAFTER);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.CAMPFIRE, InventoryType.FURNACE); // No direct Bukkit equivalent
+		// Bukkit has no HORSE or COMMAND_BLOCK inventory type, but Nukkit does. Map them to the
+		// closest container type instead of returning null, so getType() never breaks plugin code.
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.HORSE, InventoryType.CHEST);
+		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.COMMAND_BLOCK, InventoryType.CHEST);
 		bukkitToNukkit.put(InventoryType.LECTERN, cn.nukkit.inventory.InventoryType.CRAFTING); // No Nukkit equivalent
 		bukkitToNukkit.put(InventoryType.COMPOSTER, cn.nukkit.inventory.InventoryType.DROPPER); // No Nukkit equivalent
 		bukkitToNukkit.put(InventoryType.CHISELED_BOOKSHELF, cn.nukkit.inventory.InventoryType.CHEST); // No Nukkit equivalent
 		bukkitToNukkit.put(InventoryType.JUKEBOX, cn.nukkit.inventory.InventoryType.HOPPER); // No Nukkit equivalent
-		bukkitToNukkit.put(InventoryType.CRAFTER, cn.nukkit.inventory.InventoryType.DISPENSER); // No Nukkit equivalent
 		bukkitToNukkit.put(InventoryType.SMITHING_NEW, cn.nukkit.inventory.InventoryType.SMITHING_TABLE);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.UI, InventoryType.PLAYER);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.OFFHAND, InventoryType.PLAYER);

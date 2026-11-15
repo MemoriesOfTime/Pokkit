@@ -4,7 +4,7 @@ import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityLiving;
 import cn.nukkit.entity.projectile.EntityProjectile;
 import cn.nukkit.event.EventHandler;
-import cn.nukkit.event.block.ItemFrameDropItemEvent;
+import cn.nukkit.event.block.ItemFrameUseEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.MovingObjectPosition;
 import com.google.common.base.Function;
@@ -245,24 +245,33 @@ public final class EntityEvents extends EventTranslator {
 
 
 	@EventHandler(ignoreCancelled = false)
-    public void onItemDrop(ItemFrameDropItemEvent event) {
-        // Bukkit uses EntityDamageByEntityEvent when someone hits an Item Frame
-        // However Nukkit uses ItemFrameDropItemEvent, so we are going to trigger an
-        // EntityDamageByEntityEvent
+	public void onItemDrop(ItemFrameUseEvent event) {
+		// Bukkit uses EntityDamageByEntityEvent when someone hits an Item Frame.
+		// Nukkit reports all item frame interactions through ItemFrameUseEvent,
+		// so only the DROP action is translated here.
+		if (event.getAction() != ItemFrameUseEvent.Action.DROP) {
+			return;
+		}
+
+		// The player is nullable in ItemFrameUseEvent, and an
+		// EntityDamageByEntityEvent cannot be built without a damager.
+		if (event.getPlayer() == null) {
+			return;
+		}
 
 		if (canIgnore(EntityDamageByEntityEvent.getHandlerList())) {
 			return;
 		}
 
-        EntityDamageByEntityEvent bukkitEvent = new EntityDamageByEntityEvent(
-        		PokkitEntity.toBukkit(event.getPlayer()),
-        		new PokkitItemFrameEntity(event.getItemFrame()),
-        		EntityDamageEvent.DamageCause.ENTITY_ATTACK,
-        		getDamageMap(999D),
-        		getDamageModifierMap());
+		EntityDamageByEntityEvent bukkitEvent = new EntityDamageByEntityEvent(
+				PokkitEntity.toBukkit(event.getPlayer()),
+				new PokkitItemFrameEntity(event.getItemFrame()),
+				EntityDamageEvent.DamageCause.ENTITY_ATTACK,
+				getDamageMap(999D),
+				getDamageModifierMap());
 
-        callCancellable(event, bukkitEvent);
-    }
+		callCancellable(event, bukkitEvent);
+	}
 
 	@EventHandler(ignoreCancelled = false)
 	public void onSpawn(cn.nukkit.event.entity.EntitySpawnEvent event) {

@@ -36,7 +36,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>33.1.0-jre</version> <!-- Keep in sync with Nukkit-MOT -->
+			<version>33.7.2-jre</version> <!-- Keep in sync with Nukkit-MOT -->
 			<scope>provided</scope> <!-- Don't include in Pokkit JAR, Nukkit-MOT also includes Guava -->
 		</dependency>
 		<dependency>
@@ -125,6 +125,24 @@
 									<exclude>com.google.code.gson:gson</exclude>
 								</excludes>
 							</artifactSet>
+							<filters>
+								<!--
+									org.geysermc.geyser:common (pulled in transitively by the Floodgate API)
+									is a fat jar that bundles Guava 31.0.1 and Gson 2.3.1. Nukkit-MOT already
+									ships Guava 33.7.2 and Gson 2.13.2 and its plugin class loader is
+									parent-first, so these copies are never loaded. Strip them so the plugin
+									JAR stays small and a future class loader change cannot cause version skew.
+								-->
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>com/google/common/**</exclude>
+										<exclude>com/google/thirdparty/**</exclude>
+										<exclude>com/google/gson/**</exclude>
+										<exclude>org/checkerframework/**</exclude>
+									</excludes>
+								</filter>
+							</filters>
 						</configuration>
 					</execution>
 				</executions>
