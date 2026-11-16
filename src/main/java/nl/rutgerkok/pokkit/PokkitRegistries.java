@@ -75,4 +75,14 @@ public final class PokkitRegistries {
 	public static Registry<org.bukkit.MusicInstrument> createMusicInstrumentRegistry() {
 		return new LazyMusicInstrumentRegistry(INSTRUMENT_KEYS);
 	}
+
+	/**
+	 * Creates the registry with all vanilla potion effect types.
+	 * {@code PotionEffectType} fails to initialise when one of them is missing.
+	 *
+	 * @return The registry.
+	 */
+	public static Registry<org.bukkit.potion.PotionEffectType> createPotionEffectTypeRegistry() {
+		return new nl.rutgerkok.pokkit.potion.PokkitPotionEffectRegistry();
+	}
 }

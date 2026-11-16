@@ -108,7 +108,7 @@ public final class PokkitBlock implements Block {
 	@Override
 	public int getBlockPower() {
 		int power = 0;
-		for (BlockFace face : BlockFace.values()) {
+		for (BlockFace face : PokkitBlockFace.CARDINAL_FACES) {
 			power = Math.max(power, getBlockPower(face));
 		}
 		return power;
@@ -116,7 +116,29 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public int getBlockPower(BlockFace face) {
-		return nukkit().getStrongPower(PokkitBlockFace.toNukkit(face));
+		Objects.requireNonNull(face, "face");
+		if (face == BlockFace.SELF) {
+			// Bukkit documents SELF as "the block itself", which is the power
+			// this block emits (a redstone block, wire or torch).
+			int power = 0;
+			for (BlockFace cardinal : PokkitBlockFace.CARDINAL_FACES) {
+				cn.nukkit.math.BlockFace nukkitFace = PokkitBlockFace.toNukkitOrNull(cardinal);
+				power = Math.max(power, nukkit().getWeakPower(nukkitFace));
+				power = Math.max(power, nukkit().getStrongPower(nukkitFace));
+			}
+			return power;
+		}
+		cn.nukkit.math.BlockFace nukkitFace = PokkitBlockFace.toNukkitOrNull(face);
+		if (nukkitFace == null) {
+			// Bukkit allows the diagonals here, but redstone power only
+			// travels along the six cardinal faces.
+			return 0;
+		}
+		// The block on the given face is the one that powers this block, so
+		// ask it how much power it emits towards this block.
+		cn.nukkit.block.Block neighbour = nukkit().getSide(nukkitFace);
+		cn.nukkit.math.BlockFace towardsThis = nukkitFace.getOpposite();
+		return Math.max(neighbour.getWeakPower(towardsThis), neighbour.getStrongPower(towardsThis));
 	}
 
 	@Override
@@ -293,12 +315,18 @@ public final class PokkitBlock implements Block {
 
 	@Override
 	public boolean isBlockFaceIndirectlyPowered(BlockFace face) {
-		return isBlockIndirectlyPowered();
+		Objects.requireNonNull(face, "face");
+		cn.nukkit.math.BlockFace nukkitFace = PokkitBlockFace.toNukkitOrNull(face);
+		if (nukkitFace == null) {
+			return false;
+		}
+		cn.nukkit.block.Block neighbour = nukkit().getSide(nukkitFace);
+		return neighbour.getStrongPower(nukkitFace.getOpposite()) > 0;
 	}
 
 	@Override
 	public boolean isBlockFacePowered(BlockFace face) {
-		return isBlockPowered();
+		return getBlockPower(face) > 0;
 	}
 
 	@Override
@@ -327,31 +355,125 @@ public final class PokkitBlock implements Block {
 	}
 
 	@Override
-	public RayTraceResult rayTrace(Location location, Vector vector, double v, FluidCollisionMode fluidCollisionMode) {
-		return null;
+	public RayTraceResult rayTrace(Location location, Vector direction, double maxDistance,
+			FluidCollisionMode fluidCollisionMode) {
+		Objects.requireNonNull(location, "location");
+		Objects.requireNonNull(direction, "direction");
+		Objects.requireNonNull(fluidCollisionMode, "fluidCollisionMode");
+		if (maxDistance < 0) {
+			throw new IllegalArgumentException("maxDistance must not be negative");
+		}
+		if (fluidCollisionMode == FluidCollisionMode.NEVER && isLiquid()) {
+			// The caller does not want to hit fluids.
+			return null;
+		}
+
+		BoundingBox box = getBoundingBox();
+		if (box.getWidthX() <= 0 || box.getHeight() <= 0 || box.getWidthZ() <= 0) {
+			// Air and other blocks without a collision box cannot be hit.
+			return null;
+		}
+		if (direction.lengthSquared() == 0) {
+			return null;
+		}
+		Vector ray = direction.clone().normalize();
+
+		double[] origin = { location.getX(), location.getY(), location.getZ() };
+		double[] delta = { ray.getX(), ray.getY(), ray.getZ() };
+		double[] min = { box.getMinX(), box.getMinY(), box.getMinZ() };
+		double[] max = { box.getMaxX(), box.getMaxY(), box.getMaxZ() };
+		BlockFace[] negativeFaces = { BlockFace.WEST, BlockFace.DOWN, BlockFace.NORTH };
+		BlockFace[] positiveFaces = { BlockFace.EAST, BlockFace.UP, BlockFace.SOUTH };
+
+		// Slab method: clip the ray against the three axis-aligned slabs of
+		// the bounding box and keep the last entry and first exit point.
+		double enter = 0.0D;
+		double exit = maxDistance;
+		BlockFace hitFace = null;
+		for (int axis = 0; axis < 3; axis++) {
+			if (Math.abs(delta[axis]) < 1.0E-9D) {
+				if (origin[axis] < min[axis] || origin[axis] > max[axis]) {
+					return null;
+				}
+				continue;
+			}
+			double near = (min[axis] - origin[axis]) / delta[axis];
+			double far = (max[axis] - origin[axis]) / delta[axis];
+			BlockFace nearFace = negativeFaces[axis];
+			BlockFace farFace = positiveFaces[axis];
+			if (near > far) {
+				double swap = near;
+				near = far;
+				far = swap;
+				BlockFace swapFace = nearFace;
+				nearFace = farFace;
+				farFace = swapFace;
+			}
+			if (near > enter) {
+				enter = near;
+				hitFace = nearFace;
+			}
+			if (far < exit) {
+				exit = far;
+			}
+			if (enter > exit) {
+				return null;
+			}
+		}
+		if (enter > maxDistance || exit < 0) {
+			return null;
+		}
+
+		Vector hitPosition = new Vector(origin[0] + delta[0] * enter, origin[1] + delta[1] * enter,
+				origin[2] + delta[2] * enter);
+		return new RayTraceResult(hitPosition, this, hitFace);
 	}
 
 	@Override
 	public boolean canPlace(BlockData blockData) {
-		cn.nukkit.block.Block nukkitBlock = PokkitBlockData.toNukkit(blockData);
-		return nukkitBlock.canPlaceOn(nukkit(), Position.fromObject(nukkit(), nukkit().getLevel()));
+		Objects.requireNonNull(blockData, "blockData");
+		cn.nukkit.block.Block current = nukkit();
+		if (!current.canBeReplaced()) {
+			// Something solid is already occupying this position.
+			return false;
+		}
+		cn.nukkit.level.Level level = current.getLevel();
+		if (level == null) {
+			return false;
+		}
+		// canPlaceOn checks whether the block can be placed on the support
+		// below this position, which is what "can this data be placed here"
+		// means for most blocks.
+		cn.nukkit.block.Block placed = PokkitBlockData.toNukkit(blockData);
+		cn.nukkit.block.Block support = current.getSide(cn.nukkit.math.BlockFace.DOWN);
+		return placed.canPlaceOn(support, Position.fromObject(current, level));
 	}
 
 	@Override
 	public BoundingBox getBoundingBox() {
-		return new BoundingBox(nukkit().getBoundingBox().getMinX(), nukkit().getBoundingBox().getMinY(), nukkit().getBoundingBox().getMinZ(), nukkit().getBoundingBox().getMaxX(), nukkit().getBoundingBox().getMaxY(), nukkit().getBoundingBox().getMaxZ());
+		cn.nukkit.math.AxisAlignedBB box = nukkit().getBoundingBox();
+		if (box == null) {
+			// Air, plants and other blocks without a collision box have no
+			// bounding box in Nukkit. Return an empty box at the block
+			// position instead of throwing a NullPointerException.
+			return new BoundingBox(getX(), getY(), getZ(), getX(), getY(), getZ());
+		}
+		return new BoundingBox(box.getMinX(), box.getMinY(), box.getMinZ(), box.getMaxX(), box.getMaxY(),
+				box.getMaxZ());
 	}
 
 	@Override
 	public org.bukkit.util.VoxelShape getCollisionShape() {
+		BoundingBox box = getBoundingBox();
+		boolean empty = box.getWidthX() <= 0 || box.getHeight() <= 0 || box.getWidthZ() <= 0;
 		return new org.bukkit.util.VoxelShape() {
 			@Override
 			public java.util.Collection<org.bukkit.util.BoundingBox> getBoundingBoxes() {
-				return java.util.Collections.singletonList(getBoundingBox());
+				return empty ? java.util.Collections.emptyList() : java.util.Collections.singletonList(box);
 			}
 			@Override
 			public boolean overlaps(org.bukkit.util.BoundingBox boundingBox) {
-				return getBoundingBox().overlaps(boundingBox);
+				return !empty && box.overlaps(boundingBox);
 			}
 		};
 	}

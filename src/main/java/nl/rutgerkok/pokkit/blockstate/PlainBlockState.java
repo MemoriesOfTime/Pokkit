@@ -5,8 +5,6 @@ import org.bukkit.block.BlockState;
 
 import nl.rutgerkok.pokkit.blockdata.PokkitBlockData;
 
-import cn.nukkit.nbt.tag.CompoundTag;
-
 final class PlainBlockState extends PokkitBlockState {
 
 	PlainBlockState(Location locationOrNull, PokkitBlockData materialData) {
@@ -14,7 +12,7 @@ final class PlainBlockState extends PokkitBlockState {
 	}
 
 	@Override
-	public void saveToTag(CompoundTag tag) {
+	public void saveToTag(cn.nukkit.nbt.tag.CompoundTag tag) {
 		// Empty!
 	}
 

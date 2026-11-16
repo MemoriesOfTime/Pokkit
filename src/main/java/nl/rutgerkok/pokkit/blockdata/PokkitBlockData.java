@@ -3,6 +3,7 @@ package nl.rutgerkok.pokkit.blockdata;
 import java.util.Objects;
 
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
@@ -15,8 +16,11 @@ import org.bukkit.inventory.ItemStack;
 
 import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.blockstate.PokkitBlockState;
+import nl.rutgerkok.pokkit.world.PokkitBlock;
+import nl.rutgerkok.pokkit.world.PokkitBlockFace;
 
 import cn.nukkit.block.Block;
+import cn.nukkit.level.Position;
 import cn.nukkit.utils.BlockColor;
 
 /**
@@ -264,12 +268,52 @@ public class PokkitBlockData implements BlockData {
 
 	@Override
 	public void mirror(Mirror mirror) {
-		// Bedrock does not expose block states, so there is nothing to mirror.
+		Objects.requireNonNull(mirror, "mirror");
+		if (mirror == Mirror.NONE || !(block instanceof cn.nukkit.block.BlockStairs)) {
+			// Bedrock only stores a facing for stairs; other blocks would need
+			// a full block state implementation.
+			return;
+		}
+		int data = block.getDamage();
+		int top = data & 0x4;
+		int facing = data & 0x3;
+		int mirrored = switch (mirror) {
+		case LEFT_RIGHT -> switch (facing) {
+			case 1 -> 3;
+			case 3 -> 1;
+			default -> facing;
+		};
+		case FRONT_BACK -> switch (facing) {
+			case 0 -> 2;
+			case 2 -> 0;
+			default -> facing;
+		};
+		default -> facing;
+		};
+		block.setDamage(top | mirrored);
 	}
 
 	@Override
 	public void rotate(StructureRotation rotation) {
-		// Bedrock does not expose block states, so there is nothing to rotate.
+		Objects.requireNonNull(rotation, "rotation");
+		if (rotation == StructureRotation.NONE || !(block instanceof cn.nukkit.block.BlockStairs)) {
+			// Bedrock only stores a facing for stairs; other blocks would need
+			// a full block state implementation.
+			return;
+		}
+		// Bedrock stairs store their facing as 0 = south, 1 = west, 2 = north,
+		// 3 = east, with bit 2 marking an upside-down stair. A clockwise
+		// quarter turn therefore adds one to the facing.
+		int turns = switch (rotation) {
+		case CLOCKWISE_90 -> 1;
+		case CLOCKWISE_180 -> 2;
+		case COUNTERCLOCKWISE_90 -> 3;
+		default -> 0;
+		};
+		int data = block.getDamage();
+		int top = data & 0x4;
+		int facing = (data + turns) & 0x3;
+		block.setDamage(top | facing);
 	}
 
 	@Override
@@ -279,9 +323,9 @@ public class PokkitBlockData implements BlockData {
 
 	@Override
 	public org.bukkit.SoundGroup getSoundGroup() {
-		// Nukkit does not expose the sound group of a block. Returning null
-		// would cause a NullPointerException in the caller.
-		throw Pokkit.unsupported();
+		// Nukkit does not expose the sound category of a block, so a coarse
+		// group is derived from the material name.
+		return PokkitSoundGroup.of(getMaterial());
 	}
 
 	@Override
@@ -319,26 +363,38 @@ public class PokkitBlockData implements BlockData {
 	}
 
 	@Override
-	public boolean isSupported(org.bukkit.block.Block block) {
-		Objects.requireNonNull(block, "block");
-		return isSupported(block.getLocation());
+	public boolean isSupported(org.bukkit.block.Block bukkitBlock) {
+		Objects.requireNonNull(bukkitBlock, "block");
+		return isSupported(bukkitBlock.getLocation());
 	}
 
 	@Override
-	public boolean isSupported(org.bukkit.Location location) {
-		// Nukkit has no generic "can this block be placed here" check, other
-		// than the placement rules of the block itself.
-		throw Pokkit.unsupported();
+	public boolean isSupported(Location location) {
+		Objects.requireNonNull(location, "location");
+		org.bukkit.block.Block bukkitBlock = location.getBlock();
+		if (!(bukkitBlock instanceof PokkitBlock)) {
+			return false;
+		}
+		cn.nukkit.block.Block nukkitBlock = PokkitBlock.toNukkit(bukkitBlock);
+		cn.nukkit.level.Level level = nukkitBlock.getLevel();
+		if (level == null || !nukkitBlock.canBeReplaced()) {
+			return false;
+		}
+		cn.nukkit.block.Block support = nukkitBlock.getSide(cn.nukkit.math.BlockFace.DOWN);
+		return block.canPlaceOn(support, Position.fromObject(nukkitBlock, level));
 	}
 
 	@Override
 	public boolean isFaceSturdy(BlockFace face, BlockSupport support) {
 		Objects.requireNonNull(face, "face");
 		Objects.requireNonNull(support, "support");
-		if (support != BlockSupport.FULL) {
-			throw Pokkit.unsupported();
+		cn.nukkit.math.BlockFace nukkitFace = PokkitBlockFace.toNukkitOrNull(face);
+		if (nukkitFace == null) {
+			return false;
 		}
-		return block.isSolid(cn.nukkit.math.BlockFace.valueOf(face.name()));
+		// Nukkit has no notion of center/rigid side support, so the full-face
+		// check is used for every support type.
+		return block.isSolid(nukkitFace);
 	}
 
 	@Override

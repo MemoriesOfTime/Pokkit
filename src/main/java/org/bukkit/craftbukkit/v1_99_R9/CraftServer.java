@@ -205,6 +205,10 @@ public final class CraftServer extends Server.Spigot implements Server {
 			registry = PokkitRegistries.createMusicInstrumentRegistry();
 		} else if (type == org.bukkit.damage.DamageType.class) {
 			registry = PokkitRegistries.createDamageTypeRegistry();
+		} else if (type == org.bukkit.potion.PotionEffectType.class) {
+			// Must be lazy: PotionEffectType's static initialiser fills this
+			// registry while the class is still being initialised.
+			registry = PokkitRegistries.createPotionEffectTypeRegistry();
 		} else {
 			registry = new PokkitRegistry<>();
 		}
@@ -591,6 +595,23 @@ public final class CraftServer extends Server.Spigot implements Server {
 		return pluginManager;
 	}
 
+	/**
+	 * Returns the command map, like CraftBukkit does.
+	 *
+	 * <p>
+	 * Bukkit's {@link org.bukkit.Server} interface does not declare this
+	 * method, but several plugins look it up on the concrete server class at
+	 * runtime. Command frameworks such as ACF (used by Multiverse-Core) call
+	 * {@code CraftServer#getCommandMap()} reflectively to inject their
+	 * commands, so the method has to exist here.
+	 * </p>
+	 *
+	 * @return The command map.
+	 */
+	public SimpleCommandMap getCommandMap() {
+		return commandMap;
+	}
+
 	@Override
 	public int getPort() {
 		return nukkit.getPort();
@@ -891,10 +912,26 @@ public final class CraftServer extends Server.Spigot implements Server {
 	@Override
 	public boolean unloadWorld(World world, boolean save) {
 		Level level = PokkitWorld.toNukkit(world);
-		if (save) {
-			level.save(true);
+		if (level == null) {
+			return false;
 		}
-		return nukkit.unloadLevel(level, true);
+		if (level.getProvider() == null) {
+			// The level is already closed. Plugins such as Multiverse-Core
+			// unload and delete a world in separate steps, which used to end in
+			// a confusing "already closed (have no providers)" error.
+			return true;
+		}
+		try {
+			if (save) {
+				level.save(true);
+			}
+			return nukkit.unloadLevel(level, true);
+		} catch (RuntimeException e) {
+			// Log the stack trace here: plugins such as Multiverse-Core only
+			// report the message, which hides where the failure came from.
+			logger.log(java.util.logging.Level.WARNING, "Could not unload world " + world.getName(), e);
+			throw e;
+		}
 	}
 
 	@Override

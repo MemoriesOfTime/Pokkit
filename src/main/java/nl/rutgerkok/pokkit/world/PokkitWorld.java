@@ -94,6 +94,9 @@ public final class PokkitWorld implements World {
 
 	private final World.Spigot spigot;
 	private final Level nukkit;
+	private final String name;
+	private cn.nukkit.level.Position spawnPositionCache;
+	private Long seedCache;
 	private final Map<Long, Set<Plugin>> pluginChunkTickets = new HashMap<>();
 	private final Set<Long> forceLoadedChunks = new HashSet<>();
 
@@ -110,6 +113,14 @@ public final class PokkitWorld implements World {
 				return strike(loc, true);
 			}
 		};
+		// Keep a copy: Nukkit reads both values from the level provider, which
+		// is closed once the world has been unloaded, and plugins such as
+		// Multiverse-Core read them while removing the world. The position is
+		// stored in Nukkit form: converting it here would call back into this
+		// constructor through PokkitLocation#toBukkit.
+		this.name = nukkit.getName();
+		this.seedCache = nukkit.getSeed();
+		this.spawnPositionCache = nukkit.getSpawnLocation();
 	}
 
 	@Override
@@ -452,17 +463,19 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public Block getHighestBlockAt(Location location) {
-		return PokkitBlock.toBukkit(nukkit.getBlock(new Vector3(location.getX(), getHighestBlockYAt(location.getBlockX(), location.getBlockZ()), location.getZ())));
+		return PokkitBlock.toBukkit(nukkit.getBlock(
+				new Vector3(location.getX(), getHighestBlockYAt(location.getBlockX(), location.getBlockZ()),
+						location.getZ())));
 	}
 
 	@Override
 	public int getHighestBlockYAt(int x, int z, HeightMap heightMap) {
-		return nukkit.getHighestBlockAt(x, z);
+		return highestBlockY(x, z);
 	}
 
 	@Override
 	public int getHighestBlockYAt(Location location, HeightMap heightMap) {
-		return nukkit.getHighestBlockAt(location.getBlockX(), location.getBlockZ());
+		return highestBlockY(location.getBlockX(), location.getBlockZ());
 	}
 
 	@Override
@@ -477,12 +490,45 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public int getHighestBlockYAt(int x, int z) {
-		return nukkit.getHighestBlockAt(x, z);
+		return highestBlockY(x, z);
 	}
 
 	@Override
 	public int getHighestBlockYAt(Location location) {
-		return nukkit.getHighestBlockAt(location.getBlockX(), location.getBlockZ());
+		return highestBlockY(location.getBlockX(), location.getBlockZ());
+	}
+
+	/**
+	 * Returns the highest non-air block in the column, loading (and generating)
+	 * the chunk if necessary.
+	 *
+	 * <p>
+	 * Nukkit skips unloaded chunks and reports the minimum build height for
+	 * them, which made plugins that look for a safe spawn (Multiverse-Core, for
+	 * example) believe the whole world was empty.
+	 * </p>
+	 *
+	 * @param x
+	 *            X coordinate.
+	 * @param z
+	 *            Z coordinate.
+	 * @return The y coordinate of the highest block.
+	 */
+	private int highestBlockY(int x, int z) {
+		cn.nukkit.level.format.generic.BaseFullChunk chunk = nukkit.getChunk(x >> 4, z >> 4);
+		int minHeight = nukkit.getDimensionData().getMinHeight();
+		if (chunk == null) {
+			return minHeight;
+		}
+		// Scanning the column is more reliable than Nukkit's height map, which
+		// is not filled in for every generated chunk (flat worlds in
+		// particular) and then reports the minimum height for the whole column.
+		for (int y = nukkit.getDimensionData().getMaxHeight() - 1; y >= minHeight; y--) {
+			if (chunk.getBlockIdAt(x & 15, y, z & 15) != 0) {
+				return y;
+			}
+		}
+		return minHeight;
 	}
 
 	@Override
@@ -504,7 +550,8 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public boolean getKeepSpawnInMemory() {
-		return nukkit.isSpawnChunk(nukkit.getSpawnLocation().getChunkX(), nukkit.getSpawnLocation().getChunkZ());
+		Location spawn = getSpawnLocation();
+		return nukkit.isSpawnChunk(spawn.getBlockX() >> 4, spawn.getBlockZ() >> 4);
 	}
 
 	@Override
@@ -555,7 +602,9 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public String getName() {
-		return nukkit.getName();
+		// Level#getName reads the level provider as well, so it cannot be
+		// called after the world has been unloaded.
+		return name;
 	}
 
 	@Override
@@ -724,12 +773,23 @@ public final class PokkitWorld implements World {
 
 	@Override
 	public long getSeed() {
-		return nukkit.getSeed();
+		// Like the spawn location, Nukkit reads the seed from the level
+		// provider, which is closed after the world has been unloaded.
+		if (seedCache == null || nukkit.getProvider() != null) {
+			seedCache = nukkit.getSeed();
+		}
+		return seedCache;
 	}
 
 	@Override
 	public Location getSpawnLocation() {
-		return PokkitLocation.toBukkit(nukkit.getSpawnLocation());
+		// Nukkit's getSpawnLocation reads the level provider, which is closed
+		// once the world has been unloaded. Multiverse-Core reads the spawn
+		// while it removes the world, so the last known value is cached.
+		if (spawnPositionCache == null || nukkit.getProvider() != null) {
+			spawnPositionCache = nukkit.getSpawnLocation();
+		}
+		return new Location(this, spawnPositionCache.x, spawnPositionCache.y, spawnPositionCache.z, 0.0F, 0.0F);
 	}
 
 	@Override
@@ -1211,6 +1271,7 @@ public final class PokkitWorld implements World {
 	@Override
 	public boolean setSpawnLocation(int x, int y, int z) {
 		nukkit.setSpawnLocation(new Vector3(x, y, z));
+		spawnPositionCache = null;
 		return true;
 	}
 
@@ -1220,6 +1281,7 @@ public final class PokkitWorld implements World {
 			return false;
 		}
 		nukkit.setSpawnLocation(PokkitLocation.toNukkit(location));
+		spawnPositionCache = null;
 		return true;
 	}
 
@@ -1739,6 +1801,7 @@ public final class PokkitWorld implements World {
     @Override
     public boolean setSpawnLocation(int p0, int p1, int p2, float p3) {
         nukkit.setSpawnLocation(new Vector3(p0, p1, p2));
+        spawnPositionCache = null;
         return true;
     }
     @Override

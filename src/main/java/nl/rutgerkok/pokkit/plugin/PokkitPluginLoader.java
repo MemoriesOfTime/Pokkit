@@ -93,8 +93,53 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 
 	@Override
 	public void enablePlugin(Plugin plugin) {
-		getPluginLoader().enablePlugin(PokkitPlugin.toBukkit(plugin));
+		org.bukkit.plugin.Plugin bukkitPlugin = PokkitPlugin.toBukkit(plugin);
+		if (failedPlugins.contains(bukkitPlugin.getName())) {
+			// Disabling a plugin closes its class loader, so enabling it again
+			// only produces a confusing "zip file closed" error. Real servers
+			// leave a plugin that failed to enable disabled as well.
+			return;
+		}
+		if (hasClosedClassLoader(bukkitPlugin)) {
+			// Nukkit disables a plugin when its loader throws, which closes the
+			// class loader. Do not touch the plugin again in that case.
+			failedPlugins.add(bukkitPlugin.getName());
+			return;
+		}
+		try {
+			getPluginLoader().enablePlugin(bukkitPlugin);
+		} catch (RuntimeException | Error e) {
+			// JavaPluginLoader catches exceptions from onEnable and leaves the
+			// plugin marked as enabled, so Nukkit will not retry those. Errors
+			// that escape (a closed jar, for example) end up here.
+			failedPlugins.add(bukkitPlugin.getName());
+			throw e;
+		}
 	}
+
+	/**
+	 * Checks whether the class loader of a Bukkit plugin is already closed.
+	 * {@code JavaPlugin#isEnabled()} cannot be used for this: it is set to
+	 * true before {@code onEnable()} runs.
+	 */
+	private static boolean hasClosedClassLoader(org.bukkit.plugin.Plugin plugin) {
+		if (!(plugin instanceof org.bukkit.plugin.java.JavaPlugin javaPlugin)) {
+			return false;
+		}
+		try {
+			try (InputStream stream = javaPlugin.getResource("plugin.yml")) {
+				return stream == null;
+			}
+		} catch (RuntimeException | java.io.IOException e) {
+			return true;
+		}
+	}
+
+	/**
+	 * Names of plugins that failed to enable. Their class loader is closed, so
+	 * they must not be enabled a second time.
+	 */
+	private final Set<String> failedPlugins = ConcurrentHashMap.newKeySet();
 
 	@Override
 	public PluginDescription getPluginDescription(File file) {

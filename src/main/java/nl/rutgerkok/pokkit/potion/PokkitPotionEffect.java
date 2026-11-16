@@ -19,10 +19,21 @@ public class PokkitPotionEffect {
 		return nukkitEffect;
 	}
 
-	@SuppressWarnings("deprecation")
+	/**
+	 * Converts a Nukkit effect to a Bukkit effect.
+	 *
+	 * @param nukkitEffect
+	 *            The Nukkit effect.
+	 * @return The Bukkit effect, or null when Bukkit has no equivalent for the
+	 *         Bedrock effect (fatal poison, for example).
+	 */
 	public static PotionEffect toBukkit(cn.nukkit.potion.Effect nukkitEffect) {
+		PotionEffectType type = PokkitPotionEffectType.fromNukkitId(nukkitEffect.getId());
+		if (type == null) {
+			return null;
+		}
 		return new PotionEffect(
-			PotionEffectType.getById(nukkitEffect.getId()),
+			type,
 			nukkitEffect.getDuration(),
 			nukkitEffect.getAmplifier(),
 			nukkitEffect.isAmbient(),

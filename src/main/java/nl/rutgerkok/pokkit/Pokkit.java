@@ -112,12 +112,36 @@ public final class Pokkit {
 		services.forEach(service -> service.onDisable(plugin));
 	}
 
+	/**
+	 * Registers the JDBC drivers that are shaded into this jar.
+	 *
+	 * <p>
+	 * Spigot ships the SQLite and MySQL drivers on the server class path, so
+	 * plugins simply call {@code DriverManager.getConnection(...)}. The
+	 * {@link java.sql.DriverManager} only discovers drivers through the system
+	 * class loader, which cannot see the drivers inside this plugin jar, so
+	 * they have to be registered explicitly.
+	 * </p>
+	 */
+	private static void registerJdbcDrivers() {
+		for (String driver : new String[] { "org.sqlite.JDBC", "com.mysql.cj.jdbc.Driver" }) {
+			try {
+				Class.forName(driver, true, Pokkit.class.getClassLoader());
+			} catch (ClassNotFoundException e) {
+				// The driver is optional; a plugin that needs it reports its
+				// own error.
+			}
+		}
+	}
+
 	public void onEnable(PluginBase plugin) {
 		services.forEach(service -> service.onEnable(plugin));
 	}
 
 	public void onLoad(PluginBase plugin) {
 		VERSION = plugin.getDescription().getVersion();
+
+		registerJdbcDrivers();
 
 		File pluginFolder = new File(plugin.getDataFolder(), "bukkitPlugins");
 		if (!pluginFolder.exists()) {

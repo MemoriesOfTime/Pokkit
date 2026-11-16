@@ -40,14 +40,86 @@ public abstract class PokkitBlockState implements BlockState {
 
 		PokkitBlockData blockData = (PokkitBlockData) block.getBlockData();
 		Location location = block.getLocation();
+		Material type = blockData.getMaterial();
+		String materialName = type.name();
+
+		if (blockEntityOrNull == null && (materialName.endsWith("_SIGN") || materialName.endsWith("_WALL_SIGN"))
+				&& nukkitBlock instanceof cn.nukkit.block.BlockEntityHolder<?> holder) {
+			// Signs placed through Block#setType have no block entity yet.
+			blockEntityOrNull = holder.getOrCreateBlockEntity();
+		}
 
 		if (blockEntityOrNull instanceof BlockEntitySign) {
 			String hiddenData = blockEntityOrNull.namedTag.getString(Pokkit.NAME);
-			return new SignBlockState(location, blockData, ((BlockEntitySign) blockEntityOrNull).getText(),
-					hiddenData, ((BlockEntitySign) blockEntityOrNull).getColor(), blockEntityOrNull.namedTag);
+			String[] lines = ((BlockEntitySign) blockEntityOrNull).getText();
+			String[] backLines = SignBlockState.readBackLines(blockEntityOrNull.namedTag);
+			if (materialName.contains("HANGING_SIGN")) {
+				return new HangingSignBlockState(location, blockData, lines, backLines, hiddenData,
+						((BlockEntitySign) blockEntityOrNull).getColor(), blockEntityOrNull.namedTag);
+			}
+			return new SignBlockState(location, blockData, lines, backLines, hiddenData,
+					((BlockEntitySign) blockEntityOrNull).getColor(), blockEntityOrNull.namedTag);
 		}
 
-		return new PlainBlockState(location, blockData);
+		if (materialName.endsWith("SHULKER_BOX")) {
+			return new ShulkerBoxBlockState(location, blockData);
+		}
+		if (materialName.endsWith("_BED")) {
+			return new BedBlockState(location, blockData);
+		}
+		if (materialName.endsWith("_BANNER")) {
+			return new BannerBlockState(location, blockData);
+		}
+		if ((materialName.endsWith("_HEAD") && !materialName.equals("PISTON_HEAD"))
+				|| materialName.endsWith("_SKULL")) {
+			return new SkullBlockState(location, blockData);
+		}
+		if (materialName.equals("BEEHIVE") || materialName.equals("BEE_NEST")) {
+			return new BeehiveBlockState(location, blockData);
+		}
+
+		switch (type) {
+		case CHEST:
+		case TRAPPED_CHEST:
+			return new ChestBlockState(location, blockData);
+		case BARREL:
+			return new BarrelBlockState(location, blockData);
+		case HOPPER:
+			return new HopperBlockState(location, blockData);
+		case DROPPER:
+			return new DropperBlockState(location, blockData);
+		case DISPENSER:
+			return new DispenserBlockState(location, blockData);
+		case ENDER_CHEST:
+			return new EnderChestBlockState(location, blockData);
+		case LECTERN:
+			return new LecternBlockState(location, blockData);
+		case BEACON:
+			return new BeaconBlockState(location, blockData);
+		case FURNACE:
+			return new FurnaceBlockState(location, blockData);
+		case BLAST_FURNACE:
+			return new BlastFurnaceBlockState(location, blockData);
+		case SMOKER:
+			return new SmokerBlockState(location, blockData);
+		case BREWING_STAND:
+			return new BrewingStandBlockState(location, blockData);
+		case CAMPFIRE:
+		case SOUL_CAMPFIRE:
+			return new CampfireBlockState(location, blockData);
+		case DAYLIGHT_DETECTOR:
+			return new DaylightDetectorBlockState(location, blockData);
+		case ENCHANTING_TABLE:
+			return new EnchantingTableBlockState(location, blockData);
+		case JIGSAW:
+			return new JigsawBlockState(location, blockData);
+		case BELL:
+			return new BellBlockState(location, blockData);
+		case CONDUIT:
+			return new ConduitBlockState(location, blockData);
+		default:
+			return new PlainBlockState(location, blockData);
+		}
 	}
 
 	public static BlockState fromBlockData(PokkitBlockData blockData) {
@@ -70,7 +142,8 @@ public abstract class PokkitBlockState implements BlockState {
 			String[] lines = new String[] { tag.getString("Text1"), tag.getString("Text2"), tag.getString("Text3"),
 					tag.getString("Text4") };
 			String hiddenData = tag.getString(Pokkit.NAME);
-			return new SignBlockState(null, materialData, lines, hiddenData, null, tag);
+			return new SignBlockState(null, materialData, lines, SignBlockState.readBackLines(tag), hiddenData, null,
+					tag);
 		}
 
 		return new PlainBlockState(null, materialData);
@@ -210,6 +283,16 @@ public abstract class PokkitBlockState implements BlockState {
 	 */
 	public abstract void saveToTag(CompoundTag tag);
 
+	/**
+	 * Writes this state to the given block entity.
+	 *
+	 * @param blockEntity
+	 *            The block entity.
+	 */
+	public void saveToBlockEntity(BlockEntity blockEntity) {
+		saveToTag(blockEntity.namedTag);
+	}
+
 	@Override
 	public void setBlockData(BlockData data) {
 		this.blockData = (PokkitBlockData) Objects.requireNonNull(data, "data");
@@ -266,7 +349,7 @@ public abstract class PokkitBlockState implements BlockState {
 		}
 
 		// Update NBT data
-		saveToTag(blockEntity.namedTag);
+		saveToBlockEntity(blockEntity);
 		if (!(blockEntity instanceof BlockEntitySpawnable)) {
 			if (blockEntity.chunk != null) {
 				blockEntity.chunk.setChanged();

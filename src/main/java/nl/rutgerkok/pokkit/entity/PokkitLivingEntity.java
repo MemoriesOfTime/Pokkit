@@ -108,7 +108,12 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 	public Collection<PotionEffect> getActivePotionEffects() {
 		List<PotionEffect> effects = new ArrayList<>();
 		for (cn.nukkit.potion.Effect eff : nukkit.getEffects().values()) {
-			effects.add(PokkitPotionEffect.toBukkit(eff));
+			PotionEffect effect = PokkitPotionEffect.toBukkit(eff);
+			if (effect != null) {
+				// Bedrock-only effects, such as fatal poison, have no Bukkit
+				// equivalent and are skipped.
+				effects.add(effect);
+			}
 		}
 		return effects;
 	}
@@ -269,7 +274,11 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 
 	@Override
 	public PotionEffect getPotionEffect(PotionEffectType type) {
-		cn.nukkit.potion.Effect nukkitEffect = nukkit.getEffect(type.getId());
+		int nukkitId = PokkitPotionEffectType.toNukkitId(type);
+		if (nukkitId <= 0) {
+			return null;
+		}
+		cn.nukkit.potion.Effect nukkitEffect = nukkit.getEffect(nukkitId);
 		if (nukkitEffect == null) {
 			return null;
 		}
@@ -329,9 +338,12 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 
 	@Override
 	public boolean hasPotionEffect(PotionEffectType potionEffect) {
-		Effect nukkitEffect = PokkitPotionEffectType.toNukkit(potionEffect);
+		int nukkitId = PokkitPotionEffectType.toNukkitId(potionEffect);
+		if (nukkitId <= 0) {
+			return false;
+		}
 		for (cn.nukkit.potion.Effect eff : nukkit.getEffects().values()) {
-			if (eff.getId() == nukkitEffect.getId()) {
+			if (eff.getId() == nukkitId) {
 				return true;
 			}
 		}
@@ -534,7 +546,10 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 
 	@Override
 	public void removePotionEffect(PotionEffectType type) {
-		nukkit.removeEffect(type.getId());
+		int nukkitId = PokkitPotionEffectType.toNukkitId(type);
+		if (nukkitId > 0) {
+			nukkit.removeEffect(nukkitId);
+		}
 	}
 
     @Override
