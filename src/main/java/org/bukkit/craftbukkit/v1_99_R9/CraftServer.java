@@ -577,6 +577,19 @@ public final class CraftServer extends Server.Spigot implements Server {
 
 	@Override
 	public Player getPlayer(UUID uuid) {
+		if (uuid == null) {
+			return null;
+		}
+		// Bukkit players get a UUID derived from their name (see
+		// PokkitPlayer#getUniqueId), but Nukkit keys its online players by the
+		// UUID from the login chain. Accept both, otherwise
+		// Bukkit.getPlayer(player.getUniqueId()) returns null for every player,
+		// which breaks plugin lookups for Bedrock players.
+		for (cn.nukkit.Player player : nukkit.getOnlinePlayers().values()) {
+			if (uuid.equals(UniqueIdConversion.playerNameToId(player.getName()))) {
+				return PokkitPlayer.toBukkit(player);
+			}
+		}
 		return PokkitPlayer.toBukkit(nukkit.getOnlinePlayers().get(uuid));
 	}
 

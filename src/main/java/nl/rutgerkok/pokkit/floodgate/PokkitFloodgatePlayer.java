@@ -1,6 +1,7 @@
 package nl.rutgerkok.pokkit.floodgate;
 
 import cn.nukkit.Player;
+import nl.rutgerkok.pokkit.UniqueIdConversion;
 import org.geysermc.floodgate.api.player.FloodgatePlayer;
 import org.geysermc.floodgate.api.player.PropertyKey;
 import org.geysermc.floodgate.util.DeviceOs;
@@ -34,14 +35,22 @@ public final class PokkitFloodgatePlayer implements FloodgatePlayer {
 		return nukkitPlayer.getName();
 	}
 
+	/**
+	 * Returns the UUID that Bukkit plugins see for this player.
+	 * <p>
+	 * This must be the same UUID that {@link PokkitFloodgateApi} uses as its
+	 * lookup key (and that {@code Player#getUniqueId()} returns), otherwise
+	 * {@code FloodgatePlayer#sendForm} and {@code #transfer} - which pass this
+	 * UUID back to the API - cannot find the player.
+	 */
 	@Override
 	public UUID getJavaUniqueId() {
-		return nukkitPlayer.getUniqueId();
+		return UniqueIdConversion.playerNameToId(nukkitPlayer.getName());
 	}
 
 	@Override
 	public UUID getCorrectUniqueId() {
-		return nukkitPlayer.getUniqueId();
+		return getJavaUniqueId();
 	}
 
 	@Override

@@ -295,9 +295,26 @@ public final class PokkitPluginManager implements PluginManager {
 	/**
 	 * Registers a virtual plugin. Used for plugins like Floodgate that Pokkit
 	 * provides API-level support for without an actual Bukkit plugin JAR.
+	 * <p>
+	 * The plugin is also added to the dependency graph used by Bukkit's plugin
+	 * loader, so that other plugins can declare it in {@code depend} or
+	 * {@code softdepend}.
 	 */
 	public void registerVirtualPlugin(Plugin plugin) {
 		virtualPlugins.put(plugin.getName().toLowerCase(), plugin);
+		pluginLoader.registerVirtualPluginForDependencyChecks(plugin);
+	}
+
+	/**
+	 * Checks whether the given plugin is provided by Pokkit itself, without a
+	 * plugin JAR on disk.
+	 *
+	 * @param name
+	 *            The plugin name, case insensitive.
+	 * @return Whether a virtual plugin with this name is registered.
+	 */
+	public boolean isVirtualPlugin(String name) {
+		return name != null && virtualPlugins.containsKey(name.toLowerCase());
 	}
 
 }

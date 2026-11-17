@@ -81,11 +81,15 @@ public final class Pokkit {
 	}
 
 	private final List<PokkitService> services = ImmutableList.of(new MainScoreboardService(), new PermissionsYml(),
+			// Floodgate must be registered before PluginService loads the
+			// Bukkit plugins: those plugins may declare "depend: [floodgate]"
+			// or call FloodgateApi.getInstance() from onLoad/onEnable.
+			new FloodgateService(),
 			new PluginService(), new PlayerBlockEvents(), new PlayerConnectEvents(), new PlayerChatEvents(),
 			new PlayerInteractEvents(), new EntityEvents(), new InventoryEvents(), new PlayerItemConsumeEvents(),
 			new PlayerToggleEvents(), new PlayerLifecycleEvents(), new WorldEvents(),
 			new PlayerBucketEvents(), new VehicleEvents(), new InventoryDragEvents(), new CraftItemEvents(),
-			new FloodgateService(), ChunkPersistentDataStore.getInstance()
+			ChunkPersistentDataStore.getInstance()
 			);
 
 	public Pokkit() {

@@ -20,6 +20,7 @@ import java.lang.reflect.Proxy;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
@@ -157,11 +158,51 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 			Set<String> pluginDependencies = new HashSet<>(description.getDepend());
 			pluginDependencies.addAll(description.getSoftDepend());
 			dependencies.put(description.getName(), pluginDependencies);
+			// The dependency manager is created on the first plugin load, so
+			// the graph it holds was built from the descriptions that were
+			// known back then. Keep it up to date, otherwise isTransitiveDepend
+			// rejects every dependency and JavaPluginLoader logs "loaded class
+			// ... which is not a depend or softdepend of this plugin" for
+			// perfectly legal class sharing.
+			if (dependencyManager != null) {
+				fillDependencyGraph(dependencyManager);
+			}
+			removeVirtualPluginDependencies(description);
 			return description;
 		} catch (Exception e) {
 			Bukkit.getServer().getLogger().log(Level.SEVERE, "Could not load plugin " + file.getName(), e);
 			return null;
 		}
+	}
+
+	/**
+	 * Removes dependencies on plugins that Pokkit provides without a JAR (such
+	 * as Floodgate) from the description that Nukkit reads.
+	 * <p>
+	 * Nukkit's plugin manager only knows real plugin JARs, so it logs
+	 * "Unknown dependency" and refuses to load the plugin otherwise. Bukkit's
+	 * own dependency check still runs, and is satisfied by the virtual plugin
+	 * that {@link #registerVirtualPluginForDependencyChecks} adds.
+	 *
+	 * @param description
+	 *            The description to clean up.
+	 */
+	private static void removeVirtualPluginDependencies(PluginDescription description) {
+		description.getDepend().removeIf(PokkitPluginLoader::isVirtualPlugin);
+		description.getSoftDepend().removeIf(PokkitPluginLoader::isVirtualPlugin);
+		description.getLoadBefore().removeIf(PokkitPluginLoader::isVirtualPlugin);
+	}
+
+	private static boolean isVirtualPlugin(String name) {
+		Server server = Bukkit.getServer();
+		if (server == null || name == null) {
+			return false;
+		}
+		PluginManager manager = server.getPluginManager();
+		// Ask the registry directly instead of going through getPlugin: that
+		// would build a Bukkit adapter for every (not yet loaded) dependency of
+		// every plugin that is being described.
+		return manager instanceof PokkitPluginManager pokkitManager && pokkitManager.isVirtualPlugin(name);
 	}
 
 	@Override
@@ -241,7 +282,11 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 				dependencies.forEach((plugin, pluginDependencies) -> {
 					typedGraph.addNode(plugin);
 					for (String dependency : pluginDependencies) {
-						typedGraph.putEdge(plugin, dependency);
+						// A self-edge is rejected by Guava and would abort the
+						// whole graph build.
+						if (!plugin.equals(dependency)) {
+							typedGraph.putEdge(plugin, dependency);
+						}
 					}
 				});
 			}
@@ -259,21 +304,42 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 	 * @param plugin
 	 *            The plugin that was just loaded.
 	 */
-	@SuppressWarnings("unchecked")
 	private void registerForDependencyChecks(org.bukkit.plugin.Plugin plugin) {
 		if (LOOKUP_NAMES_FIELD == null || PLUGINS_FIELD == null) {
 			return;
 		}
 		try {
+			SimplePluginManager manager = getDependencyManager();
+			@SuppressWarnings("unchecked")
 			Map<String, org.bukkit.plugin.Plugin> lookupNames =
-					(Map<String, org.bukkit.plugin.Plugin>) LOOKUP_NAMES_FIELD.get(dependencyManager);
+					(Map<String, org.bukkit.plugin.Plugin>) LOOKUP_NAMES_FIELD.get(manager);
 			lookupNames.put(plugin.getName().replace(' ', '_'), plugin);
+			@SuppressWarnings("unchecked")
 			List<org.bukkit.plugin.Plugin> plugins =
-					(List<org.bukkit.plugin.Plugin>) PLUGINS_FIELD.get(dependencyManager);
-			plugins.add(plugin);
+					(List<org.bukkit.plugin.Plugin>) PLUGINS_FIELD.get(manager);
+			if (!plugins.contains(plugin)) {
+				plugins.add(plugin);
+			}
 		} catch (ReflectiveOperationException | RuntimeException e) {
 			logWarning("Could not register " + plugin.getName() + " for dependency checks", e);
 		}
+	}
+
+	/**
+	 * Makes a plugin that Pokkit provides without a JAR (such as Floodgate)
+	 * visible to the dependency checks of {@link JavaPluginLoader}.
+	 * <p>
+	 * Without this, a Bukkit plugin that declares {@code depend: [floodgate]}
+	 * fails to load with an {@link org.bukkit.plugin.UnknownDependencyException}
+	 * even though {@link org.bukkit.plugin.PluginManager#getPlugin(String)}
+	 * returns the virtual plugin, because {@link JavaPluginLoader} asks its own
+	 * dependency manager instead of the real plugin manager.
+	 *
+	 * @param plugin
+	 *            The virtual plugin.
+	 */
+	public void registerVirtualPluginForDependencyChecks(org.bukkit.plugin.Plugin plugin) {
+		registerForDependencyChecks(plugin);
 	}
 
 	private static void logWarning(String message, Throwable cause) {

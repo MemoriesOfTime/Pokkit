@@ -61,12 +61,12 @@ public final class PokkitFloodgateApi implements FloodgateApi {
 
 	@Override
 	public boolean isFloodgatePlayer(UUID uuid) {
-		return players.containsKey(uuid);
+		return uuid != null && players.containsKey(uuid);
 	}
 
 	@Override
 	public FloodgatePlayer getPlayer(UUID uuid) {
-		return players.get(uuid);
+		return uuid == null ? null : players.get(uuid);
 	}
 
 	@Override
@@ -80,6 +80,9 @@ public final class PokkitFloodgateApi implements FloodgateApi {
 	}
 
 	private cn.nukkit.Player getNukkitPlayer(UUID uuid) {
+		if (uuid == null) {
+			return null;
+		}
 		FloodgatePlayer fp = players.get(uuid);
 		if (fp instanceof PokkitFloodgatePlayer p) {
 			return p.getNukkitPlayer();
