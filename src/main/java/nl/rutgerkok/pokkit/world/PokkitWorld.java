@@ -416,7 +416,6 @@ public final class PokkitWorld implements World {
 		return getGameRuleValue0(rule, this.nukkit.getGameRules());
 	}
 
-	@Override
 	public String getGameRuleValue(String stringRule) {
 		if (stringRule == null) {
 			return null;
@@ -1219,7 +1218,6 @@ public final class PokkitWorld implements World {
 		return false;
 	}
 
-	@Override
 	public boolean setGameRuleValue(String rule, String value) {
 		cn.nukkit.level.GameRule gameRule = cn.nukkit.level.GameRule.parseString(rule).orElse(null);
 		if (gameRule == null) {
@@ -1360,9 +1358,9 @@ public final class PokkitWorld implements World {
 		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Villager.class, EntityType.VILLAGER);
 		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Rabbit.class, EntityType.RABBIT);
 		CLASS_TO_ENTITY_TYPE.put(org.bukkit.entity.Ocelot.class, EntityType.OCELOT);
-		CLASS_TO_ENTITY_TYPE.put(Boat.class, EntityType.BOAT);
+		CLASS_TO_ENTITY_TYPE.put(Boat.class, EntityType.OAK_BOAT);
 		CLASS_TO_ENTITY_TYPE.put(Minecart.class, EntityType.MINECART);
-		CLASS_TO_ENTITY_TYPE.put(ThrownPotion.class, EntityType.POTION);
+		CLASS_TO_ENTITY_TYPE.put(ThrownPotion.class, EntityType.SPLASH_POTION);
 		CLASS_TO_ENTITY_TYPE.put(ThrownExpBottle.class, EntityType.EXPERIENCE_BOTTLE);
 		CLASS_TO_ENTITY_TYPE.put(TNTPrimed.class, EntityType.TNT);
 		CLASS_TO_ENTITY_TYPE.put(Trident.class, EntityType.TRIDENT);

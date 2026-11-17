@@ -1,5 +1,7 @@
 package nl.rutgerkok.pokkit.world.biome;
 
+import java.util.Objects;
+
 import org.bukkit.block.Biome;
 
 public class PokkitBiome {
@@ -156,105 +158,86 @@ public class PokkitBiome {
     }
 
     public static int toNukkit(Biome biome) {
-        switch (biome) {
-            case OCEAN:
-            case DEEP_OCEAN:
-            case WARM_OCEAN:
-            case LUKEWARM_OCEAN:
-            case COLD_OCEAN:
-            case DEEP_LUKEWARM_OCEAN:
-            case DEEP_COLD_OCEAN:
-            case DEEP_FROZEN_OCEAN:
-                return 0;
-            case PLAINS:
-            case SUNFLOWER_PLAINS:
-                return 1;
-            case DESERT:
-                return 2;
-            case WINDSWEPT_HILLS:
-            case WINDSWEPT_GRAVELLY_HILLS:
-                return 3;
-            case FOREST:
-            case FLOWER_FOREST:
-                return 4;
-            case TAIGA:
-                return 5;
-            case SWAMP:
-                return 6;
-            case RIVER:
-                return 7;
-            case NETHER_WASTES:
-                return 8;
-            case THE_END:
-            case END_BARRENS:
-            case END_HIGHLANDS:
-            case END_MIDLANDS:
-            case SMALL_END_ISLANDS:
-                return 9;
-            case FROZEN_OCEAN:
-                return 10;
-            case FROZEN_RIVER:
-                return 11;
-            case SNOWY_PLAINS:
-            case ICE_SPIKES:
-                return 12;
-            case MUSHROOM_FIELDS:
-                return 14;
-            case BEACH:
-            case STONY_SHORE:
-                return 16;
-            case JUNGLE:
-            case BAMBOO_JUNGLE:
-                return 21;
-            case SPARSE_JUNGLE:
-                return 23;
-            case SNOWY_BEACH:
-                return 26;
-            case BIRCH_FOREST:
-            case OLD_GROWTH_BIRCH_FOREST:
-                return 27;
-            case DARK_FOREST:
-                return 29;
-            case SNOWY_TAIGA:
-                return 30;
-            case OLD_GROWTH_PINE_TAIGA:
-                return 32;
-            case OLD_GROWTH_SPRUCE_TAIGA:
-                return 160;
-            case WINDSWEPT_FOREST:
-                return 34;
-            case SAVANNA:
-                return 35;
-            case WINDSWEPT_SAVANNA:
-                return 163;
-            case BADLANDS:
-            case ERODED_BADLANDS:
-                return 37;
-            case WOODED_BADLANDS:
-                return 38;
-            case MEADOW:
-                return 40;
-            case LUSH_CAVES:
-                return 42;
-            case JAGGED_PEAKS:
-            case FROZEN_PEAKS:
-            case STONY_PEAKS:
-                return 44;
-            case DRIPSTONE_CAVES:
-                return 46;
-            case GROVE:
-            case SNOWY_SLOPES:
-                return 48;
-            case CHERRY_GROVE:
-                return 50;
-            case MANGROVE_SWAMP:
-                return 6;
-            case DEEP_DARK:
-                return 46;
-            case THE_VOID:
-                return 127;
-            default:
-                return 0;
+        Objects.requireNonNull(biome, "biome");
+        if (biome == Biome.OCEAN || biome == Biome.DEEP_OCEAN || biome == Biome.WARM_OCEAN
+                || biome == Biome.LUKEWARM_OCEAN || biome == Biome.COLD_OCEAN
+                || biome == Biome.DEEP_LUKEWARM_OCEAN || biome == Biome.DEEP_COLD_OCEAN
+                || biome == Biome.DEEP_FROZEN_OCEAN) {
+            return 0;
+        } else if (biome == Biome.PLAINS || biome == Biome.SUNFLOWER_PLAINS) {
+            return 1;
+        } else if (biome == Biome.DESERT) {
+            return 2;
+        } else if (biome == Biome.WINDSWEPT_HILLS || biome == Biome.WINDSWEPT_GRAVELLY_HILLS) {
+            return 3;
+        } else if (biome == Biome.FOREST || biome == Biome.FLOWER_FOREST) {
+            return 4;
+        } else if (biome == Biome.TAIGA) {
+            return 5;
+        } else if (biome == Biome.SWAMP) {
+            return 6;
+        } else if (biome == Biome.RIVER) {
+            return 7;
+        } else if (biome == Biome.NETHER_WASTES) {
+            return 8;
+        } else if (biome == Biome.THE_END || biome == Biome.END_BARRENS || biome == Biome.END_HIGHLANDS
+                || biome == Biome.END_MIDLANDS || biome == Biome.SMALL_END_ISLANDS) {
+            return 9;
+        } else if (biome == Biome.FROZEN_OCEAN) {
+            return 10;
+        } else if (biome == Biome.FROZEN_RIVER) {
+            return 11;
+        } else if (biome == Biome.SNOWY_PLAINS || biome == Biome.ICE_SPIKES) {
+            return 12;
+        } else if (biome == Biome.MUSHROOM_FIELDS) {
+            return 14;
+        } else if (biome == Biome.BEACH || biome == Biome.STONY_SHORE) {
+            return 16;
+        } else if (biome == Biome.JUNGLE || biome == Biome.BAMBOO_JUNGLE) {
+            return 21;
+        } else if (biome == Biome.SPARSE_JUNGLE) {
+            return 23;
+        } else if (biome == Biome.SNOWY_BEACH) {
+            return 26;
+        } else if (biome == Biome.BIRCH_FOREST || biome == Biome.OLD_GROWTH_BIRCH_FOREST) {
+            return 27;
+        } else if (biome == Biome.DARK_FOREST) {
+            return 29;
+        } else if (biome == Biome.SNOWY_TAIGA) {
+            return 30;
+        } else if (biome == Biome.OLD_GROWTH_PINE_TAIGA) {
+            return 32;
+        } else if (biome == Biome.OLD_GROWTH_SPRUCE_TAIGA) {
+            return 160;
+        } else if (biome == Biome.WINDSWEPT_FOREST) {
+            return 34;
+        } else if (biome == Biome.SAVANNA) {
+            return 35;
+        } else if (biome == Biome.WINDSWEPT_SAVANNA) {
+            return 163;
+        } else if (biome == Biome.BADLANDS || biome == Biome.ERODED_BADLANDS) {
+            return 37;
+        } else if (biome == Biome.WOODED_BADLANDS) {
+            return 38;
+        } else if (biome == Biome.MEADOW) {
+            return 40;
+        } else if (biome == Biome.LUSH_CAVES) {
+            return 42;
+        } else if (biome == Biome.JAGGED_PEAKS || biome == Biome.FROZEN_PEAKS || biome == Biome.STONY_PEAKS) {
+            return 44;
+        } else if (biome == Biome.DRIPSTONE_CAVES) {
+            return 46;
+        } else if (biome == Biome.GROVE || biome == Biome.SNOWY_SLOPES) {
+            return 48;
+        } else if (biome == Biome.CHERRY_GROVE) {
+            return 50;
+        } else if (biome == Biome.MANGROVE_SWAMP) {
+            return 6;
+        } else if (biome == Biome.DEEP_DARK) {
+            return 46;
+        } else if (biome == Biome.THE_VOID) {
+            return 127;
         }
+        return 0;
     }
 }

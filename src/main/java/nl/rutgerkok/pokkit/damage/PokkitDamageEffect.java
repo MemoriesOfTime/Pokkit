@@ -1,5 +1,7 @@
 package nl.rutgerkok.pokkit.damage;
 
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.damage.DamageEffect;
 
@@ -9,12 +11,16 @@ import org.bukkit.damage.DamageEffect;
  */
 public final class PokkitDamageEffect implements DamageEffect {
 
-	public static final PokkitDamageEffect HURT = new PokkitDamageEffect(Sound.ENTITY_PLAYER_HURT);
-	public static final PokkitDamageEffect THORNS = new PokkitDamageEffect(Sound.ENCHANT_THORNS_HIT);
-	public static final PokkitDamageEffect DROWNING = new PokkitDamageEffect(Sound.ENTITY_PLAYER_HURT_DROWN);
-	public static final PokkitDamageEffect BURNING = new PokkitDamageEffect(Sound.ENTITY_PLAYER_HURT_ON_FIRE);
-	public static final PokkitDamageEffect POKING = new PokkitDamageEffect(Sound.ENTITY_PLAYER_HURT_SWEET_BERRY_BUSH);
-	public static final PokkitDamageEffect FREEZING = new PokkitDamageEffect(Sound.ENTITY_PLAYER_HURT_FREEZE);
+	// Stored as keys instead of Sound constants: loading Sound initializes
+	// Registry, which asks for the damage type registry while it is still
+	// being initialized. Resolving the constants here would then fail with an
+	// ExceptionInInitializerError.
+	public static final PokkitDamageEffect HURT = new PokkitDamageEffect("entity.player.hurt");
+	public static final PokkitDamageEffect THORNS = new PokkitDamageEffect("enchant.thorns.hit");
+	public static final PokkitDamageEffect DROWNING = new PokkitDamageEffect("entity.player.hurt_drown");
+	public static final PokkitDamageEffect BURNING = new PokkitDamageEffect("entity.player.hurt_on_fire");
+	public static final PokkitDamageEffect POKING = new PokkitDamageEffect("entity.player.hurt_sweet_berry_bush");
+	public static final PokkitDamageEffect FREEZING = new PokkitDamageEffect("entity.player.hurt_freeze");
 
 	/**
 	 * Gets the damage effect with the given name.
@@ -45,19 +51,19 @@ public final class PokkitDamageEffect implements DamageEffect {
 		}
 	}
 
-	private final Sound sound;
+	private final String soundKey;
 
-	private PokkitDamageEffect(Sound sound) {
-		this.sound = sound;
+	private PokkitDamageEffect(String soundKey) {
+		this.soundKey = soundKey;
 	}
 
 	@Override
 	public Sound getSound() {
-		return sound;
+		return Registry.SOUNDS.get(NamespacedKey.minecraft(soundKey));
 	}
 
 	@Override
 	public String toString() {
-		return "PokkitDamageEffect{" + sound + "}";
+		return "PokkitDamageEffect{" + soundKey + "}";
 	}
 }

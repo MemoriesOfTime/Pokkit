@@ -7,13 +7,18 @@ import java.util.Objects;
 import java.util.Random;
 
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Registry;
+import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.map.MapCursor;
+
+import nl.rutgerkok.pokkit.Pokkit;
 
 import cn.nukkit.nbt.tag.CompoundTag;
 
@@ -357,6 +362,13 @@ public final class PokkitItemFactory implements ItemFactory {
 			throw new IllegalArgumentException("Unknown material: " + materialKey);
 		}
 		return new ItemStack(material);
+	}
+
+	@Override
+	public ItemStack createExplorerMap(World world, Location location, MapCursor.Type mapIcon) {
+		// Nukkit has no API for locating structures and writing the resulting
+		// map item.
+		throw Pokkit.unsupported();
 	}
 
 }

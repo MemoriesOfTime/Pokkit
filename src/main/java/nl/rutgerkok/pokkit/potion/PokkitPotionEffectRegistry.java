@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -37,6 +38,16 @@ public final class PokkitPotionEffectRegistry implements Registry<PotionEffectTy
 			cache.put(key, created);
 		}
 		return created;
+	}
+
+	@Override
+	public PotionEffectType getOrThrow(NamespacedKey key) {
+		Objects.requireNonNull(key, "key");
+		PotionEffectType value = get(key);
+		if (value == null) {
+			throw new NoSuchElementException("No entry for key " + key);
+		}
+		return value;
 	}
 
 	@Override

@@ -571,4 +571,29 @@ public class PokkitHumanEntity extends PokkitLivingEntity implements HumanEntity
 	public void setUnsaturatedRegenRate(int rate) {
 		nukkit.namedTag.putInt("UnsaturatedRegenRate", rate);
 	}
+
+	@Override
+	public void startRiptideAttack(int riptideLevel, float velocity, ItemStack itemStack) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasCooldown(ItemStack itemStack) {
+		return hasCooldown(itemStack.getType());
+	}
+
+	@Override
+	public int getCooldown(ItemStack itemStack) {
+		return getCooldown(itemStack.getType());
+	}
+
+	@Override
+	public void setCooldown(ItemStack itemStack, int cooldown) {
+		setCooldown(itemStack.getType(), cooldown);
+	}
+
+	@Override
+	public boolean isModelPartShown(org.bukkit.entity.model.PlayerModelPart part) {
+		throw Pokkit.unsupported();
+	}
 }

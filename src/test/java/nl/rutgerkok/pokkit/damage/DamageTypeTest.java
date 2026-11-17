@@ -33,9 +33,9 @@ public class DamageTypeTest {
 			assertNotNull(type.getDeathMessageType());
 			count++;
 		}
-		// DamageType has 46 constants; the static initialiser of DamageType
+		// DamageType has 50 constants; the static initialiser of DamageType
 		// throws when one of them is missing.
-		assertEquals(46, count);
+		assertEquals(50, count);
 	}
 
 	@Test

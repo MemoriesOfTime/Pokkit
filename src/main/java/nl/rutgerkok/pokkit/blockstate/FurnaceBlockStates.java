@@ -22,7 +22,7 @@ import cn.nukkit.blockentity.BlockEntityFurnace;
  * Furnace-like block states. Blast furnaces and smokers share the furnace
  * block entity in Nukkit, so they share the implementation.
  */
-class FurnaceBlockState extends PokkitContainerState implements Furnace {
+class FurnaceBlockState extends PokkitContainerState implements Furnace, PokkitLockable {
 
 	FurnaceBlockState(Location location, PokkitBlockData blockData) {
 		this(location, blockData, BlockEntity.FURNACE, "Furnace");

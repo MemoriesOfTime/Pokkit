@@ -31,6 +31,22 @@ public final class PokkitItemType implements ItemType.Typed<ItemMeta> {
 	}
 
 	@Override
+	public NamespacedKey getKeyOrThrow() {
+		return key;
+	}
+
+	@Override
+	public NamespacedKey getKeyOrNull() {
+		return key;
+	}
+
+	@Override
+	public boolean isRegistered() {
+		// Instances are only handed out by the item registry.
+		return true;
+	}
+
+	@Override
 	public String getTranslationKey() {
 		return "item." + key.getNamespace() + "." + key.getKey();
 	}
@@ -111,14 +127,19 @@ public final class PokkitItemType implements ItemType.Typed<ItemMeta> {
 
 	@Override
 	public int getMaxStackSize() {
-		Material material = asMaterial();
-		return material == null ? 64 : material.getMaxStackSize();
+		// Do not ask Material or Nukkit here: Material delegates back to this
+		// ItemType in 1.21.11, and Nukkit has different stack sizes for some
+		// items (cake, for example, stacks to 64 in Bedrock but to 1 in Java).
+		Integer stackSize = JavaItemData.MAX_STACK_SIZES.get(key.getKey());
+		return stackSize == null ? 64 : stackSize;
 	}
 
 	@Override
 	public short getMaxDurability() {
-		Material material = asMaterial();
-		return material == null ? 0 : material.getMaxDurability();
+		// See getMaxStackSize. Nukkit also stores one more durability point on
+		// many tools, and some newer items are missing from it entirely.
+		Integer durability = JavaItemData.MAX_DURABILITIES.get(key.getKey());
+		return durability == null ? 0 : durability.shortValue();
 	}
 
 	/*

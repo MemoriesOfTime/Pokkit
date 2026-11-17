@@ -35,6 +35,7 @@ public final class PokkitDamageType implements DamageType {
 		add("starve", false, 0.0f, "starve", PokkitDamageEffect.HURT);
 		add("cactus", false, 0.1f, "cactus", PokkitDamageEffect.POKING);
 		add("fall", false, 0.0f, "fall", DeathMessageType.FALL_VARIANTS, PokkitDamageEffect.HURT);
+		add("ender_pearl", false, 0.0f, "fall", DeathMessageType.FALL_VARIANTS, PokkitDamageEffect.HURT);
 		add("fly_into_wall", false, 0.0f, "flyIntoWall", PokkitDamageEffect.HURT);
 		add("out_of_world", false, 0.0f, "outOfWorld", PokkitDamageEffect.HURT);
 		add("generic", false, 0.0f, "generic", PokkitDamageEffect.HURT);
@@ -61,15 +62,18 @@ public final class PokkitDamageType implements DamageType {
 		add("unattributed_fireball", false, 0.1f, "onFire", PokkitDamageEffect.BURNING);
 		add("wither_skull", false, 0.1f, "witherSkull", PokkitDamageEffect.HURT);
 		add("thrown", false, 0.1f, "thrown", PokkitDamageEffect.HURT);
+		add("spear", false, 0.1f, "spear", PokkitDamageEffect.HURT);
 		add("indirect_magic", false, 0.0f, "indirectMagic", PokkitDamageEffect.HURT);
 		add("thorns", false, 0.1f, "thorns", PokkitDamageEffect.THORNS);
 		add("explosion", true, 0.1f, "explosion", PokkitDamageEffect.HURT);
 		add("player_explosion", true, 0.1f, "explosion.player", PokkitDamageEffect.HURT);
 		add("sonic_boom", true, 0.0f, "sonic_boom", PokkitDamageEffect.HURT);
+		add("wind_charge", false, 0.1f, "mob", PokkitDamageEffect.HURT);
 		add("bad_respawn_point", true, 0.1f, "badRespawnPoint", DeathMessageType.INTENTIONAL_GAME_DESIGN,
 				PokkitDamageEffect.HURT);
 		add("outside_border", false, 0.0f, "outsideBorder", PokkitDamageEffect.HURT);
 		add("generic_kill", false, 0.0f, "genericKill", PokkitDamageEffect.HURT);
+		add("mace_smash", false, 0.1f, "mace_smash", PokkitDamageEffect.HURT);
 	}
 
 	private static void add(String key, boolean always, float exhaustion, String messageId, DamageEffect effect) {
@@ -113,6 +117,22 @@ public final class PokkitDamageType implements DamageType {
 	@Override
 	public NamespacedKey getKey() {
 		return key;
+	}
+
+	@Override
+	public NamespacedKey getKeyOrThrow() {
+		return key;
+	}
+
+	@Override
+	public NamespacedKey getKeyOrNull() {
+		return key;
+	}
+
+	@Override
+	public boolean isRegistered() {
+		// Instances are only handed out by the damage type registry.
+		return true;
 	}
 
 	@Override

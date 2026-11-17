@@ -246,6 +246,41 @@ public final class PokkitPotionMeta extends PokkitItemMeta implements PotionMeta
 	}
 
 	@Override
+	public boolean hasCustomName() {
+		return hasDisplayName();
+	}
+
+	@Override
+	public String getCustomName() {
+		return getDisplayName();
+	}
+
+	@Override
+	public void setCustomName(String name) {
+		setDisplayName(name);
+	}
+
+	@Override
+	public boolean hasDurationScale() {
+		return tag.contains("PotionDurationScale");
+	}
+
+	@Override
+	public float getDurationScale() {
+		// Absent means unscaled, matching the default of the component.
+		return tag.contains("PotionDurationScale") ? tag.getFloat("PotionDurationScale") : 1.0f;
+	}
+
+	@Override
+	public void setDurationScale(Float durationScale) {
+		if (durationScale == null) {
+			tag.remove("PotionDurationScale");
+		} else {
+			tag.putFloat("PotionDurationScale", durationScale);
+		}
+	}
+
+	@Override
 	public String getAsComponentString() {
 		// The damage field holds the potion type, not durability, so it must
 		// not be exposed as the minecraft:damage component.

@@ -20,6 +20,7 @@ import java.lang.reflect.Proxy;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -151,7 +152,11 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 			}
 
 			InputStream stream = jar.getInputStream(entry);
-			PluginDescription description = new PokkitPluginDescription(stream);
+			PokkitPluginDescription description = new PokkitPluginDescription(stream);
+			if (!PluginApiVersion.isSupported(description.getDeclaredApiVersion())) {
+				logSevere(unsupportedApiVersionMessage(file, description.getDeclaredApiVersion()));
+				return null;
+			}
 			// Remember the dependencies, so that plugins that depend on each
 			// other can share classes. Like Bukkit, soft dependencies count
 			// for class sharing.
@@ -342,6 +347,48 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 		registerForDependencyChecks(plugin);
 	}
 
+	/**
+	 * Reads the {@code api-version} from a plugin JAR without fully loading it.
+	 *
+	 * @param file
+	 *            The plugin JAR.
+	 * @return The declared API version, or {@code null} if the plugin does not
+	 *         declare one or the file cannot be read.
+	 */
+	private static String readDeclaredApiVersion(File file) {
+		try (JarFile jar = new JarFile(file)) {
+			JarEntry entry = jar.getJarEntry("plugin.yml");
+			if (entry == null) {
+				return null;
+			}
+			try (InputStream stream = jar.getInputStream(entry)) {
+				return new PokkitPluginDescription(stream).getDeclaredApiVersion();
+			}
+		} catch (Exception e) {
+			logWarning("Could not read the api-version of " + file.getName(), e);
+			return null;
+		}
+	}
+
+	private static String unsupportedApiVersionMessage(File file, String declaredApiVersion) {
+		return "Plugin " + file.getName() + " requires Bukkit API " + declaredApiVersion
+				+ ", but Pokkit implements " + PluginApiVersion.SUPPORTED
+				+ ". The plugin was not loaded, because it would fail at runtime.";
+	}
+
+	private static void logSevere(String message) {
+		try {
+			java.util.logging.Logger logger = Bukkit.getLogger();
+			if (logger == null) {
+				logger = java.util.logging.Logger.getLogger("Pokkit");
+			}
+			logger.log(Level.SEVERE, "[Pokkit] " + message);
+		} catch (RuntimeException | LinkageError ignored) {
+			// The Bukkit server may not be available yet during class
+			// initialisation.
+		}
+	}
+
 	private static void logWarning(String message, Throwable cause) {
 		try {
 			java.util.logging.Logger logger = Bukkit.getLogger();
@@ -374,6 +421,14 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 
 	@Override
 	public Plugin loadPlugin(File file) throws Exception {
+		String declaredApiVersion = readDeclaredApiVersion(file);
+		if (!PluginApiVersion.isSupported(declaredApiVersion)) {
+			// Nukkit normally skips the plugin after getPluginDescription
+			// returned null, but loadPlugin may also be called directly.
+			String message = unsupportedApiVersionMessage(file, declaredApiVersion);
+			logSevere(message);
+			throw new InvalidPluginException(message);
+		}
 		JavaPlugin bukkitPlugin = (JavaPlugin) getPluginLoader().loadPlugin(file);
 		// Make the plugin visible to the dependency checks of the next
 		// plugin, so that hard dependencies resolve in any file order.

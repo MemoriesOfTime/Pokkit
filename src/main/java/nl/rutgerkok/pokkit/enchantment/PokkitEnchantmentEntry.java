@@ -56,6 +56,22 @@ public final class PokkitEnchantmentEntry extends Enchantment {
 	}
 
 	@Override
+	public NamespacedKey getKeyOrThrow() {
+		return key;
+	}
+
+	@Override
+	public NamespacedKey getKeyOrNull() {
+		return key;
+	}
+
+	@Override
+	public boolean isRegistered() {
+		// Instances are only handed out by the enchantment registry.
+		return true;
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}

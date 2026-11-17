@@ -28,6 +28,8 @@ import cn.nukkit.utils.Utils;
  */
 final class PokkitPluginDescription extends PluginDescription {
 
+	private final String apiVersion;
+
 	private static Yaml getYaml() {
 		return new Yaml(new SafeConstructor(new LoaderOptions()) {
 			{
@@ -204,7 +206,19 @@ final class PokkitPluginDescription extends PluginDescription {
 
 	private PokkitPluginDescription(Map<String, Object> input) {
 		super(withoutPermissions(input));
+		Object rawApiVersion = input.get("api-version");
+		this.apiVersion = rawApiVersion == null ? null : String.valueOf(rawApiVersion).trim();
 		parsePermissions(input);
+	}
+
+	/**
+	 * Gets the Bukkit API version declared in {@code plugin.yml}.
+	 *
+	 * @return The declared version, or {@code null} if the plugin does not
+	 *         declare one.
+	 */
+	String getDeclaredApiVersion() {
+		return apiVersion;
 	}
 
 	@Override

@@ -992,6 +992,359 @@ public class PokkitItemMeta implements ItemMeta, Damageable {
 		return null;
 	}
 
+	@Override
+	public boolean hasCustomModelDataComponent() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.CustomModelDataComponent getCustomModelDataComponent() {
+		return null;
+	}
+
+	@Override
+	public void setCustomModelDataComponent(
+			org.bukkit.inventory.meta.components.CustomModelDataComponent component) {
+		// Bedrock has no equivalent of the custom model data component.
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasEnchantable() {
+		return tag.contains("Enchantable");
+	}
+
+	@Override
+	public int getEnchantable() {
+		return tag.getInt("Enchantable");
+	}
+
+	@Override
+	public void setEnchantable(Integer enchantable) {
+		if (enchantable == null) {
+			tag.remove("Enchantable");
+		} else {
+			tag.putInt("Enchantable", enchantable);
+		}
+	}
+
+	@Override
+	public boolean hasTooltipStyle() {
+		return tag.contains("TooltipStyle");
+	}
+
+	@Override
+	public org.bukkit.NamespacedKey getTooltipStyle() {
+		return tag.contains("TooltipStyle")
+				? org.bukkit.NamespacedKey.fromString(tag.getString("TooltipStyle"))
+				: null;
+	}
+
+	@Override
+	public void setTooltipStyle(org.bukkit.NamespacedKey tooltipStyle) {
+		if (tooltipStyle == null) {
+			tag.remove("TooltipStyle");
+		} else {
+			tag.putString("TooltipStyle", tooltipStyle.toString());
+		}
+	}
+
+	@Override
+	public boolean hasItemModel() {
+		return tag.contains("ItemModel");
+	}
+
+	@Override
+	public org.bukkit.NamespacedKey getItemModel() {
+		return tag.contains("ItemModel")
+				? org.bukkit.NamespacedKey.fromString(tag.getString("ItemModel"))
+				: null;
+	}
+
+	@Override
+	public void setItemModel(org.bukkit.NamespacedKey itemModel) {
+		if (itemModel == null) {
+			tag.remove("ItemModel");
+		} else {
+			tag.putString("ItemModel", itemModel.toString());
+		}
+	}
+
+	@Override
+	public boolean isGlider() {
+		return tag.getBoolean("Glider");
+	}
+
+	@Override
+	public void setGlider(boolean glider) {
+		if (glider) {
+			tag.putBoolean("Glider", true);
+		} else {
+			tag.remove("Glider");
+		}
+	}
+
+	@Override
+	public boolean hasDamageResistant() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.Tag<org.bukkit.damage.DamageType> getDamageResistant() {
+		return null;
+	}
+
+	@Override
+	public void setDamageResistant(org.bukkit.Tag<org.bukkit.damage.DamageType> damageTypes) {
+		// Bedrock has no equivalent of a damage type tag.
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasDamageType() {
+		return tag.contains("DamageType");
+	}
+
+	@Override
+	public org.bukkit.damage.DamageType getDamageType() {
+		org.bukkit.NamespacedKey key = getDamageTypeKey();
+		return key == null ? null : org.bukkit.Registry.DAMAGE_TYPE.get(key);
+	}
+
+	@Override
+	public org.bukkit.NamespacedKey getDamageTypeKey() {
+		return tag.contains("DamageType")
+				? org.bukkit.NamespacedKey.fromString(tag.getString("DamageType"))
+				: null;
+	}
+
+	@Override
+	public void setDamageType(org.bukkit.damage.DamageType damageType) {
+		if (damageType == null) {
+			tag.remove("DamageType");
+		} else {
+			tag.putString("DamageType", damageType.getKey().toString());
+		}
+	}
+
+	@Override
+	public void setDamageTypeKey(org.bukkit.NamespacedKey damageTypeKey) {
+		if (damageTypeKey == null) {
+			tag.remove("DamageType");
+		} else {
+			tag.putString("DamageType", damageTypeKey.toString());
+		}
+	}
+
+	@Override
+	public boolean hasUseRemainder() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.ItemStack getUseRemainder() {
+		return null;
+	}
+
+	@Override
+	public void setUseRemainder(org.bukkit.inventory.ItemStack remainder) {
+		// Bedrock has no equivalent of the use remainder component.
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasUseCooldown() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.UseCooldownComponent getUseCooldown() {
+		return null;
+	}
+
+	@Override
+	public void setUseCooldown(org.bukkit.inventory.meta.components.UseCooldownComponent useCooldown) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasUseEffects() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.UseEffectsComponent getUseEffects() {
+		return null;
+	}
+
+	@Override
+	public void setUseEffects(org.bukkit.inventory.meta.components.UseEffectsComponent useEffects) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasSwingAnimation() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.SwingAnimationComponent getSwingAnimation() {
+		return null;
+	}
+
+	@Override
+	public void setSwingAnimation(org.bukkit.inventory.meta.components.SwingAnimationComponent swingAnimation) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasAttackRange() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.AttackRangeComponent getAttackRange() {
+		return null;
+	}
+
+	@Override
+	public void setAttackRange(org.bukkit.inventory.meta.components.AttackRangeComponent attackRange) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasPiercingWeapon() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.PiercingWeaponComponent getPiercingWeapon() {
+		return null;
+	}
+
+	@Override
+	public void setPiercingWeapon(org.bukkit.inventory.meta.components.PiercingWeaponComponent piercingWeapon) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasKineticWeapon() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.KineticWeaponComponent getKineticWeapon() {
+		return null;
+	}
+
+	@Override
+	public void setKineticWeapon(org.bukkit.inventory.meta.components.KineticWeaponComponent kineticWeapon) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasConsumable() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.consumable.ConsumableComponent getConsumable() {
+		return null;
+	}
+
+	@Override
+	public void setConsumable(org.bukkit.inventory.meta.components.consumable.ConsumableComponent consumable) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasWeapon() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.WeaponComponent getWeapon() {
+		return null;
+	}
+
+	@Override
+	public void setWeapon(org.bukkit.inventory.meta.components.WeaponComponent weapon) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasBlocksAttacks() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.BlocksAttacksComponent getBlocksAttacks() {
+		return null;
+	}
+
+	@Override
+	public void setBlocksAttacks(org.bukkit.inventory.meta.components.BlocksAttacksComponent blocksAttacks) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasEquippable() {
+		return false;
+	}
+
+	@Override
+	public org.bukkit.inventory.meta.components.EquippableComponent getEquippable() {
+		return null;
+	}
+
+	@Override
+	public void setEquippable(org.bukkit.inventory.meta.components.EquippableComponent equippable) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean hasBreakSound() {
+		return tag.contains("BreakSound");
+	}
+
+	@Override
+	public org.bukkit.Sound getBreakSound() {
+		if (!tag.contains("BreakSound")) {
+			return null;
+		}
+		org.bukkit.NamespacedKey key = org.bukkit.NamespacedKey.fromString(tag.getString("BreakSound"));
+		return key == null ? null : org.bukkit.Registry.SOUNDS.get(key);
+	}
+
+	@Override
+	public void setBreakSound(org.bukkit.Sound breakSound) {
+		if (breakSound == null) {
+			tag.remove("BreakSound");
+		} else {
+			tag.putString("BreakSound", breakSound.getKey().toString());
+		}
+	}
+
+	@Override
+	public boolean hasMinimumAttackCharge() {
+		return tag.contains("MinimumAttackCharge");
+	}
+
+	@Override
+	public float getMinimumAttackCharge() {
+		// Vanilla behaves as if the component is set to 1 when it is absent.
+		return tag.contains("MinimumAttackCharge") ? tag.getFloat("MinimumAttackCharge") : 1.0f;
+	}
+
+	@Override
+	public void setMinimumAttackCharge(Float minimumAttackCharge) {
+		if (minimumAttackCharge == null) {
+			tag.remove("MinimumAttackCharge");
+		} else {
+			tag.putFloat("MinimumAttackCharge", minimumAttackCharge);
+		}
+	}
+
 	/**
 	 * Gets the UUID of an attribute modifier. Modifiers created from a name
 	 * (the modern constructor) have no UUID; in that case a stable UUID is

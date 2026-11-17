@@ -1307,6 +1307,16 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
         nukkit.setDisplayName(arg0 != null ? arg0 : nukkit.getName());
     }
 
+    @Override
+    public int getPlayerListOrder() {
+        throw Pokkit.unsupported();
+    }
+
+    @Override
+    public void setPlayerListOrder(int order) {
+        throw Pokkit.unsupported();
+    }
+
 	@Override
 	public void setPlayerTime(long time, boolean relative) {
 		playerTimeOffset = time;
@@ -2076,6 +2086,31 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
     @Override
     public void sendLinks(org.bukkit.ServerLinks links) {
+        throw Pokkit.unsupported();
+    }
+
+    @Override
+    public void clearDialog() {
+        throw Pokkit.unsupported();
+    }
+
+    @Override
+    public void showDialog(NamespacedKey key) {
+        throw Pokkit.unsupported();
+    }
+
+    @Override
+    public void showDialog(net.md_5.bungee.api.dialog.Dialog dialog) {
+        throw Pokkit.unsupported();
+    }
+
+    @Override
+    public org.bukkit.Input getCurrentInput() {
+        throw Pokkit.unsupported();
+    }
+
+    @Override
+    public java.util.Collection<org.bukkit.entity.EnderPearl> getEnderPearls() {
         throw Pokkit.unsupported();
     }
 }

@@ -397,6 +397,9 @@ public class ItemTest {
 		assertFalse(Material.DIAMOND_SWORD.asItemType().hasBlockType());
 		assertEquals(64, Material.APPLE.asItemType().getMaxStackSize());
 		assertEquals(1561, Material.DIAMOND_SWORD.asItemType().getMaxDurability());
+		// Items that do not exist in Nukkit must still report their Java data.
+		assertEquals(1, Material.COPPER_SWORD.asItemType().getMaxStackSize());
+		assertEquals(190, Material.COPPER_SWORD.asItemType().getMaxDurability());
 	}
 
 	@Test
@@ -572,9 +575,9 @@ public class ItemTest {
 		ItemMeta meta = stack.getItemMeta();
 		AttributeModifier modifier = new AttributeModifier(new org.bukkit.NamespacedKey("test", "modifier"),
 				5.0, AttributeModifier.Operation.ADD_NUMBER, org.bukkit.inventory.EquipmentSlotGroup.HAND);
-		assertTrue(meta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, modifier));
+		assertTrue(meta.addAttributeModifier(Attribute.ATTACK_DAMAGE, modifier));
 
-		assertTrue(meta.getAttributeModifiers(Attribute.GENERIC_ATTACK_DAMAGE).size() == 1);
+		assertTrue(meta.getAttributeModifiers(Attribute.ATTACK_DAMAGE).size() == 1);
 		assertTrue(meta.getAttributeModifiers(EquipmentSlot.HAND).size() == 1);
 		assertTrue(meta.removeAttributeModifier(EquipmentSlot.HAND));
 		assertFalse(meta.hasAttributeModifiers());

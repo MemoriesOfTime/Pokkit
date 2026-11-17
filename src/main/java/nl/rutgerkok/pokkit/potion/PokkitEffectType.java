@@ -85,7 +85,8 @@ public final class PokkitEffectType extends PotionEffectType {
 			new Definition(36, 32, "wind_charged", 0xBDC9FF, PotionEffectTypeCategory.HARMFUL, false),
 			new Definition(37, 33, "weaving", 0x78695A, PotionEffectTypeCategory.HARMFUL, false),
 			new Definition(38, 34, "oozing", 0x99FF99, PotionEffectTypeCategory.HARMFUL, false),
-			new Definition(39, 35, "infested", 0x8C9B8C, PotionEffectTypeCategory.HARMFUL, false) };
+			new Definition(39, 35, "infested", 0x8C9B8C, PotionEffectTypeCategory.HARMFUL, false),
+			new Definition(40, 37, "breath_of_the_nautilus", 0x00FFEE, PotionEffectTypeCategory.BENEFICIAL, false) };
 
 	/**
 	 * Creates the effect type for the given key, or returns {@code null} when
@@ -164,6 +165,22 @@ public final class PokkitEffectType extends PotionEffectType {
 	@Override
 	public NamespacedKey getKey() {
 		return key;
+	}
+
+	@Override
+	public NamespacedKey getKeyOrThrow() {
+		return key;
+	}
+
+	@Override
+	public NamespacedKey getKeyOrNull() {
+		return key;
+	}
+
+	@Override
+	public boolean isRegistered() {
+		// Instances are only handed out by the effect registry.
+		return true;
 	}
 
 	@SuppressWarnings("deprecation")

@@ -1,6 +1,7 @@
 package nl.rutgerkok.pokkit;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.bukkit.Material;
@@ -380,5 +381,117 @@ public class PokkitUnsafe implements UnsafeValues {
 	@Override
 	public org.bukkit.damage.DamageSource.Builder createDamageSourceBuilder(org.bukkit.damage.DamageType damageType) {
 		return nl.rutgerkok.pokkit.damage.PokkitDamageSource.builder(damageType);
+	}
+
+	@Override
+	public org.bukkit.block.Biome getCustomBiome() {
+		// Biome.CUSTOM is filled from this method while Biome is still being
+		// initialised. A plain entry is enough: Pokkit has no custom biome
+		// registry that plugins can add to.
+		return new nl.rutgerkok.pokkit.world.biome.PokkitBiomeType("custom", 0);
+	}
+
+	@Override
+	public org.bukkit.entity.Villager.ReputationType createReputationType(String name) {
+		return ReputationType.byId(name);
+	}
+
+	@Override
+	public org.bukkit.entity.Villager.ReputationEvent createReputationEvent(String name) {
+		return ReputationEvent.byId(name);
+	}
+
+	/**
+	 * Converts a reputation name to a lowercase id. The Bukkit constants are
+	 * created by passing ids such as {@code major_negative} and
+	 * {@code bukkit_gossip} to this class.
+	 *
+	 * @param name
+	 *            The reputation name.
+	 * @return The normalized id.
+	 */
+	private static String normalizeReputationName(String name) {
+		if (name == null) {
+			throw new IllegalArgumentException("Reputation name cannot be null");
+		}
+		return name.trim().toLowerCase(Locale.ROOT);
+	}
+
+	/**
+	 * Vanilla villager reputation types. The constants of
+	 * {@link org.bukkit.entity.Villager.ReputationType} are created by this
+	 * class, so the enum below provides their implementation. The values are
+	 * the maximum value and the weight of the vanilla gossip types.
+	 */
+	private enum ReputationType implements org.bukkit.entity.Villager.ReputationType {
+
+		MAJOR_NEGATIVE("major_negative", 100, -5),
+		MINOR_NEGATIVE("minor_negative", 200, -1),
+		MINOR_POSITIVE("minor_positive", 200, 1),
+		MAJOR_POSITIVE("major_positive", 100, 5),
+		TRADING("trading", 25, 1);
+
+		private final String id;
+		private final int maxValue;
+		private final int weight;
+
+		ReputationType(String id, int maxValue, int weight) {
+			this.id = id;
+			this.maxValue = maxValue;
+			this.weight = weight;
+		}
+
+		@Override
+		public int getMaxValue() {
+			return maxValue;
+		}
+
+		@Override
+		public int getWeight() {
+			return weight;
+		}
+
+		static ReputationType byId(String name) {
+			String id = normalizeReputationName(name);
+			for (ReputationType type : values()) {
+				if (type.id.equals(id)) {
+					return type;
+				}
+			}
+			throw new IllegalArgumentException("Unknown reputation type " + name);
+		}
+	}
+
+	/**
+	 * Vanilla villager reputation events. The constants of
+	 * {@link org.bukkit.entity.Villager.ReputationEvent} are created by this
+	 * class, so the enum below provides their implementation.
+	 */
+	private enum ReputationEvent implements org.bukkit.entity.Villager.ReputationEvent {
+
+		ZOMBIE_VILLAGER_CURED("zombie_villager_cured"),
+		TRADE("trade"),
+		VILLAGER_HURT("villager_hurt"),
+		VILLAGER_KILLED("villager_killed"),
+		GOSSIP("bukkit_gossip"),
+		DECAY("bukkit_decay"),
+		GOLEM_KILLED("golem_killed"),
+		UNSPECIFIED("bukkit_unspecified");
+
+		private final String id;
+
+		ReputationEvent(String id) {
+			this.id = id;
+		}
+
+		static ReputationEvent byId(String name) {
+			String id = normalizeReputationName(name);
+			for (ReputationEvent event : values()) {
+				if (event.id.equals(id)) {
+					return event;
+				}
+			}
+			throw new IllegalArgumentException("Unknown reputation event " + name);
+		}
 	}
 }

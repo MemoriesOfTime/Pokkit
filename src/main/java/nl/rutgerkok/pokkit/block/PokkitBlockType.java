@@ -38,6 +38,22 @@ public final class PokkitBlockType implements BlockType.Typed<BlockData> {
 	}
 
 	@Override
+	public NamespacedKey getKeyOrThrow() {
+		return key;
+	}
+
+	@Override
+	public NamespacedKey getKeyOrNull() {
+		return key;
+	}
+
+	@Override
+	public boolean isRegistered() {
+		// Instances are only handed out by the block registry.
+		return true;
+	}
+
+	@Override
 	public String getTranslationKey() {
 		return "block." + key.getNamespace() + "." + key.getKey();
 	}

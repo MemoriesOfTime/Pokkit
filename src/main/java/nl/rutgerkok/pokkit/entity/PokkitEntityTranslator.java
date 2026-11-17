@@ -25,7 +25,7 @@ public class PokkitEntityTranslator {
 			return name;
 		case WOLF:
 			return "Wolf";
-		case BOAT:
+		case OAK_BOAT:
 			return "Boat";
 		case LIGHTNING_BOLT:
 			return "LightningBolt";
@@ -37,8 +37,10 @@ public class PokkitEntityTranslator {
 			return "PrimedTnt";
 		case EXPERIENCE_ORB:
 			return "XpOrb";
-		case POTION:
+		case SPLASH_POTION:
 			return "ThrownPotion";
+		case LINGERING_POTION:
+			return "ThrownLingeringPotion";
 		case FALLING_BLOCK:
 			return "FallingSand";
 		case PLAYER:

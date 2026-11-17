@@ -3,6 +3,8 @@ package nl.rutgerkok.pokkit;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.bukkit.Keyed;
@@ -40,6 +42,16 @@ public final class LazyMusicInstrumentRegistry implements Registry<MusicInstrume
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public MusicInstrument getOrThrow(NamespacedKey key) {
+		Objects.requireNonNull(key, "key");
+		MusicInstrument instrument = get(key);
+		if (instrument == null) {
+			throw new NoSuchElementException("No instrument for key " + key);
+		}
+		return instrument;
 	}
 
 	@Override

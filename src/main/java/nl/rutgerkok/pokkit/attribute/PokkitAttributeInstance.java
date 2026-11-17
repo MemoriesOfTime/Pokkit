@@ -16,16 +16,16 @@ public class PokkitAttributeInstance implements AttributeInstance {
     private static final BiMap<Attribute, Integer> map = HashBiMap.create(12);
 
     static {
-        map.put(Attribute.GENERIC_MAX_HEALTH, cn.nukkit.entity.Attribute.MAX_HEALTH);
-        map.put(Attribute.GENERIC_FOLLOW_RANGE, cn.nukkit.entity.Attribute.FOLLOW_RANGE);
-        map.put(Attribute.GENERIC_KNOCKBACK_RESISTANCE, cn.nukkit.entity.Attribute.KNOCKBACK_RESISTANCE);
-        map.put(Attribute.GENERIC_MOVEMENT_SPEED, cn.nukkit.entity.Attribute.MOVEMENT_SPEED);
-//        map.put(Attribute.GENERIC_FLYING_SPEED, cn.nukkit.entity.Attribute.);
-        map.put(Attribute.GENERIC_ATTACK_DAMAGE, cn.nukkit.entity.Attribute.ATTACK_DAMAGE);
-//        map.put(Attribute.GENERIC_ATTACK_SPEED, cn.nukkit.entity.Attribute.);
-//        map.put(Attribute.GENERIC_ARMOR, cn.nukkit.entity.Attribute.);
-//        map.put(Attribute.GENERIC_ARMOR_TOUGHNESS, cn.nukkit.entity.Attribute.);
-//        map.put(Attribute.GENERIC_LUCK, cn.nukkit.entity.Attribute.LUCK);
+        map.put(Attribute.MAX_HEALTH, cn.nukkit.entity.Attribute.MAX_HEALTH);
+        map.put(Attribute.FOLLOW_RANGE, cn.nukkit.entity.Attribute.FOLLOW_RANGE);
+        map.put(Attribute.KNOCKBACK_RESISTANCE, cn.nukkit.entity.Attribute.KNOCKBACK_RESISTANCE);
+        map.put(Attribute.MOVEMENT_SPEED, cn.nukkit.entity.Attribute.MOVEMENT_SPEED);
+//        map.put(Attribute.FLYING_SPEED, cn.nukkit.entity.Attribute.);
+        map.put(Attribute.ATTACK_DAMAGE, cn.nukkit.entity.Attribute.ATTACK_DAMAGE);
+//        map.put(Attribute.ATTACK_SPEED, cn.nukkit.entity.Attribute.);
+//        map.put(Attribute.ARMOR, cn.nukkit.entity.Attribute.);
+//        map.put(Attribute.ARMOR_TOUGHNESS, cn.nukkit.entity.Attribute.);
+//        map.put(Attribute.LUCK, cn.nukkit.entity.Attribute.LUCK);
 //        map.put(Attribute.HORSE_JUMP_STRENGTH, cn.nukkit.entity.Attribute.);
 //        map.put(Attribute.ZOMBIE_SPAWN_REINFORCEMENTS, cn.nukkit.entity.Attribute.);
     }

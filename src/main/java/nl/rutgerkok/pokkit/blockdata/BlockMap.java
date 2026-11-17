@@ -257,7 +257,8 @@ public final class BlockMap {
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NETHER_BRICKS), Material.NETHER_BRICKS);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NETHER_BRICK_FENCE), Material.NETHER_BRICK_FENCE);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NETHER_BRICKS_STAIRS), Material.NETHER_BRICK_STAIRS);
-		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NETHER_WART_BLOCK), Material.NETHER_WART_BLOCK);
+		// Bedrock id 115 is the nether wart crop; id 214 is the storage block.
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NETHER_WART_BLOCK), Material.NETHER_WART);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.ENCHANTING_TABLE), Material.ENCHANTING_TABLE);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BREWING_STAND_BLOCK), Material.BREWING_STAND);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CAULDRON_BLOCK), Material.CAULDRON);
@@ -574,29 +575,31 @@ public final class BlockMap {
 
 		// Seagrass & Coral (ID 385-392)
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.SEAGRASS), Material.SEAGRASS);
+		// Coral data: 0-4 are the living types, bit 8 marks them as dead.
+		// (The type is stored in the lower bits, so dead tube coral is 8.)
 		nukkitToBukkit[BlockID.CORAL] = new Material[16];
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 0), Material.TUBE_CORAL);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 1), Material.BRAIN_CORAL);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 2), Material.BUBBLE_CORAL);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 3), Material.FIRE_CORAL);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 4), Material.HORN_CORAL);
-		nukkitToBukkit[BlockID.CORAL][5] = Material.TUBE_CORAL;
-		nukkitToBukkit[BlockID.CORAL][6] = Material.BRAIN_CORAL;
-		nukkitToBukkit[BlockID.CORAL][7] = Material.BUBBLE_CORAL;
-		nukkitToBukkit[BlockID.CORAL][8] = Material.FIRE_CORAL;
-		nukkitToBukkit[BlockID.CORAL][9] = Material.HORN_CORAL;
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 8), Material.DEAD_TUBE_CORAL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 9), Material.DEAD_BRAIN_CORAL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 10), Material.DEAD_BUBBLE_CORAL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 11), Material.DEAD_FIRE_CORAL);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL, 12), Material.DEAD_HORN_CORAL);
 
-		nukkitToBukkit[BlockID.CORAL_BLOCK] = new Material[10];
+		nukkitToBukkit[BlockID.CORAL_BLOCK] = new Material[16];
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 0), Material.TUBE_CORAL_BLOCK);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 1), Material.BRAIN_CORAL_BLOCK);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 2), Material.BUBBLE_CORAL_BLOCK);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 3), Material.FIRE_CORAL_BLOCK);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 4), Material.HORN_CORAL_BLOCK);
-		nukkitToBukkit[BlockID.CORAL_BLOCK][5] = Material.TUBE_CORAL_BLOCK;
-		nukkitToBukkit[BlockID.CORAL_BLOCK][6] = Material.BRAIN_CORAL_BLOCK;
-		nukkitToBukkit[BlockID.CORAL_BLOCK][7] = Material.BUBBLE_CORAL_BLOCK;
-		nukkitToBukkit[BlockID.CORAL_BLOCK][8] = Material.FIRE_CORAL_BLOCK;
-		nukkitToBukkit[BlockID.CORAL_BLOCK][9] = Material.HORN_CORAL_BLOCK;
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 8), Material.DEAD_TUBE_CORAL_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 9), Material.DEAD_BRAIN_CORAL_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 10), Material.DEAD_BUBBLE_CORAL_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 11), Material.DEAD_FIRE_CORAL_BLOCK);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CORAL_BLOCK, 12), Material.DEAD_HORN_CORAL_BLOCK);
 
 		// Kelp
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.BLOCK_KELP), Material.KELP);
@@ -778,7 +781,7 @@ public final class BlockMap {
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.QUARTZ_BRICKS), Material.QUARTZ_BRICKS);
 
 		// Chain, Twisting/Weeping Vines, Nether Gold, Crying Obsidian, Soul Campfire (ID 541-545)
-		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHAIN_BLOCK), Material.CHAIN);
+		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CHAIN_BLOCK), Material.IRON_CHAIN);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.TWISTING_VINES), Material.TWISTING_VINES);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.NETHER_GOLD_ORE), Material.NETHER_GOLD_ORE);
 		registerTwoWay(cn.nukkit.block.Block.get(BlockID.CRYING_OBSIDIAN), Material.CRYING_OBSIDIAN);
@@ -1293,6 +1296,288 @@ public final class BlockMap {
 		registerBukkitToNukkit(cn.nukkit.block.Block.get(BlockID.AIR), Material.LEGACY_STRUCTURE_BLOCK);
 		registerBukkitToNukkit(cn.nukkit.block.Block.get(BlockID.STANDING_BANNER), Material.LEGACY_STANDING_BANNER);
 		registerBukkitToNukkit(cn.nukkit.block.Block.get(BlockID.WALL_BANNER), Material.LEGACY_WALL_BANNER);
+
+		registerGeneratedBlocks();
+	}
+
+	/**
+	 * Registers blocks that were added to the Bukkit registry after the
+	 * hand-written table above. The list is generated from the 1.21.11 block
+	 * registry and matched against the names Nukkit reports for its blocks, so
+	 * new vanilla blocks only need to be regenerated instead of added one by
+	 * one.
+	 */
+	private static void registerGeneratedBlocks() {
+		registerTwoWay(Block.get(BlockID.PALE_OAK_PLANKS, 0), Material.PALE_OAK_PLANKS);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_SAPLING, 0), Material.PALE_OAK_SAPLING);
+		registerTwoWay(Block.get(BlockID.HEAVY_CORE, 0), Material.HEAVY_CORE);
+		registerTwoWay(Block.get(BlockID.CHISELED_COPPER, 0), Material.CHISELED_COPPER);
+		registerTwoWay(Block.get(BlockID.EXPOSED_CHISELED_COPPER, 0), Material.EXPOSED_CHISELED_COPPER);
+		registerTwoWay(Block.get(BlockID.WEATHERED_CHISELED_COPPER, 0), Material.WEATHERED_CHISELED_COPPER);
+		registerTwoWay(Block.get(BlockID.OXIDIZED_CHISELED_COPPER, 0), Material.OXIDIZED_CHISELED_COPPER);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER, 0), Material.WAXED_OXIDIZED_COPPER);
+		registerTwoWay(Block.get(BlockID.WAXED_CHISELED_COPPER, 0), Material.WAXED_CHISELED_COPPER);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_CHISELED_COPPER, 0), Material.WAXED_EXPOSED_CHISELED_COPPER);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_CHISELED_COPPER, 0), Material.WAXED_WEATHERED_CHISELED_COPPER);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_CHISELED_COPPER, 0), Material.WAXED_OXIDIZED_CHISELED_COPPER);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_CUT_COPPER, 0), Material.WAXED_OXIDIZED_CUT_COPPER);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_CUT_COPPER_STAIRS, 0), Material.WAXED_OXIDIZED_CUT_COPPER_STAIRS);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_LOG, 0), Material.PALE_OAK_LOG);
+		registerTwoWay(Block.get(BlockID.STRIPPED_PALE_OAK_LOG, 0), Material.STRIPPED_PALE_OAK_LOG);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 8), Material.STRIPPED_OAK_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 9), Material.STRIPPED_SPRUCE_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 10), Material.STRIPPED_BIRCH_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 11), Material.STRIPPED_JUNGLE_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 12), Material.STRIPPED_ACACIA_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 13), Material.STRIPPED_DARK_OAK_WOOD);
+		registerTwoWay(Block.get(BlockID.STRIPPED_PALE_OAK_WOOD, 0), Material.STRIPPED_PALE_OAK_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 0), Material.OAK_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 1), Material.SPRUCE_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 2), Material.BIRCH_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 3), Material.JUNGLE_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 4), Material.ACACIA_WOOD);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_WOOD, 0), Material.PALE_OAK_WOOD);
+		registerTwoWay(Block.get(BlockID.WOOD_BARK, 5), Material.DARK_OAK_WOOD);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_LEAVES, 0), Material.PALE_OAK_LEAVES);
+		registerTwoWay(Block.get(BlockID.BUSH, 0), Material.BUSH);
+		registerTwoWay(Block.get(BlockID.FIREFLY_BUSH, 0), Material.FIREFLY_BUSH);
+		registerTwoWay(Block.get(BlockID.SHORT_DRY_GRASS, 0), Material.SHORT_DRY_GRASS);
+		registerTwoWay(Block.get(BlockID.TALL_DRY_GRASS, 0), Material.TALL_DRY_GRASS);
+		registerTwoWay(Block.get(BlockID.OPEN_EYEBLOSSOM, 0), Material.OPEN_EYEBLOSSOM);
+		registerTwoWay(Block.get(BlockID.CLOSED_EYEBLOSSOM, 0), Material.CLOSED_EYEBLOSSOM);
+		registerTwoWay(Block.get(BlockID.POPPY, 9), Material.CORNFLOWER);
+		registerTwoWay(Block.get(BlockID.POPPY, 10), Material.LILY_OF_THE_VALLEY);
+		registerTwoWay(Block.get(BlockID.WILDFLOWERS, 0), Material.WILDFLOWERS);
+		registerTwoWay(Block.get(BlockID.LEAF_LITTER, 0), Material.LEAF_LITTER);
+		registerTwoWay(Block.get(BlockID.PALE_MOSS_CARPET, 0), Material.PALE_MOSS_CARPET);
+		registerTwoWay(Block.get(BlockID.PALE_HANGING_MOSS, 0), Material.PALE_HANGING_MOSS);
+		registerTwoWay(Block.get(BlockID.PALE_MOSS_BLOCK, 0), Material.PALE_MOSS_BLOCK);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_SLAB, 0), Material.PALE_OAK_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB4, 3), Material.CUT_SANDSTONE_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB4, 4), Material.CUT_RED_SANDSTONE_SLAB);
+		registerTwoWay(Block.get(BlockID.RED_SANDSTONE_SLAB, 1), Material.PURPUR_SLAB);
+		registerTwoWay(Block.get(BlockID.ACACIA_SHELF, 0), Material.ACACIA_SHELF);
+		registerTwoWay(Block.get(BlockID.BAMBOO_SHELF, 0), Material.BAMBOO_SHELF);
+		registerTwoWay(Block.get(BlockID.BIRCH_SHELF, 0), Material.BIRCH_SHELF);
+		registerTwoWay(Block.get(BlockID.CHERRY_SHELF, 0), Material.CHERRY_SHELF);
+		registerTwoWay(Block.get(BlockID.CRIMSON_SHELF, 0), Material.CRIMSON_SHELF);
+		registerTwoWay(Block.get(BlockID.DARK_OAK_SHELF, 0), Material.DARK_OAK_SHELF);
+		registerTwoWay(Block.get(BlockID.JUNGLE_SHELF, 0), Material.JUNGLE_SHELF);
+		registerTwoWay(Block.get(BlockID.MANGROVE_SHELF, 0), Material.MANGROVE_SHELF);
+		registerTwoWay(Block.get(BlockID.OAK_SHELF, 0), Material.OAK_SHELF);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_SHELF, 0), Material.PALE_OAK_SHELF);
+		registerTwoWay(Block.get(BlockID.SPRUCE_SHELF, 0), Material.SPRUCE_SHELF);
+		registerTwoWay(Block.get(BlockID.WARPED_SHELF, 0), Material.WARPED_SHELF);
+		registerTwoWay(Block.get(BlockID.PURPUR_BLOCK, 2), Material.PURPUR_PILLAR);
+		registerTwoWay(Block.get(BlockID.CREAKING_HEART, 0), Material.CREAKING_HEART);
+		registerTwoWay(Block.get(BlockID.CACTUS_FLOWER, 0), Material.CACTUS_FLOWER);
+		registerTwoWay(Block.get(BlockID.FENCE, 1), Material.SPRUCE_FENCE);
+		registerTwoWay(Block.get(BlockID.FENCE, 2), Material.BIRCH_FENCE);
+		registerTwoWay(Block.get(BlockID.FENCE, 3), Material.JUNGLE_FENCE);
+		registerTwoWay(Block.get(BlockID.FENCE, 4), Material.ACACIA_FENCE);
+		registerTwoWay(Block.get(BlockID.FENCE, 5), Material.DARK_OAK_FENCE);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_FENCE, 0), Material.PALE_OAK_FENCE);
+		registerTwoWay(Block.get(BlockID.COPPER_TORCH, 0), Material.COPPER_TORCH);
+		registerTwoWay(Block.get(BlockID.REINFORCED_DEEPSLATE, 0), Material.REINFORCED_DEEPSLATE);
+		registerTwoWay(Block.get(BlockID.COPPER_BARS, 0), Material.COPPER_BARS);
+		registerTwoWay(Block.get(BlockID.EXPOSED_COPPER_BARS, 0), Material.EXPOSED_COPPER_BARS);
+		registerTwoWay(Block.get(BlockID.WEATHERED_COPPER_BARS, 0), Material.WEATHERED_COPPER_BARS);
+		registerTwoWay(Block.get(BlockID.OXIDIZED_COPPER_BARS, 0), Material.OXIDIZED_COPPER_BARS);
+		registerTwoWay(Block.get(BlockID.WAXED_COPPER_BARS, 0), Material.WAXED_COPPER_BARS);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_COPPER_BARS, 0), Material.WAXED_EXPOSED_COPPER_BARS);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_COPPER_BARS, 0), Material.WAXED_WEATHERED_COPPER_BARS);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER_BARS, 0), Material.WAXED_OXIDIZED_COPPER_BARS);
+		registerTwoWay(Block.get(BlockID.COPPER_CHAIN, 0), Material.COPPER_CHAIN);
+		registerTwoWay(Block.get(BlockID.EXPOSED_COPPER_CHAIN, 0), Material.EXPOSED_COPPER_CHAIN);
+		registerTwoWay(Block.get(BlockID.WEATHERED_COPPER_CHAIN, 0), Material.WEATHERED_COPPER_CHAIN);
+		registerTwoWay(Block.get(BlockID.OXIDIZED_COPPER_CHAIN, 0), Material.OXIDIZED_COPPER_CHAIN);
+		registerTwoWay(Block.get(BlockID.WAXED_COPPER_CHAIN, 0), Material.WAXED_COPPER_CHAIN);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_COPPER_CHAIN, 0), Material.WAXED_EXPOSED_COPPER_CHAIN);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_COPPER_CHAIN, 0), Material.WAXED_WEATHERED_COPPER_CHAIN);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER_CHAIN, 0), Material.WAXED_OXIDIZED_COPPER_CHAIN);
+		registerTwoWay(Block.get(BlockID.RESIN_CLUMP, 0), Material.RESIN_CLUMP);
+		registerTwoWay(Block.get(BlockID.RESIN_BLOCK, 0), Material.RESIN_BLOCK);
+		registerTwoWay(Block.get(BlockID.RESIN_BRICKS, 0), Material.RESIN_BRICKS);
+		registerTwoWay(Block.get(BlockID.RESIN_BRICK_STAIRS, 0), Material.RESIN_BRICK_STAIRS);
+		registerTwoWay(Block.get(BlockID.RESIN_BRICK_SLAB, 0), Material.RESIN_BRICK_SLAB);
+		registerTwoWay(Block.get(BlockID.RESIN_BRICK_WALL, 0), Material.RESIN_BRICK_WALL);
+		registerTwoWay(Block.get(BlockID.CHISELED_RESIN_BRICKS, 0), Material.CHISELED_RESIN_BRICKS);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_STAIRS, 0), Material.PALE_OAK_STAIRS);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 6), Material.BRICK_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 11), Material.PRISMARINE_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 12), Material.RED_SANDSTONE_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 8), Material.MOSSY_STONE_BRICK_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 2), Material.GRANITE_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 7), Material.STONE_BRICK_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 9), Material.NETHER_BRICK_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 4), Material.ANDESITE_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 13), Material.RED_NETHER_BRICK_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 5), Material.SANDSTONE_WALL);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 3), Material.DIORITE_WALL);
+		registerTwoWay(Block.get(BlockID.QUARTZ_BLOCK, 1), Material.CHISELED_QUARTZ_BLOCK);
+		registerTwoWay(Block.get(BlockID.QUARTZ_BLOCK, 2), Material.QUARTZ_PILLAR);
+		registerTwoWay(Block.get(BlockID.DRIED_GHAST, 0), Material.DRIED_GHAST);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN, 0), Material.TUBE_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN, 1), Material.BRAIN_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN, 2), Material.BUBBLE_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN, 3), Material.FIRE_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN, 4), Material.HORN_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_DEAD, 0), Material.DEAD_TUBE_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_DEAD, 1), Material.DEAD_BRAIN_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_DEAD, 2), Material.DEAD_BUBBLE_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_DEAD, 3), Material.DEAD_FIRE_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_DEAD, 4), Material.DEAD_HORN_CORAL_FAN);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB3, 1), Material.SMOOTH_RED_SANDSTONE_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB4, 0), Material.MOSSY_STONE_BRICK_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB3, 5), Material.POLISHED_DIORITE_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB3, 0), Material.END_STONE_BRICK_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB4, 1), Material.SMOOTH_QUARTZ_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB3, 6), Material.GRANITE_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB3, 3), Material.ANDESITE_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB3, 2), Material.POLISHED_ANDESITE_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB3, 4), Material.DIORITE_SLAB);
+		registerTwoWay(Block.get(BlockID.EXPOSED_LIGHTNING_ROD, 0), Material.EXPOSED_LIGHTNING_ROD);
+		registerTwoWay(Block.get(BlockID.WEATHERED_LIGHTNING_ROD, 0), Material.WEATHERED_LIGHTNING_ROD);
+		registerTwoWay(Block.get(BlockID.OXIDIZED_LIGHTNING_ROD, 0), Material.OXIDIZED_LIGHTNING_ROD);
+		registerTwoWay(Block.get(BlockID.WAXED_LIGHTNING_ROD, 0), Material.WAXED_LIGHTNING_ROD);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_LIGHTNING_ROD, 0), Material.WAXED_EXPOSED_LIGHTNING_ROD);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_LIGHTNING_ROD, 0), Material.WAXED_WEATHERED_LIGHTNING_ROD);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_LIGHTNING_ROD, 0), Material.WAXED_OXIDIZED_LIGHTNING_ROD);
+		registerTwoWay(Block.get(BlockID.CALIBRATED_SCULK_SENSOR, 0), Material.CALIBRATED_SCULK_SENSOR);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_BUTTON, 0), Material.PALE_OAK_BUTTON);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_PRESSURE_PLATE, 0), Material.PALE_OAK_PRESSURE_PLATE);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_DOOR, 0), Material.PALE_OAK_DOOR);
+		registerTwoWay(Block.get(BlockID.WAXED_COPPER_DOOR, 0), Material.WAXED_COPPER_DOOR);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_COPPER_DOOR, 0), Material.WAXED_EXPOSED_COPPER_DOOR);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_COPPER_DOOR, 0), Material.WAXED_WEATHERED_COPPER_DOOR);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER_DOOR, 0), Material.WAXED_OXIDIZED_COPPER_DOOR);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_TRAPDOOR, 0), Material.PALE_OAK_TRAPDOOR);
+		registerTwoWay(Block.get(BlockID.WAXED_COPPER_TRAPDOOR, 0), Material.WAXED_COPPER_TRAPDOOR);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_COPPER_TRAPDOOR, 0), Material.WAXED_EXPOSED_COPPER_TRAPDOOR);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_COPPER_TRAPDOOR, 0), Material.WAXED_WEATHERED_COPPER_TRAPDOOR);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER_TRAPDOOR, 0), Material.WAXED_OXIDIZED_COPPER_TRAPDOOR);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_FENCE_GATE, 0), Material.PALE_OAK_FENCE_GATE);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_HANGING_SIGN, 0), Material.PALE_OAK_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.COPPER_LANTERN, 0), Material.COPPER_LANTERN);
+		registerTwoWay(Block.get(BlockID.EXPOSED_COPPER_LANTERN, 0), Material.EXPOSED_COPPER_LANTERN);
+		registerTwoWay(Block.get(BlockID.WEATHERED_COPPER_LANTERN, 0), Material.WEATHERED_COPPER_LANTERN);
+		registerTwoWay(Block.get(BlockID.OXIDIZED_COPPER_LANTERN, 0), Material.OXIDIZED_COPPER_LANTERN);
+		registerTwoWay(Block.get(BlockID.WAXED_COPPER_LANTERN, 0), Material.WAXED_COPPER_LANTERN);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_COPPER_LANTERN, 0), Material.WAXED_EXPOSED_COPPER_LANTERN);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_COPPER_LANTERN, 0), Material.WAXED_WEATHERED_COPPER_LANTERN);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER_LANTERN, 0), Material.WAXED_OXIDIZED_COPPER_LANTERN);
+		registerTwoWay(Block.get(BlockID.SMALL_AMETHYST_BUD, 0), Material.SMALL_AMETHYST_BUD);
+		registerTwoWay(Block.get(BlockID.MEDIUM_AMETHYST_BUD, 0), Material.MEDIUM_AMETHYST_BUD);
+		registerTwoWay(Block.get(BlockID.LARGE_AMETHYST_BUD, 0), Material.LARGE_AMETHYST_BUD);
+		registerTwoWay(Block.get(BlockID.FROG_SPAWN, 0), Material.FROGSPAWN);
+		registerTwoWay(Block.get(BlockID.WAXED_COPPER_GRATE, 0), Material.WAXED_COPPER_GRATE);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_COPPER_GRATE, 0), Material.WAXED_EXPOSED_COPPER_GRATE);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_COPPER_GRATE, 0), Material.WAXED_WEATHERED_COPPER_GRATE);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER_GRATE, 0), Material.WAXED_OXIDIZED_COPPER_GRATE);
+		registerTwoWay(Block.get(BlockID.WAXED_COPPER_BULB, 0), Material.WAXED_COPPER_BULB);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_COPPER_BULB, 0), Material.WAXED_EXPOSED_COPPER_BULB);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_COPPER_BULB, 0), Material.WAXED_WEATHERED_COPPER_BULB);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER_BULB, 0), Material.WAXED_OXIDIZED_COPPER_BULB);
+		registerTwoWay(Block.get(BlockID.COPPER_CHEST, 0), Material.COPPER_CHEST);
+		registerTwoWay(Block.get(BlockID.EXPOSED_COPPER_CHEST, 0), Material.EXPOSED_COPPER_CHEST);
+		registerTwoWay(Block.get(BlockID.WEATHERED_COPPER_CHEST, 0), Material.WEATHERED_COPPER_CHEST);
+		registerTwoWay(Block.get(BlockID.OXIDIZED_COPPER_CHEST, 0), Material.OXIDIZED_COPPER_CHEST);
+		registerTwoWay(Block.get(BlockID.WAXED_COPPER_CHEST, 0), Material.WAXED_COPPER_CHEST);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_COPPER_CHEST, 0), Material.WAXED_EXPOSED_COPPER_CHEST);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_COPPER_CHEST, 0), Material.WAXED_WEATHERED_COPPER_CHEST);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER_CHEST, 0), Material.WAXED_OXIDIZED_COPPER_CHEST);
+		registerTwoWay(Block.get(BlockID.COPPER_GOLEM_STATUE, 0), Material.COPPER_GOLEM_STATUE);
+		registerTwoWay(Block.get(BlockID.EXPOSED_COPPER_GOLEM_STATUE, 0), Material.EXPOSED_COPPER_GOLEM_STATUE);
+		registerTwoWay(Block.get(BlockID.WEATHERED_COPPER_GOLEM_STATUE, 0), Material.WEATHERED_COPPER_GOLEM_STATUE);
+		registerTwoWay(Block.get(BlockID.OXIDIZED_COPPER_GOLEM_STATUE, 0), Material.OXIDIZED_COPPER_GOLEM_STATUE);
+		registerTwoWay(Block.get(BlockID.WAXED_COPPER_GOLEM_STATUE, 0), Material.WAXED_COPPER_GOLEM_STATUE);
+		registerTwoWay(Block.get(BlockID.WAXED_EXPOSED_COPPER_GOLEM_STATUE, 0), Material.WAXED_EXPOSED_COPPER_GOLEM_STATUE);
+		registerTwoWay(Block.get(BlockID.WAXED_WEATHERED_COPPER_GOLEM_STATUE, 0), Material.WAXED_WEATHERED_COPPER_GOLEM_STATUE);
+		registerTwoWay(Block.get(BlockID.WAXED_OXIDIZED_COPPER_GOLEM_STATUE, 0), Material.WAXED_OXIDIZED_COPPER_GOLEM_STATUE);
+		registerTwoWay(Block.get(BlockID.TRIAL_SPAWNER, 0), Material.TRIAL_SPAWNER);
+		registerTwoWay(Block.get(BlockID.VAULT, 0), Material.VAULT);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_WALL_SIGN, 0), Material.PALE_OAK_WALL_SIGN);
+		registerTwoWay(Block.get(BlockID.LAVA_CAULDRON, 0), Material.LAVA_CAULDRON);
+		registerTwoWay(Block.get(BlockID.TORCHFLOWER_CROP, 0), Material.TORCHFLOWER_CROP);
+		registerTwoWay(Block.get(BlockID.PITCHER_CROP, 0), Material.PITCHER_CROP);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG, 2), Material.DEAD_TUBE_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG, 3), Material.DEAD_BRAIN_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG2, 2), Material.DEAD_BUBBLE_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG2, 3), Material.DEAD_FIRE_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG3, 2), Material.DEAD_HORN_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG, 0), Material.TUBE_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG, 1), Material.BRAIN_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG2, 0), Material.BUBBLE_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG2, 1), Material.FIRE_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.CORAL_FAN_HANG3, 0), Material.HORN_CORAL_WALL_FAN);
+		registerTwoWay(Block.get(BlockID.BAMBOO_SAPLING, 0), Material.BAMBOO_SAPLING);
+		registerTwoWay(Block.get(BlockID.BUBBLE_COLUMN, 0), Material.BUBBLE_COLUMN);
+		registerTwoWay(Block.get(BlockID.SWEET_BERRY_BUSH, 0), Material.SWEET_BERRY_BUSH);
+		registerTwoWay(Block.get(BlockID.WHITE_CANDLE_CAKE, 0), Material.WHITE_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.ORANGE_CANDLE_CAKE, 0), Material.ORANGE_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.MAGENTA_CANDLE_CAKE, 0), Material.MAGENTA_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.LIGHT_BLUE_CANDLE_CAKE, 0), Material.LIGHT_BLUE_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.YELLOW_CANDLE_CAKE, 0), Material.YELLOW_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.LIME_CANDLE_CAKE, 0), Material.LIME_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.PINK_CANDLE_CAKE, 0), Material.PINK_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.GRAY_CANDLE_CAKE, 0), Material.GRAY_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.LIGHT_GRAY_CANDLE_CAKE, 0), Material.LIGHT_GRAY_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.CYAN_CANDLE_CAKE, 0), Material.CYAN_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.PURPLE_CANDLE_CAKE, 0), Material.PURPLE_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.BLUE_CANDLE_CAKE, 0), Material.BLUE_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.BROWN_CANDLE_CAKE, 0), Material.BROWN_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.GREEN_CANDLE_CAKE, 0), Material.GREEN_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.RED_CANDLE_CAKE, 0), Material.RED_CANDLE_CAKE);
+		registerTwoWay(Block.get(BlockID.BLACK_CANDLE_CAKE, 0), Material.BLACK_CANDLE_CAKE);
+
+		// Blocks whose Nukkit display name differs from the Bukkit material,
+		// or that are a data variant of a shared Nukkit block.
+		registerTwoWay(Block.get(BlockID.PALE_OAK_STANDING_SIGN, 0), Material.PALE_OAK_SIGN);
+		registerTwoWay(Block.get(BlockID.SANDSTONE, 3), Material.CUT_SANDSTONE);
+		registerTwoWay(Block.get(BlockID.RED_SANDSTONE, 3), Material.CUT_RED_SANDSTONE);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB4, 2), Material.SMOOTH_STONE_SLAB);
+		registerTwoWay(Block.get(BlockID.RED_SANDSTONE_SLAB, 2), Material.PRISMARINE_SLAB);
+		registerTwoWay(Block.get(BlockID.RED_SANDSTONE_SLAB, 3), Material.PRISMARINE_BRICK_SLAB);
+		registerTwoWay(Block.get(BlockID.RED_SANDSTONE_SLAB, 4), Material.DARK_PRISMARINE_SLAB);
+		registerTwoWay(Block.get(BlockID.STONE_SLAB3, 7), Material.POLISHED_GRANITE_SLAB);
+		registerTwoWay(Block.get(BlockID.MONSTER_EGG, 1), Material.INFESTED_COBBLESTONE);
+		registerTwoWay(Block.get(BlockID.MONSTER_EGG, 2), Material.INFESTED_STONE_BRICKS);
+		registerTwoWay(Block.get(BlockID.MONSTER_EGG, 3), Material.INFESTED_MOSSY_STONE_BRICKS);
+		registerTwoWay(Block.get(BlockID.MONSTER_EGG, 4), Material.INFESTED_CRACKED_STONE_BRICKS);
+		registerTwoWay(Block.get(BlockID.MONSTER_EGG, 5), Material.INFESTED_CHISELED_STONE_BRICKS);
+		registerTwoWay(Block.get(BlockID.ANVIL, 4), Material.CHIPPED_ANVIL);
+		registerTwoWay(Block.get(BlockID.ANVIL, 8), Material.DAMAGED_ANVIL);
+		registerTwoWay(Block.get(BlockID.LIGHT_BLOCK, 0), Material.LIGHT);
+		registerTwoWay(Block.get(BlockID.COBBLE_WALL, 10), Material.END_STONE_BRICK_WALL);
+		registerTwoWay(Block.get(BlockID.BROWN_MUSHROOM_BLOCK, 10), Material.MUSHROOM_STEM);
+		registerTwoWay(Block.get(BlockID.SEAGRASS, 1), Material.TALL_SEAGRASS);
+		registerTwoWay(Block.get(BlockID.PUMPKIN_STEM, 8), Material.ATTACHED_PUMPKIN_STEM);
+		registerTwoWay(Block.get(BlockID.MELON_STEM, 8), Material.ATTACHED_MELON_STEM);
+		registerTwoWay(Block.get(BlockID.TORCH, 1), Material.WALL_TORCH);
+		registerTwoWay(Block.get(BlockID.REDSTONE_TORCH, 1), Material.REDSTONE_WALL_TORCH);
+		registerTwoWay(Block.get(BlockID.SOUL_TORCH, 1), Material.SOUL_WALL_TORCH);
+		registerTwoWay(Block.get(BlockID.COPPER_TORCH, 1), Material.COPPER_WALL_TORCH);
+		// Wall-mounted heads use the same block with the wall bit (8) set.
+		registerTwoWay(Block.get(BlockID.SKULL_BLOCK, 8), Material.SKELETON_WALL_SKULL);
+		registerTwoWay(Block.get(BlockID.WITHER_SKELETON_SKULL, 8), Material.WITHER_SKELETON_WALL_SKULL);
+		registerTwoWay(Block.get(BlockID.ZOMBIE_HEAD, 8), Material.ZOMBIE_WALL_HEAD);
+		registerTwoWay(Block.get(BlockID.PLAYER_HEAD, 8), Material.PLAYER_WALL_HEAD);
+		registerTwoWay(Block.get(BlockID.CREEPER_HEAD, 8), Material.CREEPER_WALL_HEAD);
+		registerTwoWay(Block.get(BlockID.DRAGON_HEAD, 8), Material.DRAGON_WALL_HEAD);
+		registerTwoWay(Block.get(BlockID.PIGLIN_HEAD, 8), Material.PIGLIN_WALL_HEAD);
+		// Wall hanging signs set ATTACHED_BIT (256) on the standing sign.
+		registerTwoWay(Block.get(BlockID.OAK_HANGING_SIGN, 256), Material.OAK_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.SPRUCE_HANGING_SIGN, 256), Material.SPRUCE_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.BIRCH_HANGING_SIGN, 256), Material.BIRCH_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.JUNGLE_HANGING_SIGN, 256), Material.JUNGLE_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.ACACIA_HANGING_SIGN, 256), Material.ACACIA_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.DARK_OAK_HANGING_SIGN, 256), Material.DARK_OAK_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.CRIMSON_HANGING_SIGN, 256), Material.CRIMSON_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.WARPED_HANGING_SIGN, 256), Material.WARPED_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.MANGROVE_HANGING_SIGN, 256), Material.MANGROVE_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.BAMBOO_HANGING_SIGN, 256), Material.BAMBOO_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.CHERRY_HANGING_SIGN, 256), Material.CHERRY_WALL_HANGING_SIGN);
+		registerTwoWay(Block.get(BlockID.PALE_OAK_HANGING_SIGN, 256), Material.PALE_OAK_WALL_HANGING_SIGN);
 	}
 
 	/**
@@ -1396,7 +1681,12 @@ public final class BlockMap {
 	}
 
 	private static void registerNukkitToBukkit(Block nukkit, Material bukkit) {
-		nukkitToBukkit[nukkit.getId()][nukkit.getDamage()] = bukkit;
+		int id = nukkit.getId();
+		int damage = nukkit.getDamage();
+		if (damage >= nukkitToBukkit[id].length) {
+			nukkitToBukkit[id] = java.util.Arrays.copyOf(nukkitToBukkit[id], damage + 1);
+		}
+		nukkitToBukkit[id][damage] = bukkit;
 	}
 
 	private static void registerBukkitToNukkit(Block nukkit, Material bukkit) {

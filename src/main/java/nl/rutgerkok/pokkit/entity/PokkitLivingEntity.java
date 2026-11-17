@@ -10,9 +10,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -504,6 +506,11 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
 	}
 
 	@Override
+	public void setRiptiding(boolean riptiding) {
+		nukkit.setSpinAttack(riptiding);
+	}
+
+	@Override
 	public boolean isSleeping() {
 		return nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_SLEEPING);
 	}
@@ -711,4 +718,24 @@ public class PokkitLivingEntity extends PokkitEntity implements LivingEntity {
     public void setInvisible(boolean invisible) {
         nukkit.setDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_INVISIBLE, invisible);
     }
+
+	@Override
+	public Color getWaypointColor() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public void setWaypointColor(Color color) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public NamespacedKey getWaypointStyle() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public void setWaypointStyle(NamespacedKey style) {
+		throw Pokkit.unsupported();
+	}
 }

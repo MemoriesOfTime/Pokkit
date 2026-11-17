@@ -271,7 +271,7 @@ public class ItemMap {
 		registerTwoWay(ItemID.GLOW_BERRIES, Material.GLOW_BERRIES);
 		registerTwoWay(ItemID.CAMPFIRE, Material.CAMPFIRE);
 		registerTwoWay(ItemID.SOUL_CAMPFIRE, Material.SOUL_CAMPFIRE);
-		registerTwoWay(ItemID.CHAIN, Material.CHAIN);
+		registerTwoWay(ItemID.CHAIN, Material.IRON_CHAIN);
 		registerTwoWay(ItemID.AMETHYST_SHARD, Material.AMETHYST_SHARD);
 		registerTwoWay(ItemID.SPYGLASS, Material.SPYGLASS);
 		registerTwoWay(ItemID.WARPED_FUNGUS_ON_A_STICK, Material.WARPED_FUNGUS_ON_A_STICK);

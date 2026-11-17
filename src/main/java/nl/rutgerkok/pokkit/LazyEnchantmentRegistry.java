@@ -3,6 +3,8 @@ package nl.rutgerkok.pokkit;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.bukkit.NamespacedKey;
@@ -47,6 +49,16 @@ public final class LazyEnchantmentRegistry implements Registry<Enchantment> {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public Enchantment getOrThrow(NamespacedKey key) {
+		Objects.requireNonNull(key, "key");
+		Enchantment enchantment = get(key);
+		if (enchantment == null) {
+			throw new NoSuchElementException("No enchantment for key " + key);
+		}
+		return enchantment;
 	}
 
 	@Override

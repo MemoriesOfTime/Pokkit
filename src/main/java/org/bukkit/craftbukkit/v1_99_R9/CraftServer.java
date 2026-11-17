@@ -111,6 +111,12 @@ public final class CraftServer extends Server.Spigot implements Server {
 	private final Messenger messenger;
 	private final Logger logger;
 
+	/**
+	 * Bukkit-only setting: Nukkit has no equivalent for pausing the server when
+	 * no players are online, so the value is kept here.
+	 */
+	private int pauseWhenEmptyTime;
+
 	private final Map<Class<? extends Keyed>, Registry<? extends Keyed>> registries = new HashMap<>();
 
 	/**
@@ -197,12 +203,27 @@ public final class CraftServer extends Server.Spigot implements Server {
 		}
 		if (type == BlockType.class) {
 			registry = PokkitRegistries.createBlockTypeRegistry();
+		} else if (type == org.bukkit.block.Biome.class) {
+			// Must be lazy: Biome's static initialiser fills this registry
+			// while the interface is still being initialised.
+			registry = PokkitRegistries.createBiomeRegistry();
+		} else if (type == org.bukkit.attribute.Attribute.class) {
+			// Must be lazy: Attribute's static initialiser fills this registry
+			// while the interface is still being initialised.
+			registry = PokkitRegistries.createAttributeRegistry();
 		} else if (type == Enchantment.class) {
 			registry = PokkitRegistries.createEnchantmentRegistry();
 		} else if (type == ItemType.class) {
 			registry = PokkitRegistries.createItemTypeRegistry();
+		} else if (type == org.bukkit.inventory.MenuType.class) {
+			// Must be lazy, for the same reason as Attribute.
+			registry = PokkitRegistries.createMenuTypeRegistry();
 		} else if (type == MusicInstrument.class) {
 			registry = PokkitRegistries.createMusicInstrumentRegistry();
+		} else if (type == org.bukkit.Sound.class) {
+			// Must be lazy: Sound's static initialiser fills this registry
+			// while the interface is still being initialised.
+			registry = PokkitRegistries.createSoundRegistry();
 		} else if (type == org.bukkit.damage.DamageType.class) {
 			registry = PokkitRegistries.createDamageTypeRegistry();
 		} else if (type == org.bukkit.potion.PotionEffectType.class) {
@@ -300,6 +321,12 @@ public final class CraftServer extends Server.Spigot implements Server {
 	}
 
 	@Override
+	public Merchant createMerchant() {
+		// Merchants are not implemented yet, just like createMerchant(String).
+		return createMerchant(null);
+	}
+
+	@Override
 	public World createWorld(WorldCreator creator) {
 		World alreadyLoaded = this.getWorld(creator.name());
 		if (alreadyLoaded != null) {
@@ -388,6 +415,12 @@ public final class CraftServer extends Server.Spigot implements Server {
 	}
 
 	@Override
+	public Map<String, String> getCodeOfConducts() {
+		// Bedrock servers have no code of conduct entries.
+		return Collections.emptyMap();
+	}
+
+	@Override
 	public Map<String, String[]> getCommandAliases() {
 		// Command aliases method not available in Nukkit-MOT, return empty map
 		return ImmutableMap.of();
@@ -444,6 +477,11 @@ public final class CraftServer extends Server.Spigot implements Server {
 	@Override
 	public int getIdleTimeout() {
 		return nukkit.getPropertyInt("player-idle-timeout", 0);
+	}
+
+	@Override
+	public int getPauseWhenEmptyTime() {
+		return pauseWhenEmptyTime;
 	}
 
 	@Override
@@ -880,6 +918,11 @@ public final class CraftServer extends Server.Spigot implements Server {
 	@Override
 	public void setIdleTimeout(int timeout) {
 		nukkit.setPropertyInt("player-idle-timeout", timeout);
+	}
+
+	@Override
+	public void setPauseWhenEmptyTime(int seconds) {
+		this.pauseWhenEmptyTime = seconds;
 	}
 
 	@Override

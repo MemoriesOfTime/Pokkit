@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.bukkit.Keyed;
@@ -26,6 +28,16 @@ public final class PokkitRegistry<T extends Keyed> implements Registry<T> {
 	@Override
 	public T get(NamespacedKey key) {
 		return map.get(key);
+	}
+
+	@Override
+	public T getOrThrow(NamespacedKey key) {
+		Objects.requireNonNull(key, "key");
+		T value = get(key);
+		if (value == null) {
+			throw new NoSuchElementException("No entry for key " + key);
+		}
+		return value;
 	}
 
 	@Override

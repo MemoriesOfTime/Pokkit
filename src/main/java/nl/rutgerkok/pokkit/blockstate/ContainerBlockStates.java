@@ -7,6 +7,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Beacon;
 import org.bukkit.block.Chest;
@@ -15,6 +16,7 @@ import org.bukkit.block.Dropper;
 import org.bukkit.block.EnderChest;
 import org.bukkit.block.Hopper;
 import org.bukkit.block.Lectern;
+import org.bukkit.block.Lockable;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -34,10 +36,29 @@ import cn.nukkit.blockentity.BlockEntityBeacon;
 import cn.nukkit.blockentity.BlockEntityLectern;
 
 /**
+ * Adds the item-based lock that was added to {@link Lockable} in Bukkit
+ * 1.21.2. Nukkit only stores locks as plain strings, so removing a lock can be
+ * represented, but an item key cannot.
+ */
+interface PokkitLockable extends Lockable {
+
+	@Override
+	default void setLockItem(ItemStack item) {
+		if (item == null || item.getType() == Material.AIR) {
+			setLock(null);
+			return;
+		}
+		// Bedrock locks match the name of the held item; a complete item key
+		// cannot be represented without silently dropping its components.
+		throw Pokkit.unsupported();
+	}
+}
+
+/**
  * Container block states whose Bukkit interface adds no state beyond the
  * inventory, the custom name and the lock.
  */
-final class ChestBlockState extends PokkitContainerState implements Chest {
+final class ChestBlockState extends PokkitContainerState implements Chest, PokkitLockable {
 
 	ChestBlockState(Location location, PokkitBlockData blockData) {
 		super(location, blockData, 27, "Chest");
@@ -49,7 +70,7 @@ final class ChestBlockState extends PokkitContainerState implements Chest {
 	}
 }
 
-final class BarrelBlockState extends PokkitContainerState implements Barrel {
+final class BarrelBlockState extends PokkitContainerState implements Barrel, PokkitLockable {
 
 	BarrelBlockState(Location location, PokkitBlockData blockData) {
 		super(location, blockData, 27, "Barrel");
@@ -61,7 +82,7 @@ final class BarrelBlockState extends PokkitContainerState implements Barrel {
 	}
 }
 
-final class ShulkerBoxBlockState extends PokkitContainerState implements ShulkerBox {
+final class ShulkerBoxBlockState extends PokkitContainerState implements ShulkerBox, PokkitLockable {
 
 	ShulkerBoxBlockState(Location location, PokkitBlockData blockData) {
 		super(location, blockData, 27, "Shulker Box");
@@ -86,7 +107,7 @@ final class ShulkerBoxBlockState extends PokkitContainerState implements Shulker
 	}
 }
 
-final class HopperBlockState extends PokkitContainerState implements Hopper {
+final class HopperBlockState extends PokkitContainerState implements Hopper, PokkitLockable {
 
 	HopperBlockState(Location location, PokkitBlockData blockData) {
 		super(location, blockData, 5, "Hopper");
@@ -98,7 +119,7 @@ final class HopperBlockState extends PokkitContainerState implements Hopper {
 	}
 }
 
-final class DropperBlockState extends PokkitContainerState implements Dropper {
+final class DropperBlockState extends PokkitContainerState implements Dropper, PokkitLockable {
 
 	DropperBlockState(Location location, PokkitBlockData blockData) {
 		super(location, blockData, 9, "Dropper");
@@ -117,7 +138,7 @@ final class DropperBlockState extends PokkitContainerState implements Dropper {
 	}
 }
 
-final class DispenserBlockState extends PokkitContainerState implements Dispenser {
+final class DispenserBlockState extends PokkitContainerState implements Dispenser, PokkitLockable {
 
 	DispenserBlockState(Location location, PokkitBlockData blockData) {
 		super(location, blockData, 9, "Dispenser");
@@ -211,7 +232,7 @@ final class LecternBlockState extends PokkitTileState implements Lectern {
 	}
 }
 
-final class BeaconBlockState extends PokkitTileState implements Beacon {
+final class BeaconBlockState extends PokkitTileState implements Beacon, PokkitLockable {
 
 	BeaconBlockState(Location location, PokkitBlockData blockData) {
 		super(location, blockData);

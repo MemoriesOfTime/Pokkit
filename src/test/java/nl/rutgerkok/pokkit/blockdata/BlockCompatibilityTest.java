@@ -55,8 +55,8 @@ public class BlockCompatibilityTest {
 		// BlockType and ItemType throw in their static initialiser when a key
 		// is missing, so touching the constants proves the registries are
 		// complete.
-		assertEquals(1058, count(Registry.BLOCK));
-		assertEquals(1333, count(Registry.ITEM));
+		assertEquals(1166, count(Registry.BLOCK));
+		assertEquals(1484, count(Registry.ITEM));
 		assertTrue(BlockType.WHITE_BED != null);
 		assertTrue(BlockType.WAXED_OXIDIZED_COPPER != null);
 	}
@@ -217,6 +217,33 @@ public class BlockCompatibilityTest {
 			stone.merge(Bukkit.createBlockData(Material.GRANITE));
 			fail("Merging different materials must be rejected");
 		} catch (IllegalArgumentException expected) {
+		}
+	}
+
+	@Test
+	public void testModernBlocksRoundTrip() {
+		// Representative blocks from the generated and manual mapping tables.
+		Material[] blocks = {
+				Material.PALE_OAK_PLANKS, Material.PALE_OAK_SIGN, Material.CHISELED_COPPER,
+				Material.WAXED_OXIDIZED_CUT_COPPER_STAIRS, Material.RESIN_BRICKS,
+				Material.CREAKING_HEART, Material.HEAVY_CORE, Material.VAULT,
+				Material.CUT_SANDSTONE, Material.CUT_RED_SANDSTONE,
+				Material.SMOOTH_STONE_SLAB, Material.PRISMARINE_SLAB,
+				Material.PRISMARINE_BRICK_SLAB, Material.DARK_PRISMARINE_SLAB,
+				Material.POLISHED_GRANITE_SLAB, Material.INFESTED_COBBLESTONE,
+				Material.INFESTED_CHISELED_STONE_BRICKS, Material.CHIPPED_ANVIL,
+				Material.DAMAGED_ANVIL, Material.LIGHT, Material.END_STONE_BRICK_WALL,
+				Material.MUSHROOM_STEM, Material.TALL_SEAGRASS,
+				Material.ATTACHED_PUMPKIN_STEM, Material.ATTACHED_MELON_STEM,
+				Material.WALL_TORCH, Material.REDSTONE_WALL_TORCH,
+				Material.SOUL_WALL_TORCH, Material.COPPER_WALL_TORCH,
+				Material.SKELETON_WALL_SKULL, Material.PIGLIN_WALL_HEAD,
+				Material.OAK_WALL_HANGING_SIGN, Material.PALE_OAK_WALL_HANGING_SIGN,
+				Material.NETHER_WART, Material.NETHER_WART_BLOCK,
+				Material.DEAD_TUBE_CORAL, Material.DEAD_BRAIN_CORAL_BLOCK
+		};
+		for (Material block : blocks) {
+			assertEquals(block, Bukkit.createBlockData(block).getMaterial());
 		}
 	}
 }

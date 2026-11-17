@@ -14,7 +14,7 @@ import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityBrewingStand;
 import cn.nukkit.blockentity.BlockEntityCampfire;
 
-final class BrewingStandBlockState extends PokkitContainerState implements BrewingStand {
+final class BrewingStandBlockState extends PokkitContainerState implements BrewingStand, PokkitLockable {
 
 	BrewingStandBlockState(Location location, PokkitBlockData blockData) {
 		super(location, blockData, 5, "Brewing Stand");

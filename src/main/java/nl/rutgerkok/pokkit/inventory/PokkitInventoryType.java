@@ -51,6 +51,7 @@ public final class PokkitInventoryType {
 		bukkitToNukkit.put(InventoryType.COMPOSTER, cn.nukkit.inventory.InventoryType.DROPPER); // No Nukkit equivalent
 		bukkitToNukkit.put(InventoryType.CHISELED_BOOKSHELF, cn.nukkit.inventory.InventoryType.CHEST); // No Nukkit equivalent
 		bukkitToNukkit.put(InventoryType.JUKEBOX, cn.nukkit.inventory.InventoryType.HOPPER); // No Nukkit equivalent
+		bukkitToNukkit.put(InventoryType.DECORATED_POT, cn.nukkit.inventory.InventoryType.CHEST); // No Nukkit equivalent
 		bukkitToNukkit.put(InventoryType.SMITHING_NEW, cn.nukkit.inventory.InventoryType.SMITHING_TABLE);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.UI, InventoryType.PLAYER);
 		nukkitToBukkit.put(cn.nukkit.inventory.InventoryType.OFFHAND, InventoryType.PLAYER);

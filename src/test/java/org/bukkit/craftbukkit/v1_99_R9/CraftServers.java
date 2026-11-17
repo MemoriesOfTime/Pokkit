@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.v1_99_R9;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -71,11 +72,33 @@ public final class CraftServers extends Server.Spigot implements Server {
 
 	private ItemFactory itemFactory;
 
+	private int pauseWhenEmptyTime;
+
 	public CraftServers() {
         if (Bukkit.getServer() == null) {
             Bukkit.setServer(this);
         }
         instance = this;
+	}
+
+	@Override
+	public int getPauseWhenEmptyTime() {
+		return pauseWhenEmptyTime;
+	}
+
+	@Override
+	public void setPauseWhenEmptyTime(int seconds) {
+		pauseWhenEmptyTime = seconds;
+	}
+
+	@Override
+	public Merchant createMerchant() {
+		return createMerchant(null);
+	}
+
+	@Override
+	public Map<String, String> getCodeOfConducts() {
+		return Collections.emptyMap();
 	}
 	
 	@Override
@@ -798,12 +821,22 @@ public final class CraftServers extends Server.Spigot implements Server {
 	public <T extends Keyed> org.bukkit.Registry<T> getRegistry(Class<T> aClass) {
 		if (aClass == org.bukkit.block.BlockType.class) {
 			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createBlockTypeRegistry();
+		} else if (aClass == org.bukkit.block.Biome.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createBiomeRegistry();
+		} else if (aClass == org.bukkit.attribute.Attribute.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createAttributeRegistry();
 		} else if (aClass == org.bukkit.enchantments.Enchantment.class) {
 			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createEnchantmentRegistry();
 		} else if (aClass == org.bukkit.inventory.ItemType.class) {
 			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createItemTypeRegistry();
+		} else if (aClass == org.bukkit.inventory.MenuType.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createMenuTypeRegistry();
 		} else if (aClass == org.bukkit.MusicInstrument.class) {
 			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createMusicInstrumentRegistry();
+		} else if (aClass == org.bukkit.Sound.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createSoundRegistry();
+		} else if (aClass == org.bukkit.potion.PotionEffectType.class) {
+			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createPotionEffectTypeRegistry();
 		} else if (aClass == org.bukkit.damage.DamageType.class) {
 			return (org.bukkit.Registry<T>) nl.rutgerkok.pokkit.PokkitRegistries.createDamageTypeRegistry();
 		}
