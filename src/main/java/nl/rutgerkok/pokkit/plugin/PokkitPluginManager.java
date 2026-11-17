@@ -215,10 +215,36 @@ public final class PokkitPluginManager implements PluginManager {
 							"Unexpected plugin type: " + nukkitPlugin + "(" + nukkitPlugin.getClass() + ")");
 				}
 				Plugin bukkitPlugin = PokkitPlugin.toBukkit(nukkitPlugin);
-				bukkitPlugin.onLoad();
-				bukkitPlugins.add(bukkitPlugin);
+				if (callOnLoad(bukkitPlugin, pluginLoader)) {
+					bukkitPlugins.add(bukkitPlugin);
+				}
 			}
 			return bukkitPlugins.toArray(new Plugin[0]);
+		}
+	}
+
+	/**
+	 * Calls {@code onLoad()} on a single plugin, containing any exception it
+	 * throws. Bukkit logs such an exception and continues with the next
+	 * plugin; letting it escape here would abort {@code Pokkit.onLoad()}
+	 * instead, which skips every service registered after the plugin service
+	 * (all event translators, for example) and leaves the server running
+	 * without Bukkit events.
+	 *
+	 * @param plugin
+	 *            The plugin to load.
+	 * @param pluginLoader
+	 *            Loader that remembers the failure, so that the plugin is not
+	 *            enabled later on.
+	 * @return Whether the plugin loaded successfully.
+	 */
+	static boolean callOnLoad(Plugin plugin, PokkitPluginLoader pluginLoader) {
+		try {
+			plugin.onLoad();
+			return true;
+		} catch (Throwable t) {
+			pluginLoader.markLoadFailure(plugin, t);
+			return false;
 		}
 	}
 

@@ -33,7 +33,7 @@ public final class NukkitHook extends PluginBase {
 		try {
 			pokkit.getClass().getMethod("onEnable", PluginBase.class).invoke(pokkit, this);
 		} catch (Throwable t) {
-			this.getLogger().error("Error disabling plugin", t);
+			this.getLogger().error("Error enabling plugin", t);
 		}
 	}
 

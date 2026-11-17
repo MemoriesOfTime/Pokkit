@@ -96,7 +96,7 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 	@Override
 	public void enablePlugin(Plugin plugin) {
 		org.bukkit.plugin.Plugin bukkitPlugin = PokkitPlugin.toBukkit(plugin);
-		if (failedPlugins.contains(bukkitPlugin.getName())) {
+		if (hasFailed(bukkitPlugin.getName())) {
 			// Disabling a plugin closes its class loader, so enabling it again
 			// only produces a confusing "zip file closed" error. Real servers
 			// leave a plugin that failed to enable disabled as well.
@@ -138,10 +138,33 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 	}
 
 	/**
-	 * Names of plugins that failed to enable. Their class loader is closed, so
-	 * they must not be enabled a second time.
+	 * Names of plugins that failed to load or enable. Their class loader is
+	 * closed, so they must not be enabled a second time.
 	 */
 	private final Set<String> failedPlugins = ConcurrentHashMap.newKeySet();
+
+	/**
+	 * Marks a plugin as failed, because {@code onLoad()} threw. Like Bukkit,
+	 * the failure is logged and the remaining plugins are still loaded.
+	 *
+	 * @param plugin
+	 *            The plugin that failed to load.
+	 * @param cause
+	 *            The exception thrown by {@code onLoad()}.
+	 */
+	void markLoadFailure(org.bukkit.plugin.Plugin plugin, Throwable cause) {
+		failedPlugins.add(plugin.getName());
+		logSevere("Could not load plugin '" + plugin.getName() + "'", cause);
+	}
+
+	/**
+	 * @param name
+	 *            Name of a plugin, as declared in {@code plugin.yml}.
+	 * @return Whether that plugin failed to load or enable.
+	 */
+	boolean hasFailed(String name) {
+		return failedPlugins.contains(name);
+	}
 
 	@Override
 	public PluginDescription getPluginDescription(File file) {
@@ -377,12 +400,17 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 	}
 
 	private static void logSevere(String message) {
+		logSevere(message, null);
+	}
+
+	private static void logSevere(String message, Throwable cause) {
 		try {
 			java.util.logging.Logger logger = Bukkit.getLogger();
 			if (logger == null) {
 				logger = java.util.logging.Logger.getLogger("Pokkit");
 			}
-			logger.log(Level.SEVERE, "[Pokkit] " + message);
+			// The server logger already prefixes its messages with [Pokkit].
+			logger.log(Level.SEVERE, message, cause);
 		} catch (RuntimeException | LinkageError ignored) {
 			// The Bukkit server may not be available yet during class
 			// initialisation.
@@ -393,7 +421,7 @@ public final class PokkitPluginLoader implements cn.nukkit.plugin.PluginLoader {
 		try {
 			java.util.logging.Logger logger = Bukkit.getLogger();
 			if (logger != null) {
-				logger.log(Level.WARNING, "[Pokkit] " + message, cause);
+				logger.log(Level.WARNING, message, cause);
 			}
 		} catch (RuntimeException ignored) {
 			// The Bukkit server may not be available yet during class

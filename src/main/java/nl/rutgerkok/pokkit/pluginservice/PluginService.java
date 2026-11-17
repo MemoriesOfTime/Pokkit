@@ -26,6 +26,13 @@ public final class PluginService implements PokkitService {
 
 	@Override
 	public void onEnable(PluginBase pokkit) {
+		if (plugins == null) {
+			// onLoad did not finish, so there is no list of plugins to enable.
+			// Enabling them anyway would throw a NullPointerException here and
+			// hide the original failure.
+			pokkit.getLogger().warning("Bukkit plugins were not loaded, skipping the enable step");
+			return;
+		}
 		enablePlugins(PluginLoadOrder.POSTWORLD);
 		plugins = null; // no longer needed, Nukkit takes care of them now
 	}
