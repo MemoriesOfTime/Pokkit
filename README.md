@@ -1,73 +1,97 @@
-# Pokkit [![CircleCI](https://circleci.com/gh/PetteriM1/Pokkit.svg?style=svg)](https://circleci.com/gh/PetteriM1/Pokkit)
+# Pokkit
 
-The Minecraft multiplayer scene is fragmented. There are many competing server implementations. A popular server is [Spigot](http://www.spigotmc.org/). Spigot is able to load plugins, which can interact with Minecraft through the Spigot Plugin API. For Minecraft Pocket Edition, the mobile version of Minecraft, a server with a plugin API similar to Spigot exists: [Nukkit](https://nukkitx.com/). Unfortunately, plugins written for Spigot cannot run on Nukkit.
+[![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fmotci.cn%2Fjob%2FPokkit&style=flat-square)](https://motci.cn/job/Pokkit/)
+[![Spigot API](https://img.shields.io/badge/Spigot%20API-1.21.11--R0.2-informational?style=flat-square)](#requirements)
+[![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square)](#requirements)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE.md)
 
-Pokkit is a translation layer that allows plugins written for Spigot to work on Nukkit. However, it is far from perfect. Because of the size of the Spigot API, it is not possible for me to implement all of the Spigot API.
+**Pokkit** is a compatibility layer that lets Bukkit/Spigot plugins run on [Nukkit-MOT](https://github.com/MemoriesOfTime/Nukkit-MOT), a Minecraft Bedrock Edition server. It implements the Spigot Plugin API on top of Nukkit and translates Nukkit events, so a plugin written for Spigot can be loaded on a Bedrock server without changing a single line of code.
 
-**Do not expect that Pokkit allows you to run a random Spigot plugin on Nukkit.** Pokkit is still very incomplete, so only a handful of plugins will work. A list of plugins that are confirmed to work or not to work can be found on [Google Docs](https://docs.google.com/spreadsheets/d/1afyyvkdQWyJO6bv1kzofrJxqniqlg28TKqr3YK6ouic/edit?usp=sharing). You are encouraged to edit this list yourself if you have found a Spigot plugin that works or doesn't work.
+> [!WARNING]
+> **Pokkit is not suitable for production use.** It is **not** a complete implementation of the Spigot API: only a subset of plugins works, and unsupported methods throw `UnsupportedOperationException`. **Do not expect that Pokkit allows you to run a random Spigot plugin on Nukkit.** Use it for development, testing or hobby servers only — do not run it in production if you depend on Spigot plugins working correctly.
 
-My motivation for creating Pokkit was to allow some plugins that I use to work on Nukkit. I am not trying to write a complete implementation of the Spigot API myself. This would be impossible. Keep in mind that Spigot was created over the span of five years by hundreds of different programmers.
+## Table of contents
 
-## For Spigot plugin developrs
-If you are a Spigot plugin developer looking to port your plugin, Pokkit may be very interesting to you. Instead of maintaining two code bases, or introducing large amounts of abstraction into your codebase, you can simply keep using the Spigot API.
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Compatibility](#compatibility)
+- [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
+- [License](#license)
 
-While testing your plugin, you will most likely come accross an unimplemented method or event. You are encouraged to implement these methods and events, and to submit your changes as a pull request. This will bring us closer to a complete implementation of the Spigot API.
+## Features
 
-To get started writing code for Pokkit, I have created a [file with examples](./IMPL_EXAMPLES.md) on how I implemented the methods.
+- **Bukkit/Spigot plugin loader** — loads and enables Bukkit plugins from `plugins/Pokkit/bukkitPlugins/`, honouring `plugin.yml` dependencies and its `load` order (`STARTUP` / `POSTWORLD`).
+- **Event translation** — player, entity, inventory, block, world, vehicle, chat, item and lifecycle events are translated from Nukkit to Bukkit and fired on the Bukkit event bus.
+- **Commands and permissions** — `plugin.yml` commands are exposed as Bukkit `PluginCommand`s, so custom executors and command aliases keep working, and a Bukkit-compatible `permissions.yml` is honoured.
+- **Scoreboard persistence** — main scoreboard data is stored in `scoreboard.yml` and restored on the next start.
+- **Type mappings** — items, blocks and enchantments are converted between the Bukkit and Nukkit representations, and Bukkit metadata for players, worlds and blocks is supported.
+- **Bundled JDBC drivers** — SQLite and MySQL drivers are shaded in and registered, so plugins can call `DriverManager.getConnection(...)` like they would on Spigot.
+- **Floodgate integration** — every player counts as a Bedrock player: Floodgate API lookups work with stable, name-derived UUIDs, and a virtual `floodgate` plugin lets plugins detect Floodgate and declare it as a dependency.
 
-## Download and usage
-Download the latest release [here](https://nukkitx.com/resources/pokkit.21/). Install Pokkit like you would install any Nukkit plugin: place the JAR file in the `plugins` directory of your Nukkit server. Start your server, then stop it again. You'll notice that a new folder has been created inside the `plugins` directory: a folder called `Pokkit`. Open this folder. Inside the folder, there a three things:
+## Requirements
 
-* A folder called `bukkitPlugins`: place any plugin written for Spigot in this folder.
-* A file called `permissions.yml`: this is Bukkit's [permissions.yml file](http://wiki.bukkit.org/Permissions.yml).
-* A file called `scoreboard.yml`: scoreboard data is saved here.
+| Component | Version |
+|-----------|---------|
+| Java | 17 or newer |
+| Server | [Nukkit-MOT](https://github.com/MemoriesOfTime/Nukkit-MOT) (`MOT-SNAPSHOT`) |
+| Bukkit API | Spigot `1.21.11-R0.2-SNAPSHOT` |
 
-It is important to remember that you must **install Bukkit plugins in the `plugins/Pokkit/bukkitPlugins/` directory**, and not in the `plugins/` directory.
+## Installation
 
-## Compiling instructions
-* Make sure you have installed [Maven](https://maven.apache.org/).
-* Download a copy of the source code of Pokkit (use one of the buttons on this page).
-* Then run `mvn install` in the directory containing the Pokkit source code.
-* A JAR file will be placed in the newly created `target` directory.
+1. Download the latest build from the CI job: **<https://motci.cn/job/Pokkit/>**
+   (or grab the artifact directly from the [last successful build](https://motci.cn/job/Pokkit/lastSuccessfulBuild/artifact/target/)).
+2. Place the `Pokkit-*.jar` file into the `plugins/` directory of your Nukkit-MOT server.
+3. Start the server once, then stop it. Pokkit creates a `plugins/Pokkit/` folder.
+4. Put every Bukkit/Spigot plugin **into `plugins/Pokkit/bukkitPlugins/`** — not into `plugins/`.
+5. Restart the server.
 
-## Bug reports
-In general, I will only fix a bug for you if happens to also affect me. Pokkit is a personal project that I uploaded in the hope that it will be useful to others, but I'm not willing to spend the time to create a complete, bug-free implementation of the Spigot API. See my reasoning in the introduction.
+After the first start, the data folder looks like this:
 
-Still, I will leave open all valid bug reports, so that anyone interested in improving Pokkit can have a look.
+```
+plugins/
+└── Pokkit/
+    ├── config.yml          # Pokkit settings
+    ├── permissions.yml     # Bukkit permissions configuration
+    ├── scoreboard.yml      # persisted scoreboard data
+    └── bukkitPlugins/      # <-- Bukkit/Spigot plugin JARs go here
+```
+
+> [!WARNING]
+> Bukkit plugins placed directly in `plugins/` are **not** loaded. They must live in `plugins/Pokkit/bukkitPlugins/`.
+
+## Compatibility
+
+Pokkit covers a large part of the Spigot API, but coverage is uneven, so a given plugin may or may not work — which is why it is not suitable for production servers. There is no maintained list of compatible plugins — test your plugin and check the log. Typical symptoms of a missing feature are an `UnsupportedOperationException` naming the Pokkit version, or a method that silently does nothing (particles, for example).
+
+- When a plugin fails, check the server log first: Pokkit reports unimplemented methods there.
+- Missing API is usually straightforward to add — see [Contributing](#contributing).
+
+## Contributing
+
+Contributions are welcome, both bug reports and pull requests. Please read [CONTRIBUTING.md](./CONTRIBUTING.md) first.
+
+**Porting or debugging a plugin?** When you hit an unimplemented method or event, implementing it is usually a small change: find the `Pokkit*` adapter class and delegate to the matching Nukkit API.
+
+- [`IMPL_EXAMPLES.md`](./IMPL_EXAMPLES.md) — worked examples of how Bukkit methods are implemented.
+- [`Events.md`](./Events.md) — step-by-step guide for adding a new event listener.
+- [`AGENTS.md`](./AGENTS.md) — build, test and code-style conventions.
+
+Code style, in short: tabs for indentation, opening braces on the same line.
+
+## Acknowledgements
+
+Pokkit was originally created by [Rutger Kok](https://github.com/rutgerkok); Thanks to everyone who contributed code over the years:
+
+| Year | Contributors |
+|------|--------------|
+| 2020 | [PetteriM1](https://github.com/PetteriM1), [CreeperFace](https://github.com/Creeperface01) |
+| 2019 | [PetteriM1](https://github.com/PetteriM1) |
+| 2018 | [Jesse Boyd](https://github.com/boy0001), [Rutger Kok](https://github.com/rutgerkok) |
+| 2017 | [Ankit](https://github.com/AnkitM252), [Langsdorf](https://github.com/Langsdorf), [MrPowerGamerBR](https://github.com/MrPowerGamerBR), [NycuRO](https://github.com/NycuRO), [PikyCZ](https://github.com/PikyCZ), [RaynLegends](https://github.com/RaynLegends), [Rutger Kok](https://github.com/rutgerkok), [SuperAlecs](https://github.com/SuperAlecs) |
+| 2016 | [daveboden](https://github.com/daveboden), [Langsdorf](https://github.com/Langsdorf), [MrPowerGamerBR](https://github.com/MrPowerGamerBR), [OliverUv](https://github.com/OliverUv), [Rutger Kok](https://github.com/rutgerkok), [ZINGDING](https://github.com/ZINGDING) |
 
 ## License
-License is MIT, except for the files that were derived from the Bukkit project. See the [license](./LICENSE.md) file for details.
 
-## Pull requests
-Contributions are very much welcomed. If you have any questions, feel free to send me an e-mail (address is on my Github profile).
-
-Before you start, please read the [contribution guidelines](./CONTRIBUTING.md). I hope to be able to add your name to the list below soon!
-
-### Contributed code in 2020
-* [PetteriM1](https://github.com/PetteriM1)
-* [CreeperFace](https://github.com/Creeperface01)
-
-### Contributed code in 2019
-* [PetteriM1](https://github.com/PetteriM1)
-
-### Contributed code in 2018
-* [Jesse Boyd](https://github.com/boy0001)
-* [Rutger Kok](https://github.com/rutgerkok)
-
-### Contributed code in 2017
-* [Ankit](https://github.com/AnkitM252)
-* [Langsdorf](https://github.com/Langsdorf)
-* [MrPowerGamerBR](https://github.com/MrPowerGamerBR)
-* [NycuRO](https://github.com/NycuRO)
-* [PikyCZ](https://github.com/PikyCZ)
-* [RaynLegends](https://github.com/RaynLegends)
-* [Rutger Kok](https://github.com/rutgerkok)
-* [SuperAlecs](https://github.com/SuperAlecs)
-
-### Contributed code in 2016
-* [daveboden](https://github.com/daveboden)
-* [Langsdorf](https://github.com/Langsdorf)
-* [MrPowerGamerBR](https://github.com/MrPowerGamerBR)
-* [OliverUv](https://github.com/OliverUv)
-* [Rutger Kok](https://github.com/rutgerkok)
-* [ZINGDING](https://github.com/ZINGDING)
+Pokkit is licensed under the MIT license, except for the files derived from the Bukkit project. See [LICENSE.md](./LICENSE.md) for details.
