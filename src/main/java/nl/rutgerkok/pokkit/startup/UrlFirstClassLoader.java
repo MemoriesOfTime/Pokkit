@@ -15,6 +15,30 @@ import java.util.Map;
  */
 final class UrlFirstClassLoader extends URLClassLoader {
 
+	/**
+	 * Packages that must always be loaded from Nukkit, not from the bundled
+	 * libraries. Nukkit-MOT ships Guava, Gson, SnakeYAML and SLF4J; loading a
+	 * second copy would give the same types two class identities and break
+	 * interop with Nukkit APIs (for example when a Guava collection is passed
+	 * to Nukkit).
+	 *
+	 * <p>
+	 * Some dependencies bundle these libraries internally (notably the Geyser
+	 * common jar pulled in by the Floodgate API), so they cannot be excluded
+	 * at build time. Delegating these packages to the parent loader has the
+	 * same effect as the shade filters this build used to have.
+	 * </p>
+	 *
+	 * <p>
+	 * Keep this list in sync with the {@code excludeGroupIds} configuration of
+	 * {@code maven-dependency-plugin} in {@code pom.xml}: everything Nukkit
+	 * provides is excluded from the bundled jars where possible, and listed
+	 * here for dependencies that bundle it internally.
+	 * </p>
+	 */
+	private static final String[] PARENT_FIRST_PREFIXES = { "com.google.common.", "com.google.thirdparty.",
+			"com.google.gson.", "org.yaml.snakeyaml.", "org.checkerframework.", "org.slf4j." };
+
 	private final Map<String, Class<?>> loaded = new HashMap<>();
 
 	public UrlFirstClassLoader(URL[] urls, ClassLoader fallback) {
@@ -37,6 +61,14 @@ final class UrlFirstClassLoader extends URLClassLoader {
 			return cached;
 		}
 
+		if (isParentFirst(name)) {
+			// Delegate to Nukkit before looking in the bundled libraries: these
+			// packages must have a single class identity in the server.
+			Class<?> fromParent = super.loadClass(name, resolve);
+			loaded.put(name, fromParent);
+			return fromParent;
+		}
+
 		try {
 			// Load from JAR file
 			Class<?> loadedFromJar = this.findClass(name);
@@ -54,5 +86,14 @@ final class UrlFirstClassLoader extends URLClassLoader {
 			}
 			return fromGlobal;
 		}
+	}
+
+	private static boolean isParentFirst(String name) {
+		for (String prefix : PARENT_FIRST_PREFIXES) {
+			if (name.startsWith(prefix)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

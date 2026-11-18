@@ -117,14 +117,15 @@ public final class Pokkit {
 	}
 
 	/**
-	 * Registers the JDBC drivers that are shaded into this jar.
+	 * Registers the JDBC drivers that are bundled with this plugin.
 	 *
 	 * <p>
 	 * Spigot ships the SQLite and MySQL drivers on the server class path, so
 	 * plugins simply call {@code DriverManager.getConnection(...)}. The
 	 * {@link java.sql.DriverManager} only discovers drivers through the system
-	 * class loader, which cannot see the drivers inside this plugin jar, so
-	 * they have to be registered explicitly.
+	 * class loader, which cannot see the drivers in the nested jars that
+	 * {@code NukkitHook} extracts to the plugin data folder, so they have to be
+	 * registered explicitly.
 	 * </p>
 	 */
 	private static void registerJdbcDrivers() {

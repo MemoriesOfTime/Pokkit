@@ -27,7 +27,7 @@
 - **Commands and permissions** — `plugin.yml` commands are exposed as Bukkit `PluginCommand`s, so custom executors and command aliases keep working, and a Bukkit-compatible `permissions.yml` is honoured.
 - **Scoreboard persistence** — main scoreboard data is stored in `scoreboard.yml` and restored on the next start.
 - **Type mappings** — items, blocks and enchantments are converted between the Bukkit and Nukkit representations, and Bukkit metadata for players, worlds and blocks is supported.
-- **Bundled JDBC drivers** — SQLite and MySQL drivers are shaded in and registered, so plugins can call `DriverManager.getConnection(...)` like they would on Spigot.
+- **Bundled JDBC drivers** — SQLite and MySQL drivers are bundled in isolated class-loader jars and registered, so plugins can call `DriverManager.getConnection(...)` like they would on Spigot without leaking the drivers into native Nukkit plugins.
 - **Floodgate integration** — every player counts as a Bedrock player: Floodgate API lookups work with stable, name-derived UUIDs, and a virtual `floodgate` plugin lets plugins detect Floodgate and declare it as a dependency.
 
 ## Requirements

@@ -126,41 +126,64 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<!--
+					Delete the libraries copied by a previous build before new ones are
+					copied. copy-dependencies only adds files, so without this step an
+					upgraded dependency would leave both the old and the new jar in
+					target/classes and therefore in the plugin jar.
+				-->
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.4</version>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.5.0</version>
 				<executions>
 					<execution>
-						<phase>package</phase>
+						<id>clean-bundled-libraries</id>
+						<phase>generate-resources</phase>
 						<goals>
-							<goal>shade</goal>
+							<goal>clean</goal>
 						</goals>
 						<configuration>
-							<artifactSet>
-								<excludes>
-									<!-- These are provided by Nukkit-MOT -->
-									<exclude>org.yaml:snakeyaml</exclude>
-									<exclude>com.google.code.gson:gson</exclude>
-								</excludes>
-							</artifactSet>
-							<filters>
-								<!--
-									org.geysermc.geyser:common (pulled in transitively by the Floodgate API)
-									is a fat jar that bundles Guava 31.0.1 and Gson 2.3.1. Nukkit-MOT already
-									ships Guava 33.7.2 and Gson 2.13.2 and its plugin class loader is
-									parent-first, so these copies are never loaded. Strip them so the plugin
-									JAR stays small and a future class loader change cannot cause version skew.
-								-->
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>com/google/common/**</exclude>
-										<exclude>com/google/thirdparty/**</exclude>
-										<exclude>com/google/gson/**</exclude>
-										<exclude>org/checkerframework/**</exclude>
-									</excludes>
-								</filter>
-							</filters>
+							<excludeDefaultDirectories>true</excludeDefaultDirectories>
+							<filesets>
+								<fileset>
+									<directory>${project.build.outputDirectory}/META-INF/pokkit/lib</directory>
+								</fileset>
+							</filesets>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!--
+					Bundle the dependencies as nested jars instead of shading them into the
+					plugin jar. Nukkit exposes every class in a plugin jar to all other
+					plugins (JavaPluginLoader#getClassByName scans the class loader URLs of
+					every plugin), so shaded libraries would leak into native Nukkit
+					plugins. NukkitHook extracts the nested jars to the plugin data folder
+					and loads them from a private class loader that Nukkit never sees.
+				-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.8.1</version>
+				<executions>
+					<execution>
+						<id>copy-bundled-libraries</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/META-INF/pokkit/lib</outputDirectory>
+							<includeScope>runtime</includeScope>
+							<!--
+								Nukkit-MOT provides these; keep the parent copies for class
+								identity. Some dependencies bundle their own copies anyway
+								(Geyser common ships Guava and Gson), so the same packages are
+								parent-first in UrlFirstClassLoader. Keep the two lists in sync.
+							-->
+							<excludeGroupIds>com.google.guava,com.google.code.gson,org.yaml,org.slf4j</excludeGroupIds>
+							<useBaseVersion>true</useBaseVersion>
+							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
 				</executions>

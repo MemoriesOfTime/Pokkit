@@ -132,3 +132,8 @@ src/test/java/org/bukkit/craftbukkit/v1_99_R9/      # Tests for the CraftBukkit-
 - `commons-lang:commons-lang:2.6`, `org.apache.commons:commons-lang3:3.18.0`, `com.googlecode.json-simple:json-simple:1.1.1` (compile) - libraries Bukkit plugins expect from the server
 - `org.jetbrains:annotations:24.1.0` (provided) - `@NotNull` / `@Nullable` annotations used in Bukkit API signatures
 - `junit:junit:4.13.2` (test)
+
+### Dependency isolation
+Dependencies are **not** shaded into the plugin JAR. `maven-dependency-plugin` copies them as nested jars to `META-INF/pokkit/lib/`; `NukkitHook` extracts them to `plugins/Pokkit/lib/` and adds them only to `UrlFirstClassLoader`, never to Nukkit's `PluginClassLoader`.
+
+This is required for isolation: Nukkit's `JavaPluginLoader.getClassByName` scans the class-loader URLs of every plugin, so any class entry in the plugin JAR (including shaded dependencies) is visible to native Nukkit plugins. Do not move dependencies back into the JAR, and do not declare them under `plugin.yml` `libraries` (those URLs are added to the `PluginClassLoader`). Nukkit-provided packages (Guava, Gson, SnakeYAML, SLF4J) must stay parent-first in `UrlFirstClassLoader` so that their class identity stays consistent with Nukkit's. As a consequence, native Nukkit plugins cannot use Pokkit's libraries or the Bukkit API through Pokkit; that is intended, and release notes should mention it.
